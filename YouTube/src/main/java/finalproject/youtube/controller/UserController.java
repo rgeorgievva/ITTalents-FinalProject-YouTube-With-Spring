@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @RestController
 public class UserController extends BaseController {
@@ -50,5 +51,39 @@ public class UserController extends BaseController {
         userDAO.editProfile(user);
     }
 
+    @GetMapping(value = "users/get/by/{username}")
+    public List<User> getByUsername(@PathVariable("username") String username) throws UserException {
+        return userDAO.findByUsername(username);
+    }
+
+    @PostMapping(value = "users/subscribe/to/user")
+    public void subscribeToUser(@RequestBody List<User> users, HttpSession session)
+            throws UserException {
+        if (users.size() < 2) {
+            throw new UserException("Missing subscriber");
+        }
+        User subscriber = users.get(0);
+        User subscribedTo = users.get(1);
+        if (!validateLogged(session, subscriber)) {
+            throw new UserException("Unauthorized");
+        }
+
+        userDAO.subscribeToUser(subscriber, subscribedTo);
+    }
+
+    @DeleteMapping(value = "users/unsubscribe/from/user")
+    public void unsubscribeFromUser(@RequestBody List<User> users, HttpSession session)
+            throws UserException {
+        if (users.size() < 2) {
+            throw new UserException("Missing subscriber");
+        }
+        User subscriber = users.get(0);
+        User subscribedTo = users.get(1);
+        if (!validateLogged(session, subscriber)) {
+            throw new UserException("Unauthorized");
+        }
+
+        userDAO.unsubscribeFromUser(subscriber, subscribedTo);
+    }
 
 }
