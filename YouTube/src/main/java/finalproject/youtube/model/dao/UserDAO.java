@@ -4,6 +4,7 @@ import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Component
 public class UserDAO {
 
     @Autowired
