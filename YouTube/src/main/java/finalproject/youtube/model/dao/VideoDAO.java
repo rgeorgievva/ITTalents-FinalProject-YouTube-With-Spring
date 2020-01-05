@@ -4,7 +4,6 @@ import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
-import javafx.scene.media.MediaPlayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,7 @@ public class VideoDAO {
     DBManager dbManager;
 
     // add video
-    public int uploadVideo(Video video, User owner) throws VideoException {
+    public int uploadVideo(Video video) throws VideoException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
@@ -31,7 +30,7 @@ public class VideoDAO {
                 statement.setString(2, video.getDescription());
                 statement.setString(3, video.getVideoUrl());
                 statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-                statement.setInt(5, owner.getId());
+                statement.setInt(5, video.getOwnerId());
                 statement.setInt(6, video.getCategoryId());
                 statement.setLong(7, video.getDuration());
                 statement.setString(8, video.getThumbnailUrl());
@@ -43,7 +42,8 @@ public class VideoDAO {
             }
 
         } catch (SQLException e) {
-            throw new VideoException("Could not upload video! Please try again later.", e);
+        //    throw new VideoException("Could not upload video! Please try again later.", e);
+            throw new VideoException(e.getMessage(), e);
         }
     }
 
