@@ -4,6 +4,7 @@ import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
+import javafx.scene.media.MediaPlayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

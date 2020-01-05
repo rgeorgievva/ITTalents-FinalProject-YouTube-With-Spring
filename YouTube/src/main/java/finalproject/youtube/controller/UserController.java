@@ -1,5 +1,6 @@
 package finalproject.youtube.controller;
 
+import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.entity.User;
@@ -15,23 +16,6 @@ public class UserController extends BaseController {
     @Autowired
     UserDAO userDAO;
 
-    public static boolean validateLogged(HttpSession session, User user) {
-        if (session.isNew()) {
-            return false;
-        }
-
-        if (session.getAttribute("user") == null) {
-            return false;
-        }
-
-        User u = (User) session.getAttribute("user");
-        if (!u.getEmail().equals(user.getEmail())) {
-            return false;
-        }
-
-        return true;
-    }
-
     @PostMapping(value = "users/register")
     public void register(@RequestBody User user) throws UserException {
         userDAO.registerUser(user);
@@ -39,15 +23,18 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/login")
     public void login(HttpSession session, @RequestBody User user) throws UserException {
-        userDAO.loginUser(user.getEmail(), user.getPassword());
-        session.setAttribute("user", user);
+        int userId = userDAO.loginUser(user.getEmail(), user.getPassword());
+        user.setId(userId);
+        SessionManager.logUser(session, user);
     }
 
     @PutMapping(value = "users/profile/edit")
     public void editUserProfile(HttpSession session, @RequestBody User user) throws UserException {
-        if (!validateLogged(session, user)) {
+        if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
+        int loggedUserId = SessionManager.getLoggedUser(session).getId();
+        user.setId(loggedUserId);
         userDAO.editProfile(user);
     }
 
@@ -57,33 +44,24 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "users/subscribe/to/user")
-    public void subscribeToUser(@RequestBody List<User> users, HttpSession session)
+    public void subscribeToUser(@RequestBody User subscribedTo, HttpSession session)
             throws UserException {
-        if (users.size() < 2) {
-            throw new UserException("Missing subscriber");
-        }
-        User subscriber = users.get(0);
-        User subscribedTo = users.get(1);
-        if (!validateLogged(session, subscriber)) {
+        if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
 
+        User subscriber = SessionManager.getLoggedUser(session);
         userDAO.subscribeToUser(subscriber, subscribedTo);
     }
 
     @DeleteMapping(value = "users/unsubscribe/from/user")
-    public void unsubscribeFromUser(@RequestBody List<User> users, HttpSession session)
-            throws UserException {
-        if (users.size() < 2) {
-            throw new UserException("Missing subscriber");
-        }
-        User subscriber = users.get(0);
-        User subscribedTo = users.get(1);
-        if (!validateLogged(session, subscriber)) {
+    public void unsubscribeFromUser(@RequestBody User unsubscribedFrom, HttpSession session) throws UserException {
+        if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
 
-        userDAO.unsubscribeFromUser(subscriber, subscribedTo);
+        User subscriber = SessionManager.getLoggedUser(session);
+        userDAO.unsubscribeFromUser(subscriber, unsubscribedFrom);
     }
 
 }
