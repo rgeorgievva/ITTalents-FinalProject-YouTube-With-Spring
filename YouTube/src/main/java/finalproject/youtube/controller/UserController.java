@@ -28,6 +28,15 @@ public class UserController extends BaseController {
         SessionManager.logUser(session, user);
     }
 
+    @PostMapping(value = "users/logout")
+    public void logout(HttpSession session) throws UserException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new UserException("Not logged in!");
+        }
+
+        session.invalidate();
+    }
+
     @PutMapping(value = "users/profile/edit")
     public void editUserProfile(HttpSession session, @RequestBody User user) throws UserException {
         if (!SessionManager.validateLogged(session)) {
