@@ -2,7 +2,9 @@ package finalproject.youtube.model.dao;
 
 import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.UserException;
+import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +79,33 @@ public class UserDAO {
             }
         } catch (SQLException e) {
             throw new UserException("Could not login! Please try again later!", e);
+        }
+    }
+
+    public User getById(int userId) throws UserException {
+        try {
+            Connection connection = dbManager.getConnection();
+            String sql = "SELECT id, user_name, first_name, last_name, email, password, date_created " +
+                    "FROM users WHERE id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, userId);
+                ResultSet resultSet = statement.executeQuery();
+                if (!resultSet.next()) {
+                    throw new UserException("No user with this id!");
+                }
+                String userName = resultSet.getString("user_name");
+                String firstName = resultSet.getString("first_name");
+                String lastName = resultSet.getString("last_name");
+                String email = resultSet.getString("email");
+                String password = resultSet.getString("password");
+                LocalDateTime dateCreated = resultSet.getTimestamp("date_created").toLocalDateTime();
+
+                User user = new User(userName, firstName, lastName, email, password);
+                user.setId(userId);
+                return user;
+            }
+        } catch (SQLException | UserException e) {
+            throw new UserException("Could not get this user. Please try again later", e);
         }
     }
 

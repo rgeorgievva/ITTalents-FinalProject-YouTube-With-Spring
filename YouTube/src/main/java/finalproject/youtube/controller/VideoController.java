@@ -4,6 +4,7 @@ import finalproject.youtube.AmazonClient;
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.exceptions.VideoException;
+import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
@@ -19,6 +20,9 @@ public class VideoController extends BaseController {
 
     @Autowired
     VideoDAO videoDAO;
+
+    @Autowired
+    UserDAO userDAO;
 
     @Autowired
     AmazonClient amazonClient;
@@ -92,5 +96,12 @@ public class VideoController extends BaseController {
         Video video = videoDAO.getById(videoId);
 
         videoDAO.dislikeVideo(video, currentUser);
+    }
+
+    @GetMapping(value = "videos/by/user/{userId}")
+    public List<Video> getVideosUploadedByUser(@PathVariable("userId") int userId) throws UserException, VideoException {
+        User user = userDAO.getById(userId);
+
+        return videoDAO.getAllVideosByOwner(user);
     }
 }

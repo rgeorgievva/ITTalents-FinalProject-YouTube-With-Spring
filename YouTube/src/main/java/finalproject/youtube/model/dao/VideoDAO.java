@@ -42,8 +42,7 @@ public class VideoDAO {
             }
 
         } catch (SQLException e) {
-        //    throw new VideoException("Could not upload video! Please try again later.", e);
-            throw new VideoException(e.getMessage(), e);
+            throw new VideoException("Could not upload video! Please try again later.", e);
         }
     }
 
