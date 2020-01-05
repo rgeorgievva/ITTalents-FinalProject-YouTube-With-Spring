@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @RestController
 public class VideoController extends BaseController {
@@ -62,5 +63,34 @@ public class VideoController extends BaseController {
     @GetMapping(value = "videos/get/{id}")
     public Video getVideoById(@PathVariable("id") int id) throws VideoException {
          return videoDAO.getById(id);
+    }
+
+    @GetMapping(value = "videos/get/title/{title}")
+    public List<Video> getVideosByTitle(@PathVariable("title") String title) throws VideoException {
+        return videoDAO.getAllByTitle(title);
+    }
+
+    @PostMapping(value = "videos/like/{id}")
+    public void likeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new UserException("Unauthorized");
+        }
+
+        User currentUser = SessionManager.getLoggedUser(session);
+        Video video = videoDAO.getById(videoId);
+
+        videoDAO.likeVideo(video, currentUser);
+    }
+
+    @PostMapping(value = "videos/dislike/{id}")
+    public void dislikeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new UserException("Unauthorized");
+        }
+
+        User currentUser = SessionManager.getLoggedUser(session);
+        Video video = videoDAO.getById(videoId);
+
+        videoDAO.dislikeVideo(video, currentUser);
     }
 }
