@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 public class NoPasswordUserDto {
 
-    private int id;
+    private long id;
     @NotNull
     private String username;
     @NotNull

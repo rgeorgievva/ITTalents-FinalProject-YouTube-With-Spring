@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 @Setter
 public class VideoDto {
 
-    private int id;
+    private long id;
     private String title;
     private String description;
     private String videoUrl;
     private String thumbnailUrl;
     private long duration;
     private LocalDateTime dateUploaded;
-    private int ownerId;
+    private long ownerId;
     private int categoryId;
 }

@@ -17,7 +17,7 @@ public class Video {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private long id;
     @Column
     private String title;
     @Column
@@ -31,12 +31,12 @@ public class Video {
     @Column
     private LocalDateTime dateUploaded;
     @Column
-    private int ownerId;
+    private long ownerId;
     @Column
     private int categoryId;
 
-    public Video(int id, String title, String description, String videoUrl, String thumbnailUrl, long duration,
-                 LocalDateTime dateUploaded, int ownerId, int categoryId) {
+    public Video(long id, String title, String description, String videoUrl, String thumbnailUrl, long duration,
+                 LocalDateTime dateUploaded, long ownerId, int categoryId) {
         this.id = id;
         this.title = title;
         this.description = description;

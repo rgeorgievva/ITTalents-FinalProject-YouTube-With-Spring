@@ -30,7 +30,7 @@ public class VideoDAO {
                 statement.setString(2, video.getDescription());
                 statement.setString(3, video.getVideoUrl());
                 statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-                statement.setInt(5, video.getOwnerId());
+                statement.setLong(5, video.getOwnerId());
                 statement.setInt(6, video.getCategoryId());
                 statement.setLong(7, video.getDuration());
                 statement.setString(8, video.getThumbnailUrl());
@@ -52,7 +52,7 @@ public class VideoDAO {
             Connection connection = dbManager.getConnection();
             String sql = "DELETE FROM videos WHERE id = ?;";
             try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                statement.setInt(1, video.getId());
+                statement.setLong(1, video.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -61,13 +61,13 @@ public class VideoDAO {
     }
 
     // get video by id
-    public Video getById(int id) throws VideoException {
+    public Video getById(long id) throws VideoException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
                     "thumbnail_url FROM videos WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, id);
+                statement.setLong(1, id);
                 ResultSet resultSet = statement.executeQuery();
                 if (!resultSet.next()) {
                     throw new VideoException("No video with this id!");
@@ -76,7 +76,7 @@ public class VideoDAO {
                 String description = resultSet.getString("description");
                 String url = resultSet.getString("video_url");
                 LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                int ownerId = resultSet.getInt("owner_id");
+                long ownerId = resultSet.getLong("owner_id");
                 int categoryId = resultSet.getInt("category_id");
                 long duration = resultSet.getLong("duration");
                 String thumbnailUrl = resultSet.getString("thumbnail_url");
@@ -144,8 +144,8 @@ public class VideoDAO {
             String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
             try (PreparedStatement statement = connection.prepareStatement(likeVideo);
             ) {
-                statement.setInt(1, user.getId());
-                statement.setInt(2, video.getId());
+                statement.setLong(1, user.getId());
+                statement.setLong(2, video.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -173,8 +173,8 @@ public class VideoDAO {
             String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
             try (PreparedStatement statement = connection.prepareStatement(dislikeVideo);
             ) {
-                statement.setInt(1, user.getId());
-                statement.setInt(2, video.getId());
+                statement.setLong(1, user.getId());
+                statement.setLong(2, video.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -197,8 +197,8 @@ public class VideoDAO {
     private boolean checkForReactionOfVideo(String sql, User user, Video video) throws SQLException {
         Connection connection = dbManager.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, user.getId());
-            statement.setInt(2, video.getId());
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
             ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) {
                 return false;
@@ -211,8 +211,8 @@ public class VideoDAO {
         Connection connection = dbManager.getConnection();
         String sql = "DELETE FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, user.getId());
-            statement.setInt(2, video.getId());
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
             statement.executeUpdate();
         }
     }
@@ -221,8 +221,8 @@ public class VideoDAO {
         Connection connection = dbManager.getConnection();
         String sql = "DELETE FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, user.getId());
-            statement.setInt(2, video.getId());
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
             statement.executeUpdate();
         }
     }
@@ -248,12 +248,12 @@ public class VideoDAO {
         ) {
             connection.setAutoCommit(false);
 
-            statement.setInt(1, user.getId());
-            statement.setInt(2, video.getId());
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
             statement.executeUpdate();
 
-            statement2.setInt(1, user.getId());
-            statement2.setInt(2, video.getId());
+            statement2.setLong(1, user.getId());
+            statement2.setLong(2, video.getId());
             statement2.executeUpdate();
 
             connection.commit();
@@ -273,15 +273,15 @@ public class VideoDAO {
             String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
                     "thumbnail_url FROM videos WHERE owner_id = ?;";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, user.getId());
+                statement.setLong(1, user.getId());
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
+                    long id = resultSet.getLong("id");
                     String videoTitle = resultSet.getString("title");
                     String description = resultSet.getString("description");
                     String url = resultSet.getString("video_url");
                     LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                    int ownerId = resultSet.getInt("owner_id");
+                    long ownerId = resultSet.getLong("owner_id");
                     int categoryId = resultSet.getInt("category_id");
                     long duration = resultSet.getLong("duration");
                     String thumbnailUrl = resultSet.getString("thumbnail_url");
@@ -313,14 +313,14 @@ public class VideoDAO {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 ResultSet result = statement.executeQuery();
                 while (result.next()) {
-                    Video video = new Video(result.getInt("id"),
+                    Video video = new Video(result.getLong("id"),
                             result.getString("title"),
                             result.getString("description"),
                             result.getString("video_url"),
                             result.getString("thumbnail_url"),
                             result.getLong("duration"),
                             result.getTimestamp("date_uploaded").toLocalDateTime(),
-                            result.getInt("owner_id"),
+                            result.getLong("owner_id"),
                             result.getInt("category_id"));
                     videos.add(video);
                 }

@@ -61,7 +61,7 @@ public class UserController extends BaseController {
         if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
-        int loggedUserId = SessionManager.getLoggedUser(session).getId();
+        long loggedUserId = SessionManager.getLoggedUser(session).getId();
         user.setId(loggedUserId);
         userDAO.editProfile(user);
 

@@ -20,7 +20,7 @@ public class UserDAO {
     DBManager dbManager;
 
     // register user
-    public int registerUser(User user) throws UserException {
+    public long registerUser(User user) throws UserException {
         try {
             if (isDuplicateEmail(user.getEmail())) {
                 throw new UserException("Duplicate email!");
@@ -40,7 +40,7 @@ public class UserDAO {
                 statement.executeUpdate();
                 ResultSet generatedKeys = statement.getGeneratedKeys();
                 generatedKeys.next();
-                int userId = generatedKeys.getInt(1);
+                long userId = generatedKeys.getLong(1);
                 return userId;
             }
         } catch (SQLException e) {
@@ -82,13 +82,13 @@ public class UserDAO {
         }
     }
 
-    public User getById(int userId) throws UserException {
+    public User getById(long userId) throws UserException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "SELECT id, user_name, first_name, last_name, email, password, date_created " +
                     "FROM users WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, userId);
+                statement.setLong(1, userId);
                 ResultSet resultSet = statement.executeQuery();
                 if (!resultSet.next()) {
                     throw new UserException("No user with this id!");
@@ -121,7 +121,7 @@ public class UserDAO {
                 statement.setString(3, user.getLastName());
                 statement.setString(4, user.getEmail());
                 statement.setString(5, user.getPassword());
-                statement.setInt(6, user.getId());
+                statement.setLong(6, user.getId());
                 statement.executeUpdate();
             }
 
@@ -140,7 +140,7 @@ public class UserDAO {
                 statement.setString(1, username);
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
+                    long id = resultSet.getLong("id");
                     String userName = resultSet.getString("user_name");
                     String firstName = resultSet.getString("first_name");
                     String lastName = resultSet.getString("last_name");
@@ -160,13 +160,13 @@ public class UserDAO {
     }
 
     // subscribe to user
-    public void subscribeToUser(User subscriber, int subscribedToId) throws UserException {
+    public void subscribeToUser(User subscriber, long subscribedToId) throws UserException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) VALUES (?, ?);";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, subscriber.getId());
-                statement.setInt(2, subscribedToId);
+                statement.setLong(1, subscriber.getId());
+                statement.setLong(2, subscribedToId);
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -175,13 +175,13 @@ public class UserDAO {
     }
 
     // unsubscribe from user
-    public void unsubscribeFromUser(User subscriber, int unsubscribeFromId) throws UserException {
+    public void unsubscribeFromUser(User subscriber, long unsubscribeFromId) throws UserException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "DELETE FROM subscriptions WHERE subscriber_id = ? AND subscribed_to_id = ?;";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, subscriber.getId());
-                statement.setInt(2, unsubscribeFromId);
+                statement.setLong(1, subscriber.getId());
+                statement.setLong(2, unsubscribeFromId);
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
