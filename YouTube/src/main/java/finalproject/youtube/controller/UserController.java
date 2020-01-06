@@ -5,6 +5,8 @@ import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -17,60 +19,77 @@ public class UserController extends BaseController {
     UserDAO userDAO;
 
     @PostMapping(value = "users/register")
-    public void register(@RequestBody User user) throws UserException {
-        userDAO.registerUser(user);
+    public ResponseEntity<User> register(@RequestBody User user) throws UserException {
+        user.setId(userDAO.registerUser(user));
+
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "users/login")
-    public void login(HttpSession session, @RequestBody User user) throws UserException {
+    public ResponseEntity<User> login(HttpSession session, @RequestBody User user) throws UserException {
         int userId = userDAO.loginUser(user.getEmail(), user.getPassword());
         user.setId(userId);
         SessionManager.logUser(session, user);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping(value = "users/logout")
-    public void logout(HttpSession session) throws UserException {
+    public ResponseEntity<String> logout(HttpSession session) throws UserException {
         if (!SessionManager.validateLogged(session)) {
             throw new UserException("Not logged in!");
         }
 
         session.invalidate();
+
+        return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);
     }
 
     @PutMapping(value = "users/profile/edit")
-    public void editUserProfile(HttpSession session, @RequestBody User user) throws UserException {
+    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user) throws UserException {
         if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
         int loggedUserId = SessionManager.getLoggedUser(session).getId();
         user.setId(loggedUserId);
         userDAO.editProfile(user);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/get/by/{username}")
+    @GetMapping(value = "users/{username}")
     public List<User> getByUsername(@PathVariable("username") String username) throws UserException {
-        return userDAO.findByUsername(username);
+        List<User> users = userDAO.findByUsername(username);
+        if (users.isEmpty()) {
+            throw new UserException("No users with username " + username + " found!");
+        }
+
+        return users;
     }
 
-    @PostMapping(value = "users/subscribe/to/user")
-    public void subscribeToUser(@RequestBody User subscribedTo, HttpSession session)
+    @PostMapping(value = "users/subscribe/{id}")
+        public ResponseEntity<String> subscribeToUser(@PathVariable("id") int subscribedToId, HttpSession session)
             throws UserException {
         if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
 
         User subscriber = SessionManager.getLoggedUser(session);
-        userDAO.subscribeToUser(subscriber, subscribedTo);
+        userDAO.subscribeToUser(subscriber, subscribedToId);
+
+        return new ResponseEntity<>("Subscribed successfully!", HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "users/unsubscribe/from/user")
-    public void unsubscribeFromUser(@RequestBody User unsubscribedFrom, HttpSession session) throws UserException {
+    @DeleteMapping(value = "users/unsubscribe/{id}")
+    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session) throws UserException {
         if (!SessionManager.validateLogged(session)) {
             throw new UserException("Unauthorized");
         }
 
         User subscriber = SessionManager.getLoggedUser(session);
-        userDAO.unsubscribeFromUser(subscriber, unsubscribedFrom);
+        userDAO.unsubscribeFromUser(subscriber, unsubscribeFromId);
+
+        return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);
     }
 
 }

@@ -160,13 +160,13 @@ public class UserDAO {
     }
 
     // subscribe to user
-    public void subscribeToUser(User subscriber, User subscribedTo) throws UserException {
+    public void subscribeToUser(User subscriber, int subscribedToId) throws UserException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) VALUES (?, ?);";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setInt(1, subscriber.getId());
-                statement.setInt(2, subscribedTo.getId());
+                statement.setInt(2, subscribedToId);
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -175,13 +175,13 @@ public class UserDAO {
     }
 
     // unsubscribe from user
-    public void unsubscribeFromUser(User subscriber, User subscribedTo) throws UserException {
+    public void unsubscribeFromUser(User subscriber, int unsubscribeFromId) throws UserException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "DELETE FROM subscriptions WHERE subscriber_id = ? AND subscribed_to_id = ?;";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setInt(1, subscriber.getId());
-                statement.setInt(2, subscribedTo.getId());
+                statement.setInt(2, unsubscribeFromId);
                 statement.executeUpdate();
             }
         } catch (SQLException e) {

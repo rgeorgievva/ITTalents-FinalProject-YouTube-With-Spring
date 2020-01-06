@@ -1,10 +1,10 @@
-package ittalents.youtube.model.dao;
+package finalproject.youtube.model.dao;
 
-import ittalents.youtube.db.DBManager;
+import finalproject.youtube.db.DBManager;
 import ittalents.youtube.exceptions.CommentException;
-import ittalents.youtube.model.entity.Comment;
-import ittalents.youtube.model.entity.User;
-import ittalents.youtube.model.entity.Video;
+import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
