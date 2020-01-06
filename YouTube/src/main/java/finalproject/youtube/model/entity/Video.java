@@ -1,5 +1,6 @@
 package finalproject.youtube.model.entity;
 
+import finalproject.youtube.model.dto.VideoDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,6 +46,21 @@ public class Video {
         this.dateUploaded = dateUploaded;
         this.ownerId = ownerId;
         this.categoryId = categoryId;
+    }
+
+    public VideoDto toVideoDto() {
+        VideoDto videoDto = new VideoDto();
+        videoDto.setId(this.id);
+        videoDto.setTitle(this.title);
+        videoDto.setDescription(this.description);
+        videoDto.setVideoUrl(this.videoUrl);
+        videoDto.setThumbnailUrl(this.thumbnailUrl);
+        videoDto.setDuration(this.duration);
+        videoDto.setDateUploaded(this.dateUploaded);
+        videoDto.setOwnerId(this.ownerId);
+        videoDto.setCategoryId(this.categoryId);
+
+        return videoDto;
     }
 
     @Override
