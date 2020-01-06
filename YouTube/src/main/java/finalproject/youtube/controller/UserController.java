@@ -3,6 +3,9 @@ package finalproject.youtube.controller;
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
+import finalproject.youtube.model.dto.LoginUserDto;
+import finalproject.youtube.model.dto.NoPasswordUserDto;
+import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,19 +22,27 @@ public class UserController extends BaseController {
     UserDAO userDAO;
 
     @PostMapping(value = "users/register")
-    public ResponseEntity<User> register(@RequestBody User user) throws UserException {
+    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws UserException {
+        if (!registerUser.getPassword().equals(registerUser.getConfirmPassword())) {
+            System.out.println(registerUser.getPassword());
+            System.out.println(registerUser.getConfirmPassword());
+            throw new UserException("Confirmed password doesn't match password!");
+        }
+
+        User user = User.registerDtoToUser(registerUser);
         user.setId(userDAO.registerUser(user));
 
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.CREATED);
     }
 
     @PostMapping(value = "users/login")
-    public ResponseEntity<User> login(HttpSession session, @RequestBody User user) throws UserException {
-        int userId = userDAO.loginUser(user.getEmail(), user.getPassword());
-        user.setId(userId);
+    public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) throws UserException {
+        int userId = userDAO.loginUser(loginUser.getEmail(), loginUser.getPassword());
+
+        User user = userDAO.getById(userId);
         SessionManager.logUser(session, user);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
     }
 
     @PostMapping(value = "users/logout")
@@ -58,8 +69,8 @@ public class UserController extends BaseController {
     }
 
     @GetMapping(value = "users/{username}")
-    public List<User> getByUsername(@PathVariable("username") String username) throws UserException {
-        List<User> users = userDAO.findByUsername(username);
+    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws UserException {
+        List<NoPasswordUserDto> users = userDAO.findByUsername(username);
         if (users.isEmpty()) {
             throw new UserException("No users with username " + username + " found!");
         }

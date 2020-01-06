@@ -1,7 +1,7 @@
 package finalproject.youtube.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import finalproject.youtube.model.dto.UserDto;
+import finalproject.youtube.model.dto.NoPasswordUserDto;
+import finalproject.youtube.model.dto.RegisterUserDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,30 +40,27 @@ public class User {
         this.password = password;
     }
 
-    public User dtoToUser(UserDto userDto) {
+    public static User registerDtoToUser(RegisterUserDto userDto) {
         User user = new User();
-        user.setId(userDto.getId());
         user.setUsername(userDto.getUsername());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());
-        user.setDateCreated(userDto.getDateCreated());
 
         return user;
     }
 
-    public UserDto userToUserDto(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setUsername(user.getUsername());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setLastName(user.getLastName());
-        userDto.setPassword(user.getPassword());
-        userDto.setEmail(user.getEmail());
-        userDto.setDateCreated(user.getDateCreated());
+    public NoPasswordUserDto toNoPasswordUserDto() {
+        NoPasswordUserDto noPasswordUserDto = new NoPasswordUserDto();
+        noPasswordUserDto.setId(this.id);
+        noPasswordUserDto.setUsername(this.username);
+        noPasswordUserDto.setFirstName(this.firstName);
+        noPasswordUserDto.setLastName(this.lastName);
+        noPasswordUserDto.setEmail(this.email);
+        noPasswordUserDto.setDateCreated(this.dateCreated);
 
-        return userDto;
+        return noPasswordUserDto;
     }
 
     @Override

@@ -2,9 +2,8 @@ package finalproject.youtube.model.dao;
 
 import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.UserException;
-import finalproject.youtube.exceptions.VideoException;
+import finalproject.youtube.model.dto.NoPasswordUserDto;
 import finalproject.youtube.model.entity.User;
-import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +35,8 @@ public class UserDAO {
                 statement.setString(3, user.getLastName());
                 statement.setString(4, user.getEmail());
                 statement.setString(5, user.getPassword());
-                statement.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+                user.setDateCreated(LocalDateTime.now());
+                statement.setTimestamp(6, Timestamp.valueOf(user.getDateCreated()));
                 statement.executeUpdate();
                 ResultSet generatedKeys = statement.getGeneratedKeys();
                 generatedKeys.next();
@@ -131,9 +131,9 @@ public class UserDAO {
     }
 
     // find all users with given username
-    public List<User> findByUsername(String username) throws UserException {
+    public List<NoPasswordUserDto> findByUsername(String username) throws UserException {
         try {
-            List<User> users = new ArrayList<>();
+            List<NoPasswordUserDto> users = new ArrayList<>();
             Connection connection = dbManager.getConnection();
             String sql = "SELECT id, user_name, first_name, last_name, email, password, date_created FROM users WHERE user_name = ?;";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -150,7 +150,7 @@ public class UserDAO {
                     User user = new User(userName, firstName, lastName, email, password);
                     user.setId(id);
                     user.setDateCreated(dateCreated);
-                    users.add(user);
+                    users.add(user.toNoPasswordUserDto());
                 }
             }
             return Collections.unmodifiableList(users);

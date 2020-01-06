@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class RegisterUserDto {
 
-    private int id;
     @NotNull
     private String username;
     @NotNull
