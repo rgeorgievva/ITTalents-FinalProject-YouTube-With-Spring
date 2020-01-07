@@ -47,4 +47,13 @@ public abstract class BaseController {
                 LocalDateTime.now(),
                 e.getClass().getName());
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public ErrorDto handleNotFoundException(NotFoundException e) {
+        return new ErrorDto(e.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
 }

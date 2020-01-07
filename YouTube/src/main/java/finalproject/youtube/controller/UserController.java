@@ -4,6 +4,7 @@ import finalproject.youtube.SessionManager;
 import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
+import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dto.LoginUserDto;
@@ -65,10 +66,10 @@ public class UserController extends BaseController {
     }
 
     @GetMapping(value = "users/{username}")
-    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws UserException {
+    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws NotFoundException, UserException {
         List<NoPasswordUserDto> users = userDAO.findByUsername(username);
         if (users.isEmpty()) {
-            throw new UserException("No users with username " + username + " found!");
+            throw new NotFoundException("No users with username " + username + " found!");
         }
 
         return users;
