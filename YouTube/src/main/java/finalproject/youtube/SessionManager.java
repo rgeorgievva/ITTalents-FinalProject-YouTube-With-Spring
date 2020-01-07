@@ -1,6 +1,6 @@
 package finalproject.youtube;
 
-import finalproject.youtube.exceptions.UserException;
+import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.entity.User;
 
 import javax.servlet.http.HttpSession;
@@ -21,12 +21,12 @@ public class SessionManager {
         return true;
     }
 
-    public static User getLoggedUser(HttpSession session) throws UserException {
+    public static User getLoggedUser(HttpSession session) throws AuthorizationException {
         if (validateLogged(session)) {
             return (User) session.getAttribute("user");
         }
 
-        throw new UserException("Not logged!");
+        throw new AuthorizationException("Not logged!");
     }
 
     public static void logUser(HttpSession session, User user) {

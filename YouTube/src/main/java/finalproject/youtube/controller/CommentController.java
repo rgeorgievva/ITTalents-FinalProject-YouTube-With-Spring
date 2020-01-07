@@ -2,7 +2,6 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.CommentException;
-import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dao.VideoDAO;

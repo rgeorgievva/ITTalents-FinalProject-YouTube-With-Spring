@@ -5,7 +5,6 @@ import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
-import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dto.LoginUserDto;
 import finalproject.youtube.model.dto.NoPasswordUserDto;
@@ -17,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -26,8 +26,7 @@ public class UserController extends BaseController {
     UserDAO userDAO;
 
     @PostMapping(value = "users/register")
-    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws UserException,
-            BadRequestException {
+    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws BadRequestException, SQLException {
         Validator.validateRegisterDto(registerUser);
 
         User user = User.registerDtoToUser(registerUser);
@@ -37,7 +36,8 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "users/login")
-    public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) throws UserException {
+    public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser)
+            throws BadRequestException, SQLException, NotFoundException {
         int userId = userDAO.loginUser(loginUser.getEmail(), loginUser.getPassword());
 
         User user = userDAO.getById(userId);
@@ -47,14 +47,15 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "users/logout")
-    public ResponseEntity<String> logout(HttpSession session) throws UserException {
+    public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate();
 
         return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);
     }
 
     @PutMapping(value = "users/profile/edit")
-    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user) throws UserException, AuthorizationException {
+    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user)
+            throws AuthorizationException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -66,7 +67,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping(value = "users/{username}")
-    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws NotFoundException, UserException {
+    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws NotFoundException, SQLException {
         List<NoPasswordUserDto> users = userDAO.findByUsername(username);
         if (users.isEmpty()) {
             throw new NotFoundException("No users with username " + username + " found!");
@@ -77,7 +78,7 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/subscribe/{id}")
         public ResponseEntity<String> subscribeToUser(@PathVariable("id") int subscribedToId, HttpSession session)
-            throws UserException, AuthorizationException {
+            throws AuthorizationException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -89,7 +90,8 @@ public class UserController extends BaseController {
     }
 
     @DeleteMapping(value = "users/unsubscribe/{id}")
-    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session) throws UserException, AuthorizationException {
+    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session)
+            throws AuthorizationException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
