@@ -1,9 +1,6 @@
 package finalproject.youtube.controller;
 
-import finalproject.youtube.exceptions.CommentException;
-import finalproject.youtube.exceptions.PlaylistException;
-import finalproject.youtube.exceptions.UserException;
-import finalproject.youtube.exceptions.VideoException;
+import finalproject.youtube.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,4 +25,5 @@ public abstract class BaseController {
     @ExceptionHandler({PlaylistException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public String handlePlaylistException(PlaylistException e){return e.getMessage();}
+
 }

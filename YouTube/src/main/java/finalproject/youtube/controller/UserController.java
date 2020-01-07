@@ -1,6 +1,8 @@
 package finalproject.youtube.controller;
 
 import finalproject.youtube.SessionManager;
+import finalproject.youtube.Validator;
+import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dto.LoginUserDto;
@@ -22,12 +24,9 @@ public class UserController extends BaseController {
     UserDAO userDAO;
 
     @PostMapping(value = "users/register")
-    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws UserException {
-        if (!registerUser.getPassword().equals(registerUser.getConfirmPassword())) {
-            System.out.println(registerUser.getPassword());
-            System.out.println(registerUser.getConfirmPassword());
-            throw new UserException("Confirmed password doesn't match password!");
-        }
+    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws UserException,
+            BadRequestException {
+        Validator.validateRegisterDto(registerUser);
 
         User user = User.registerDtoToUser(registerUser);
         user.setId(userDAO.registerUser(user));
@@ -47,10 +46,6 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/logout")
     public ResponseEntity<String> logout(HttpSession session) throws UserException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Not logged in!");
-        }
-
         session.invalidate();
 
         return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);

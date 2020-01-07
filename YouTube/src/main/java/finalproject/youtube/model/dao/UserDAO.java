@@ -102,6 +102,7 @@ public class UserDAO {
 
                 User user = new User(userName, firstName, lastName, email, password);
                 user.setId(userId);
+                user.setDateCreated(dateCreated);
                 return user;
             }
         } catch (SQLException | UserException e) {
