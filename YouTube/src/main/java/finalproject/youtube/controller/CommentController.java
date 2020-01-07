@@ -54,13 +54,33 @@ public class CommentController {
         if(videoDAO.getById(videoId) == null){
             throw new VideoException("There is no such video");
         }
-        if(commentDAO.getCommentById(parentCommentId) == null){
-            throw new CommentException("There is no such comment with id=" + parentCommentId);
-        }
+        Comment dbComment = commentDAO.getCommentById(parentCommentId);
         reply.setOwnerId(SessionManager.getLoggedUser(session).getId());
         reply.setVideoId(videoId);
         reply.setRepliedToId(parentCommentId);
         commentDAO.addReplyToComment(reply);
+    }
+
+    @PostMapping(value = "/{videoId}/comments/{commentId}/edit")
+    public void editComment(HttpSession session,
+                            @RequestBody Comment comment,
+                            @PathVariable("videoId") int videoId,
+                            @PathVariable("commentId") int commentId)
+            throws CommentException, UserException, VideoException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new CommentException("Please login to reply to a comment");
+        }
+        if(videoDAO.getById(videoId) == null){
+            throw new VideoException("There is no such video");
+        }
+        Comment dbComment = commentDAO.getCommentById(commentId);
+        if(dbComment.getOwnerId() != SessionManager.getLoggedUser(session).getId()){
+            throw new CommentException("You are not the owner of this comment to edit it");
+        }
+        comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
+        comment.setId(commentId);
+        comment.setTimePosted(LocalDateTime.now());
+        commentDAO.editComment(comment);
     }
 
 
