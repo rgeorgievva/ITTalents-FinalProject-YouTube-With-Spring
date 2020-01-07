@@ -16,13 +16,13 @@ public class Playlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int    id;
+    private long   id;
     @Column(name = "title")
-    private String        title;
+    private String title;
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
     @Column(name = "owner_id")
-    private int           ownerId;
+    private long          ownerId;
 
     public Playlist(int id, String title, LocalDateTime dateCreated, int ownerId) {
         this.id = id;

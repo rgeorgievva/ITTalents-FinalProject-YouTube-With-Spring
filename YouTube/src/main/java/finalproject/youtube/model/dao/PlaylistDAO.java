@@ -1,7 +1,7 @@
 package finalproject.youtube.model.dao;
 
 import finalproject.youtube.db.DBManager;
-import ittalents.youtube.exceptions.PlaylistException;
+import finalproject.youtube.exceptions.PlaylistException;
 import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public class PlaylistDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, playlist.getTitle());
             preparedStatement.setTimestamp(2, Timestamp.valueOf(playlist.getDateCreated()));
-            preparedStatement.setInt(3, playlist.getOwnerId());
+            preparedStatement.setLong(3, playlist.getOwnerId());
             preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
@@ -48,7 +48,7 @@ public class PlaylistDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             playlist.setTitle(title);
             preparedStatement.setString(1, playlist.getTitle());
-            preparedStatement.setInt(2, playlist.getId());
+            preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw  new PlaylistException("Could not edit playlist. Please, try again later.", e);
@@ -64,7 +64,7 @@ public class PlaylistDAO {
 
                 connection.setAutoCommit(false);
 
-                deletePlaylist.setInt(1, playlist.getId());
+                deletePlaylist.setLong(1, playlist.getId());
                 deletePlaylist.executeUpdate();
 
                 connection.commit();
@@ -85,8 +85,8 @@ public class PlaylistDAO {
             Connection connection = dbManager.getConnection();
             String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, video.getId());
-            preparedStatement.setInt(2, playlist.getId());
+            preparedStatement.setLong(1, video.getId());
+            preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw  new PlaylistException("Could not add video to playlist.", e);
@@ -98,8 +98,8 @@ public class PlaylistDAO {
             Connection connection = dbManager.getConnection();
             String sql = "delete from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, video.getId());
-            preparedStatement.setInt(2, playlist.getId());
+            preparedStatement.setLong(1, video.getId());
+            preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw  new PlaylistException("Could not remove video from playlist", e);
@@ -116,7 +116,7 @@ public class PlaylistDAO {
                     "on v.id = vp.video_id\n" +
                     "where vp.playlist_id = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setInt(1, playlist.getId());
+            preparedStatement.setLong(1, playlist.getId());
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Video video = new Video(resultSet.getInt("id"), resultSet.getString("title"),

@@ -1,14 +1,14 @@
 package finalproject.youtube.model.dao;
 
 import finalproject.youtube.db.DBManager;
-import ittalents.youtube.exceptions.CommentException;
+import finalproject.youtube.exceptions.CommentException;
 import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;
-import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 
 @Component
 public class CommentDAO {
@@ -18,7 +18,7 @@ public class CommentDAO {
 
     private CommentDAO(){}
 
-    public void addCommentToVideo(Video video, Comment comment) throws CommentException {
+    public void addCommentToVideo(Comment comment) throws CommentException {
         try {
             Connection connection = dbManager.getConnection();
             String sql = "insert into youtube.comments " +
@@ -27,9 +27,8 @@ public class CommentDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1, comment.getText());
                 preparedStatement.setTimestamp(2, Timestamp.valueOf(comment.getTimePosted()));
-                comment.setVideoId(video.getId());
-                preparedStatement.setInt(3, comment.getVideoId());
-                preparedStatement.setInt(4,  comment.getOwnerId());
+                preparedStatement.setLong(3, comment.getVideoId());
+                preparedStatement.setLong(4,  comment.getOwnerId());
                 preparedStatement.executeUpdate();
                 ResultSet resultSet = preparedStatement.getGeneratedKeys();
                 resultSet.next();
@@ -40,38 +39,36 @@ public class CommentDAO {
         }
     }
 
-    public void addReplyToComment(Comment parentComment, Comment comment) throws CommentException{
+    public void addReplyToComment(Comment reply) throws CommentException{
         try {
             Connection connection = dbManager.getConnection();
             String sql = "insert into youtube.comments " +
                     "(text, time_posted, video_id, owner_id, replied_to_id) values" +
                     "(?,?,?,?,?);";
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1, comment.getText());
-                preparedStatement.setTimestamp(2, Timestamp.valueOf(comment.getTimePosted()));
-                comment.setVideoId(parentComment.getVideoId());
-                preparedStatement.setInt(3, comment.getVideoId());
-                preparedStatement.setInt(4,  comment.getOwnerId());
-                comment.setRepliedToId(parentComment.getId());
-                preparedStatement.setInt(5,  comment.getRepliedToId());
+                preparedStatement.setString(1, reply.getText());
+            reply.setTimePosted(LocalDateTime.now());
+                preparedStatement.setTimestamp(2, Timestamp.valueOf(reply.getTimePosted()));
+                preparedStatement.setLong(3, reply.getVideoId());
+                preparedStatement.setLong(4,  reply.getOwnerId());
+                preparedStatement.setLong(5,  reply.getRepliedToId());
                 preparedStatement.executeUpdate();
                 ResultSet resultSet = preparedStatement.getGeneratedKeys();
                 resultSet.next();
                 int comment_id = resultSet.getInt(1);
-                comment.setId(comment_id);
+                reply.setId(comment_id);
         } catch (SQLException e) {
             throw  new CommentException("Could not add reply to comment. Please, try again later.", e);
         }
     }
 
-    public void editComment(String editedText, Comment comment) throws CommentException {
+    public void editComment(Comment comment) throws CommentException {
         try {
             Connection connection = dbManager.getConnection();
-            comment.setText(editedText);
             String sql = "update youtube.comments set text = ? where id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setString(1, comment.getText());
-                preparedStatement.setInt(2, comment.getId());
+                preparedStatement.setLong(2, comment.getId());
                 preparedStatement.executeUpdate();
         } catch (SQLException e) {
            throw new CommentException("Could not edit comment. Please, try again later.", e);
@@ -81,14 +78,13 @@ public class CommentDAO {
     public void deleteComment(Comment comment) throws CommentException {
         try{
             Connection connection = dbManager.getConnection();
-            String deleteFromComments = "delete from youtube.comments where id = ? or replied_to_id = ?;";
+            String deleteFromComments = "delete from youtube.comments where id = ?;";
 
             try (PreparedStatement deleteFromCommentsStatement = connection.prepareStatement(deleteFromComments);) {
 
                 connection.setAutoCommit(false);
 
-                deleteFromCommentsStatement.setInt(1, comment.getId());
-                deleteFromCommentsStatement.setInt(2, comment.getId());
+                deleteFromCommentsStatement.setLong(1, comment.getId());
                 deleteFromCommentsStatement.executeUpdate();
 
                 connection.commit();
@@ -108,25 +104,28 @@ public class CommentDAO {
     public void likeComment(User user, Comment comment) throws CommentException {
         try {
             Connection connection = dbManager.getConnection();
+            //removes comment from liked comments
             if(commentIsAlreadyLiked(user, comment)){
                 String unlike = "delete from youtube.users_liked_comments where user_id = ? and comment_id = ?";
                 PreparedStatement preparedStatement = connection.prepareStatement(unlike);
-                preparedStatement.setInt(1, user.getId());
-                preparedStatement.setInt(2, comment.getId());
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, comment.getId());
                 preparedStatement.executeUpdate();
             }
             else {
+                //removes comment from disliked comments
                 if(commentIsAlreadyDisliked(user, comment)){
                     String sql = "delete from youtube.users_disliked_comments where user_id = ? and comment_id = ?";
                     PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                    preparedStatement.setInt(1, user.getId());
-                    preparedStatement.setInt(2, comment.getId());
+                    preparedStatement.setLong(1, user.getId());
+                    preparedStatement.setLong(2, comment.getId());
                     preparedStatement.executeUpdate();
                 }
+                //adds comment to liked comments
                 String like = "insert into youtube.users_liked_comments values (? , ?);";
                 PreparedStatement preparedStatement = connection.prepareStatement(like);
-                preparedStatement.setInt(1, user.getId());
-                preparedStatement.setInt(2, comment.getId());
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, comment.getId());
                 preparedStatement.executeUpdate();
             }
 
@@ -138,25 +137,28 @@ public class CommentDAO {
     public void dislikeComment(User user, Comment comment) throws CommentException {
         try {
             Connection connection = dbManager.getConnection();
+            //removes comment from disliked comments
             if(commentIsAlreadyDisliked(user, comment)){
                 String sql = "delete from youtube.users_disliked_comments where user_id = ? and comment_id = ?";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                preparedStatement.setInt(1, user.getId());
-                preparedStatement.setInt(2, comment.getId());
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, comment.getId());
                 preparedStatement.executeUpdate();
             }
             else {
+                //removes comment from liked comments
                 if(commentIsAlreadyLiked(user, comment)){
                     String unlike = "delete from youtube.users_liked_comments where user_id = ? and comment_id = ?";
                     PreparedStatement preparedStatement = connection.prepareStatement(unlike);
-                    preparedStatement.setInt(1, user.getId());
-                    preparedStatement.setInt(2, comment.getId());
+                    preparedStatement.setLong(1, user.getId());
+                    preparedStatement.setLong(2, comment.getId());
                     preparedStatement.executeUpdate();
                 }
+                //adds comment to disliked comments
                 String dislike = "insert into youtube.users_disliked_comments values (? , ?);";
                 PreparedStatement preparedStatement = connection.prepareStatement(dislike);
-                preparedStatement.setInt(1, user.getId());
-                preparedStatement.setInt(2, comment.getId());
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.setLong(2, comment.getId());
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -169,8 +171,8 @@ public class CommentDAO {
         Connection connection = dbManager.getConnection();
         String sql = "select * from youtube.users_liked_comments where user_id = ? and comment_id = ?;";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setInt(1, user.getId());
-            preparedStatement.setInt(2, comment.getId());
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, comment.getId());
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.next();
         }
@@ -181,8 +183,8 @@ public class CommentDAO {
         Connection connection = dbManager.getConnection();
         String sql = "select * from youtube.users_disliked_comments where user_id = ? and comment_id = ?;";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setInt(1, user.getId());
-            preparedStatement.setInt(2, comment.getId());
+            preparedStatement.setLong(1, user.getId());
+            preparedStatement.setLong(2, comment.getId());
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.next();
         }
