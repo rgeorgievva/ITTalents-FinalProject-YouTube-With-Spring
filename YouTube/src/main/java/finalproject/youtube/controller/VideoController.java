@@ -1,5 +1,8 @@
 package finalproject.youtube.controller;
 
+import com.xuggle.mediatool.IMediaReader;
+import com.xuggle.mediatool.ToolFactory;
+import com.xuggle.xuggler.IContainer;
 import finalproject.youtube.AmazonClient;
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.Validator;
@@ -25,8 +28,6 @@ import java.util.List;
 @RestController
 public class VideoController extends BaseController {
 
-    private static final String NO_DESCRIPTION_TO_VIDEO = "No description";
-
     @Autowired
     VideoDAO videoDAO;
 
@@ -38,9 +39,11 @@ public class VideoController extends BaseController {
 
     @PostMapping(value = "videos/upload")
     public ResponseEntity<VideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
+                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail,
                                                 @RequestParam(value = "title") String title,
                                                 @RequestParam(value = "description") String description,
                                                 @RequestParam(value = "categoryId") int categoryId,
+
                                                 HttpSession session) throws AuthorizationException,
             BadRequestException, SQLException {
         if (!SessionManager.validateLogged(session)) {
@@ -48,18 +51,20 @@ public class VideoController extends BaseController {
         }
 
         Validator.validateVideoInformation(title, categoryId);
+
         Video video = new Video();
         video.setTitle(title);
         video.setDescription(description);
         video.setCategoryId(categoryId);
-        video.setThumbnailUrl("");
 
         User owner = SessionManager.getLoggedUser(session);
         video.setOwnerId(owner.getId());
 
-        video.setVideoUrl(amazonClient.uploadFile(multipartFile, video));
+        video.setVideoUrl(amazonClient.uploadFile(multipartFile, video, false));
+        video.setThumbnailUrl(amazonClient.uploadFile(thumbnail, video, true));
 
-        videoDAO.uploadVideo(video);
+        long id = videoDAO.uploadVideo(video);
+        video.setId(id);
 
         return new ResponseEntity<>(video.toVideoDto(), HttpStatus.OK);
     }
@@ -77,7 +82,9 @@ public class VideoController extends BaseController {
          video.setOwnerId(owner.getId());
 
          amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
-         videoDAO.removeVideo(video);
+         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
+
+         videoDAO.removeVideo(video.getId());
 
          return new ResponseEntity<>("Successfully deleted video with id " + id + "!", HttpStatus.OK);
     }

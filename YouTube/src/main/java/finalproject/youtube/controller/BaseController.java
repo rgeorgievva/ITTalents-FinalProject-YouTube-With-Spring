@@ -28,7 +28,7 @@ public abstract class BaseController {
                 e.getClass().getName());
     }
 
-    @ExceptionHandler(BadRequestException.class)
+    @ExceptionHandler(AuthorizationException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ErrorDto handleAuthorizationException(AuthorizationException e) {
         return new ErrorDto(e.getMessage(),

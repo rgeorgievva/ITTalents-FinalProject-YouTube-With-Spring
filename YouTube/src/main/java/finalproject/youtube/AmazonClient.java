@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.xuggle.xuggler.IContainer;
 import finalproject.youtube.model.entity.Video;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,11 +52,11 @@ public class AmazonClient {
     }
 
 
-    public String uploadFile(MultipartFile multipartFile, Video video) {
+    public String uploadFile(MultipartFile multipartFile, Video video, boolean isThumbnail) {
         String fileUrl = "";
         try {
             File file = convertMultiPartToFile(multipartFile);
-            String fileName = generateFileName(multipartFile, video);
+            String fileName = generateFileName(multipartFile, video, isThumbnail);
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
             file.delete();
@@ -73,9 +74,10 @@ public class AmazonClient {
         return convFile;
     }
 
-    private String generateFileName(MultipartFile multiPart, Video video) {
-        return new Date().getTime() + "-" + video.getOwnerId() + "-"
-                + multiPart.getOriginalFilename().replace(" ", "_");
+    private String generateFileName(MultipartFile multiPart, Video video, boolean isThumbnail) {
+        String addedSting = isThumbnail ? "thumbnail-" : "";
+        return new Date().getTime() + "-" + video.getOwnerId() + "-" + addedSting +
+                multiPart.getOriginalFilename().replace(" ", "_");
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {
@@ -92,4 +94,5 @@ public class AmazonClient {
         }
         return "Video was deleted successfully!";
     }
+
 }

@@ -28,7 +28,8 @@ public class VideoDAO {
             statement.setString(1, video.getTitle());
             statement.setString(2, video.getDescription());
             statement.setString(3, video.getVideoUrl());
-            statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            video.setDateUploaded(LocalDateTime.now());
+            statement.setTimestamp(4, Timestamp.valueOf(video.getDateUploaded()));
             statement.setLong(5, video.getOwnerId());
             statement.setInt(6, video.getCategoryId());
             statement.setLong(7, video.getDuration());
@@ -42,11 +43,11 @@ public class VideoDAO {
     }
 
     // remove video
-    public void removeVideo(Video video) throws SQLException {
+    public void removeVideo(long videoId) throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "DELETE FROM videos WHERE id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setLong(1, video.getId());
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, videoId);
             statement.executeUpdate();
         }
     }

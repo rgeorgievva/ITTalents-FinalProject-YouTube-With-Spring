@@ -3,7 +3,6 @@ package finalproject.youtube;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.entity.Category;
-import finalproject.youtube.model.entity.Video;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +16,7 @@ public class Validator {
     private static final Pattern VALID_USERNAME_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._-]{3,}$");
     private static final Pattern VALID_VIDEO_TITLE_FORMAT =
-            Pattern.compile("^[a-zA-Z0-9._-]{5,}$");
+            Pattern.compile("^[a-zA-Z0-9._ -]{5,}$");
 
     private static boolean validateEmail(String email) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(email);
@@ -76,7 +75,7 @@ public class Validator {
     public static void validateVideoInformation(String title, long id) throws BadRequestException {
         if (!validateVideoTitle(title)) {
             throw new BadRequestException("Video title should be at least 5 chars and should contain only " +
-                    "latin letters, digits, points, dashes and underscores");
+                    "latin letters, digits, points, dashes, underscores and spaces");
         }
 
         if (!Category.isValidId(id)) {
