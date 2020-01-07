@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public abstract class BaseController {
@@ -44,5 +45,16 @@ public abstract class BaseController {
                 HttpStatus.NOT_FOUND.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
+    }
+
+    @ExceptionHandler(SQLException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleSQLExceptions(SQLException e){
+        ErrorDto errorDTO = new ErrorDto(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+        return errorDTO;
     }
 }
