@@ -18,6 +18,29 @@ public class CommentDAO {
 
     private CommentDAO(){}
 
+    public Comment getCommentById(long id) throws CommentException {
+        try{
+            Connection connection = dbManager.getConnection();
+            String sql = "select * from youtube.comments where id = ?;";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setLong(1, id);
+                ResultSet resultSet = ps.executeQuery();
+                if(!resultSet.next()){
+                    throw new CommentException("There is no such comment with id=" + id);
+                }
+                String text = resultSet.getString("text");
+                LocalDateTime time = resultSet.getTimestamp("time_posted").toLocalDateTime();
+                long videoId = resultSet.getLong("video_id");
+                long ownerid = resultSet.getLong("owner_id");
+                long repliedToId = resultSet.getLong("replied_to_id");
+                Comment comment = new Comment(id,text,time,videoId,ownerid,repliedToId);
+                return comment;
+                }
+            }catch (SQLException e) {
+                throw new CommentException("There is no such comment with id=" + id, e);
+            }
+    }
+
     public void addCommentToVideo(Comment comment) throws CommentException {
         try {
             Connection connection = dbManager.getConnection();
