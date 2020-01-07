@@ -70,27 +70,38 @@ public class VideoController extends BaseController {
     }
 
     @DeleteMapping(value = "videos/delete/{id}")
-    public ResponseEntity<String> deleteVideo(@PathVariable("id") int id, HttpSession session)
+    public ResponseEntity<String> deleteVideo(@PathVariable("id") long id, HttpSession session)
             throws AuthorizationException, NotFoundException, SQLException {
 
         if (!SessionManager.validateLogged(session)) {
-             throw new AuthorizationException();
-         }
+            throw new AuthorizationException();
+        }
 
-         User owner = SessionManager.getLoggedUser(session);
-         Video video = videoDAO.getById(id);
-         video.setOwnerId(owner.getId());
+        User owner = SessionManager.getLoggedUser(session);
+        Video video = videoDAO.getById(id);
+        video.setOwnerId(owner.getId());
 
-         amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
-         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
+        videoDAO.removeVideo(id);
 
-         videoDAO.removeVideo(video.getId());
+        amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
+        amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
 
-         return new ResponseEntity<>("Successfully deleted video with id " + id + "!", HttpStatus.OK);
+
+        return new ResponseEntity<>("Successfully deleted video with id " + id + "!", HttpStatus.OK);
+    }
+
+
+    @GetMapping(value = "videos/{id}")
+    public ResponseEntity<String> getVideoUrl(@PathVariable("id") long id) throws NotFoundException, SQLException {
+        Video video = videoDAO.getById(id);
+
+        String url = video.getVideoUrl();
+
+        return new ResponseEntity<>(url, HttpStatus.OK);
     }
 
     @GetMapping(value = "videos/get/{id}")
-    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") int id) throws NotFoundException, SQLException {
+    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") long id) throws NotFoundException, SQLException {
          VideoDto video = videoDAO.getById(id).toVideoDto();
 
          return new ResponseEntity<>(video, HttpStatus.OK);
