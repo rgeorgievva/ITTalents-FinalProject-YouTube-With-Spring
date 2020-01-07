@@ -6,6 +6,7 @@ import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,6 +110,37 @@ public class CommentController {
         commentDAO.deleteComment(dbComment);
     }
 
+    @PostMapping(value = "/{videoId}/comments/{commentId}/like")
+    public void likeComment(HttpSession session,
+                            @PathVariable("videoId") int videoId,
+                            @PathVariable("commentId") int commentId)
+            throws CommentException, VideoException, UserException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new CommentException("Please login to reply to a comment");
+        }
+        if(videoDAO.getById(videoId) == null){
+            throw new VideoException("There is no such video");
+        }
+        Comment dbComment = commentDAO.getCommentById(commentId);
+        User currentUser = SessionManager.getLoggedUser(session);
+        commentDAO.likeComment(currentUser, dbComment);
+    }
+
+    @PostMapping(value = "/{videoId}/comments/{commentId}/dislike")
+    public void dislikeComment(HttpSession session,
+                            @PathVariable("videoId") int videoId,
+                            @PathVariable("commentId") int commentId)
+            throws CommentException, VideoException, UserException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new CommentException("Please login to reply to a comment");
+        }
+        if(videoDAO.getById(videoId) == null){
+            throw new VideoException("There is no such video");
+        }
+        Comment dbComment = commentDAO.getCommentById(commentId);
+        User currentUser = SessionManager.getLoggedUser(session);
+        commentDAO.dislikeComment(currentUser, dbComment);
+    }
 
 
 }
