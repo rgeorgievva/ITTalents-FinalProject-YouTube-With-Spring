@@ -5,6 +5,7 @@ import finalproject.youtube.exceptions.PlaylistException;
 import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
@@ -16,14 +17,14 @@ import java.util.List;
 public class PlaylistDAO {
 
     @Autowired
-    DBManager dbManager;
+    JdbcTemplate jdbcTemplate;
 
     private PlaylistDAO() {
     }
 
     public void createPlaylist(Playlist playlist) throws PlaylistException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.playlists " +
                     "(title, date_created, owner_id) " +
                      "values (?,?,?);";
@@ -43,7 +44,7 @@ public class PlaylistDAO {
 
     public void editPlaylist(Playlist playlist, String title) throws PlaylistException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "update youtube.playlists set title = ? where id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             playlist.setTitle(title);
@@ -58,7 +59,7 @@ public class PlaylistDAO {
 
     public void deletePlaylist(Playlist playlist) throws PlaylistException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String deletePlaylistSql = "delete from youtube.playlists where id = ?;";
             try(PreparedStatement deletePlaylist = connection.prepareStatement(deletePlaylistSql)){
 
@@ -82,7 +83,7 @@ public class PlaylistDAO {
 
     public void addVideoToPlaylist(Video video, Playlist playlist) throws PlaylistException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, video.getId());
@@ -95,7 +96,7 @@ public class PlaylistDAO {
 
     public void removeVideoFromPlaylist(Video video, Playlist playlist) throws PlaylistException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "delete from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, video.getId());
@@ -109,7 +110,7 @@ public class PlaylistDAO {
     public List<Video> getAllVideosFromPlaylist(Playlist playlist) throws PlaylistException {
         try{
             List<Video> videos = new ArrayList <>();
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "select *\n" +
                     "from youtube.videos as v\n" +
                     "join youtube.videos_in_playlist as vp\n" +
@@ -136,7 +137,7 @@ public class PlaylistDAO {
     public List<Playlist> getPlaylistsByTitle(String title) throws PlaylistException {
         try {
             List<Playlist> playlists = new ArrayList <>();
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "select * from youtube.playlists where title = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, title);

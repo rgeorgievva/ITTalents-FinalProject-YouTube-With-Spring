@@ -5,6 +5,7 @@ import finalproject.youtube.exceptions.CommentException;
 import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
@@ -14,13 +15,13 @@ import java.time.LocalDateTime;
 public class CommentDAO {
 
     @Autowired
-    DBManager dbManager;
+    JdbcTemplate jdbcTemplate;
 
     private CommentDAO(){}
 
     public Comment getCommentById(long id) throws CommentException {
         try{
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "select * from youtube.comments where id = ?;";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setLong(1, id);
@@ -43,7 +44,7 @@ public class CommentDAO {
 
     public void addCommentToVideo(Comment comment) throws CommentException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.comments " +
                     "(text, time_posted, video_id, owner_id) values" +
                     "(?,?,?,?);";
@@ -64,7 +65,7 @@ public class CommentDAO {
 
     public void addReplyToComment(Comment reply) throws CommentException{
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.comments " +
                     "(text, time_posted, video_id, owner_id, replied_to_id) values" +
                     "(?,?,?,?,?);";
@@ -87,7 +88,7 @@ public class CommentDAO {
 
     public void editComment(Comment comment) throws CommentException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "update youtube.comments set text = ? where id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setString(1, comment.getText());
@@ -100,7 +101,7 @@ public class CommentDAO {
 
     public void deleteComment(Comment comment) throws CommentException {
         try{
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             String deleteFromComments = "delete from youtube.comments where id = ?;";
 
             try (PreparedStatement deleteFromCommentsStatement = connection.prepareStatement(deleteFromComments);) {
@@ -126,7 +127,7 @@ public class CommentDAO {
 
     public void likeComment(User user, Comment comment) throws CommentException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             //removes comment from liked comments
             if(commentIsAlreadyLiked(user, comment)){
                 String unlike = "delete from youtube.users_liked_comments where user_id = ? and comment_id = ?";
@@ -159,7 +160,7 @@ public class CommentDAO {
 
     public void dislikeComment(User user, Comment comment) throws CommentException {
         try {
-            Connection connection = dbManager.getConnection();
+            Connection connection = jdbcTemplate.getDataSource().getConnection();
             //removes comment from disliked comments
             if(commentIsAlreadyDisliked(user, comment)){
                 String sql = "delete from youtube.users_disliked_comments where user_id = ? and comment_id = ?";
@@ -191,7 +192,7 @@ public class CommentDAO {
 
     //finds if the current comment is already liked
     private boolean commentIsAlreadyLiked(User user, Comment comment) throws SQLException {
-        Connection connection = dbManager.getConnection();
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "select * from youtube.users_liked_comments where user_id = ? and comment_id = ?;";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.setLong(1, user.getId());
@@ -203,7 +204,7 @@ public class CommentDAO {
 
     //finds if the current comment is already disliked
     private boolean commentIsAlreadyDisliked(User user, Comment comment) throws SQLException {
-        Connection connection = dbManager.getConnection();
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "select * from youtube.users_disliked_comments where user_id = ? and comment_id = ?;";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.setLong(1, user.getId());
