@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.exceptions.VideoException;
+import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,165 +20,142 @@ public class VideoDAO {
     JdbcTemplate jdbcTemplate;
 
     // add video
-    public int uploadVideo(Video video) throws VideoException {
-        try {
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
-                    " duration, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-            try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                statement.setString(1, video.getTitle());
-                statement.setString(2, video.getDescription());
-                statement.setString(3, video.getVideoUrl());
-                statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-                statement.setLong(5, video.getOwnerId());
-                statement.setInt(6, video.getCategoryId());
-                statement.setLong(7, video.getDuration());
-                statement.setString(8, video.getThumbnailUrl());
-                statement.executeUpdate();
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                generatedKeys.next();
-                int videoId = generatedKeys.getInt(1);
-                return videoId;
-            }
-
-        } catch (SQLException e) {
-            throw new VideoException("Could not upload video! Please try again later.", e);
+    public int uploadVideo(Video video) throws SQLException {
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
+                " duration, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, video.getTitle());
+            statement.setString(2, video.getDescription());
+            statement.setString(3, video.getVideoUrl());
+            statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            statement.setLong(5, video.getOwnerId());
+            statement.setInt(6, video.getCategoryId());
+            statement.setLong(7, video.getDuration());
+            statement.setString(8, video.getThumbnailUrl());
+            statement.executeUpdate();
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            generatedKeys.next();
+            int videoId = generatedKeys.getInt(1);
+            return videoId;
         }
     }
 
     // remove video
-    public void removeVideo(Video video) throws VideoException {
-        try {
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "DELETE FROM videos WHERE id = ?;";
-            try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                statement.setLong(1, video.getId());
-                statement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new VideoException("Could not delete video! Please try again later.", e);
+    public void removeVideo(Video video) throws SQLException {
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "DELETE FROM videos WHERE id = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, video.getId());
+            statement.executeUpdate();
         }
     }
 
     // get video by id
-    public Video getById(long id) throws VideoException {
-        try {
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                    "thumbnail_url FROM videos WHERE id = ?";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setLong(1, id);
-                ResultSet resultSet = statement.executeQuery();
-                if (!resultSet.next()) {
-                    throw new VideoException("No video with this id!");
-                }
-                String title = resultSet.getString("title");
-                String description = resultSet.getString("description");
-                String url = resultSet.getString("video_url");
-                LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                long ownerId = resultSet.getLong("owner_id");
-                int categoryId = resultSet.getInt("category_id");
-                long duration = resultSet.getLong("duration");
-                String thumbnailUrl = resultSet.getString("thumbnail_url");
-                Video video = new Video(id, title, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
-                        categoryId);
-                return video;
+    public Video getById(long id) throws SQLException, NotFoundException {
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
+                "thumbnail_url FROM videos WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (!resultSet.next()) {
+                throw new NotFoundException("No video with this id found!");
             }
-        } catch (SQLException e) {
-            throw new VideoException("Could not get this video. Please try again later", e);
+            Video video = new Video();
+            video.setTitle(resultSet.getString("title"));
+            video.setDescription(resultSet.getString("description"));
+            video.setVideoUrl(resultSet.getString("video_url"));
+            video.setDateUploaded(resultSet.getTimestamp("date_uploaded").toLocalDateTime());
+            video.setOwnerId(resultSet.getLong("owner_id"));
+            video.setCategoryId(resultSet.getInt("category_id"));
+            video.setDuration(resultSet.getLong("duration"));
+            video.setThumbnailUrl(resultSet.getString("thumbnail_url"));
+            return video;
         }
     }
 
     // get all videos by title
-    public List<Video> getAllByTitle(String title) throws VideoException {
+    public List<Video> getAllByTitle(String title) throws SQLException, NotFoundException {
         List<Video> videos = new ArrayList<>();
-        try {
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                    "thumbnail_url FROM videos WHERE title = ?;";
-            try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                statement.setString(1, title);
-                ResultSet resultSet = statement.executeQuery();
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String videoTitle = resultSet.getString("title");
-                    String description = resultSet.getString("description");
-                    String url = resultSet.getString("video_url");
-                    LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                    int ownerId = resultSet.getInt("owner_id");
-                    int categoryId = resultSet.getInt("category_id");
-                    long duration = resultSet.getLong("duration");
-                    String thumbnailUrl = resultSet.getString("thumbnail_url");
-                    Video video = new Video(id, title, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
-                            categoryId);
-                    videos.add(video);
-                }
-                if (videos.isEmpty()) {
-                    throw new VideoException("No videos with title " + title + " found!");
-                }
-                return videos;
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
+                "thumbnail_url FROM videos WHERE title = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, title);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String description = resultSet.getString("description");
+                String url = resultSet.getString("video_url");
+                LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
+                int ownerId = resultSet.getInt("owner_id");
+                int categoryId = resultSet.getInt("category_id");
+                long duration = resultSet.getLong("duration");
+                String thumbnailUrl = resultSet.getString("thumbnail_url");
+
+                Video video = new Video(id, title, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
+                        categoryId);
+
+                videos.add(video);
             }
 
-        } catch (SQLException e) {
-            throw new VideoException("Could not get videos with title " + title + "! Please try again later.", e);
+            if (videos.isEmpty()) {
+                throw new NotFoundException("No videos with title " + title + " found!");
+            }
+
+            return videos;
         }
     }
 
     // like video
-    public void likeVideo(Video video, User user) throws VideoException {
-        try {
-            // if the user has already liked this video -> remove like
-            if (hasUserLikedVideo(user, video)) {
-                removeLike(user, video);
-                return;
-            }
+    public void likeVideo(Video video, User user) throws SQLException {
+        // if the user has already liked this video -> remove like
+        if (hasUserLikedVideo(user, video)) {
+            removeLike(user, video);
+            return;
+        }
 
-            // if the user has disliked this video -> remove the dislike and like the video
-            if (hasUserDislikedVideo(user, video)) {
-                removeDislikeAndLike(user, video);
-                return;
-            }
+        // if the user has disliked this video -> remove the dislike and like the video
+        if (hasUserDislikedVideo(user, video)) {
+            removeDislikeAndLike(user, video);
+            return;
+        }
 
-            // like the video
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
-            try (PreparedStatement statement = connection.prepareStatement(likeVideo);
-            ) {
-                statement.setLong(1, user.getId());
-                statement.setLong(2, video.getId());
-                statement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new VideoException("Could not like this video right now! Please try again later.", e);
+        // like the video
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
+        try (PreparedStatement statement = connection.prepareStatement(likeVideo);
+        ) {
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
+            statement.executeUpdate();
         }
     }
 
     // dislike video
-    public void dislikeVideo(Video video, User user) throws VideoException {
-        try {
-            // if the user has already disliked this video -> remove dislike
-            if (hasUserDislikedVideo(user, video)) {
-                removeDislike(user, video);
-                return;
-            }
+    public void dislikeVideo(Video video, User user) throws SQLException {
+        // if the user has already disliked this video -> remove dislike
+        if (hasUserDislikedVideo(user, video)) {
+            removeDislike(user, video);
+            return;
+        }
 
-            // if the user has liked this video -> remove the like and dislike the video
-            if (hasUserLikedVideo(user, video)) {
-                removeLikeAndDislike(user, video);
-                return;
-            }
+        // if the user has liked this video -> remove the like and dislike the video
+        if (hasUserLikedVideo(user, video)) {
+            removeLikeAndDislike(user, video);
+            return;
+        }
 
-            // dislike the video
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
-            try (PreparedStatement statement = connection.prepareStatement(dislikeVideo);
-            ) {
-                statement.setLong(1, user.getId());
-                statement.setLong(2, video.getId());
-                statement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new VideoException("Could not dislike this video right now! Please try again later.", e);
+        // dislike the video
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
+        try (PreparedStatement statement = connection.prepareStatement(dislikeVideo);
+        ) {
+            statement.setLong(1, user.getId());
+            statement.setLong(2, video.getId());
+            statement.executeUpdate();
         }
     }
 
@@ -266,72 +243,63 @@ public class VideoDAO {
     }
 
     // get all videos uploaded by user
-    public List<Video> getAllVideosByOwner(User user) throws VideoException {
+    public List<Video> getAllVideosByOwner(User user) throws SQLException, NotFoundException {
         List<Video> videosByOwner = new ArrayList<>();
-        try {
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                    "thumbnail_url FROM videos WHERE owner_id = ?;";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setLong(1, user.getId());
-                ResultSet resultSet = statement.executeQuery();
-                while (resultSet.next()) {
-                    long id = resultSet.getLong("id");
-                    String videoTitle = resultSet.getString("title");
-                    String description = resultSet.getString("description");
-                    String url = resultSet.getString("video_url");
-                    LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                    long ownerId = resultSet.getLong("owner_id");
-                    int categoryId = resultSet.getInt("category_id");
-                    long duration = resultSet.getLong("duration");
-                    String thumbnailUrl = resultSet.getString("thumbnail_url");
-                    Video video = new Video(id, videoTitle, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
-                            categoryId);
-                    videosByOwner.add(video);
-                }
-                if (videosByOwner.isEmpty()) {
-                    throw new VideoException("User " + user.getUsername() + " has no uploaded videos!");
-                }
-                return videosByOwner;
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
+                "thumbnail_url FROM videos WHERE owner_id = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, user.getId());
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                long id = resultSet.getLong("id");
+                String videoTitle = resultSet.getString("title");
+                String description = resultSet.getString("description");
+                String url = resultSet.getString("video_url");
+                LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
+                long ownerId = resultSet.getLong("owner_id");
+                int categoryId = resultSet.getInt("category_id");
+                long duration = resultSet.getLong("duration");
+                String thumbnailUrl = resultSet.getString("thumbnail_url");
+                Video video = new Video(id, videoTitle, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
+                        categoryId);
+                videosByOwner.add(video);
             }
-        } catch (SQLException e) {
-            throw new VideoException("Could not get videos uploaded by " + user.getUsername() +
-                    ". Please try again later.", e);
+            if (videosByOwner.isEmpty()) {
+                throw new NotFoundException("User " + user.getUsername() + " has no uploaded videos!");
+            }
+            return videosByOwner;
         }
     }
 
     // get all videos sorted by time uploaded and number likes
-    public List<Video> getAllByDateUploadedAndNumberLikes() throws VideoException {
-        try {
-            List<Video> videos = new ArrayList<>();
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "SELECT v.*, COUNT(*) AS total_likes " +
-                    "FROM users_liked_videos AS l " +
-                    "JOIN videos AS v ON l.video_id = v.id " +
-                    "GROUP BY l.video_id " +
-                    "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                ResultSet result = statement.executeQuery();
-                while (result.next()) {
-                    Video video = new Video(result.getLong("id"),
-                            result.getString("title"),
-                            result.getString("description"),
-                            result.getString("video_url"),
-                            result.getString("thumbnail_url"),
-                            result.getLong("duration"),
-                            result.getTimestamp("date_uploaded").toLocalDateTime(),
-                            result.getLong("owner_id"),
-                            result.getInt("category_id"));
-                    videos.add(video);
-                }
-                if (videos.isEmpty()) {
-                    throw new VideoException("No videos uploaded!");
-                }
-                return Collections.unmodifiableList(videos);
+    public List<Video> getAllByDateUploadedAndNumberLikes() throws NotFoundException, SQLException {
+        List<Video> videos = new ArrayList<>();
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "SELECT v.*, COUNT(*) AS total_likes " +
+                "FROM users_liked_videos AS l " +
+                "JOIN videos AS v ON l.video_id = v.id " +
+                "GROUP BY l.video_id " +
+                "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                Video video = new Video(result.getLong("id"),
+                        result.getString("title"),
+                        result.getString("description"),
+                        result.getString("video_url"),
+                        result.getString("thumbnail_url"),
+                        result.getLong("duration"),
+                        result.getTimestamp("date_uploaded").toLocalDateTime(),
+                        result.getLong("owner_id"),
+                        result.getInt("category_id"));
+                videos.add(video);
             }
-        } catch (SQLException e) {
-            throw new VideoException("Could not get all videos by uploading date and number likes. Please " +
-                    "try again later.", e);
+            if (videos.isEmpty()) {
+                throw new NotFoundException("No videos uploaded!");
+            }
+            return Collections.unmodifiableList(videos);
         }
     }
+
 }

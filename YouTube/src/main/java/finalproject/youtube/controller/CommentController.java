@@ -2,7 +2,6 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.CommentException;
-import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.entity.Comment;
@@ -22,7 +21,7 @@ public class CommentController {
     @Autowired
     VideoDAO videoDAO;
 
-    
+
     @GetMapping(value = "/{video_id}/comments/{comment_id}")
     public Comment getCommentById(HttpSession session,
                                   @PathVariable("video_id") int videoId,

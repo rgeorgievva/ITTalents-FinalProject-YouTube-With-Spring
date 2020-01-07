@@ -2,6 +2,8 @@ package finalproject.youtube;
 
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.RegisterUserDto;
+import finalproject.youtube.model.entity.Category;
+import finalproject.youtube.model.entity.Video;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +16,8 @@ public class Validator {
             Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$");
     private static final Pattern VALID_USERNAME_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._-]{3,}$");
+    private static final Pattern VALID_VIDEO_TITLE_FORMAT =
+            Pattern.compile("^[a-zA-Z0-9._-]{5,}$");
 
     private static boolean validateEmail(String email) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(email);
@@ -36,6 +40,12 @@ public class Validator {
         Matcher matcher = VALID_USERNAME_FORMAT.matcher(username);
         return matcher.find();
     }
+
+    private static boolean validateVideoTitle(String title) {
+        Matcher matcher = VALID_VIDEO_TITLE_FORMAT.matcher(title);
+        return matcher.find();
+    }
+
 
     public static void validateRegisterDto(RegisterUserDto registerUserDto) throws BadRequestException {
         String username = registerUserDto.getUsername();
@@ -60,6 +70,17 @@ public class Validator {
 
         if (!validateConfirmPassword(password, confirmPassword)) {
             throw new BadRequestException("Confirm password should match password!");
+        }
+    }
+
+    public static void validateVideoInformation(String title, long id) throws BadRequestException {
+        if (!validateVideoTitle(title)) {
+            throw new BadRequestException("Video title should be at least 5 chars and should contain only " +
+                    "latin letters, digits, points, dashes and underscores");
+        }
+
+        if (!Category.isValidId(id)) {
+            throw new BadRequestException("Invalid category id!");
         }
     }
 }

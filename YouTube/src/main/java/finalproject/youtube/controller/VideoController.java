@@ -2,9 +2,10 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.AmazonClient;
 import finalproject.youtube.SessionManager;
+import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
+import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
-import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.VideoDto;
@@ -24,6 +25,8 @@ import java.util.List;
 @RestController
 public class VideoController extends BaseController {
 
+    private static final String NO_DESCRIPTION_TO_VIDEO = "No description";
+
     @Autowired
     VideoDAO videoDAO;
 
@@ -38,10 +41,13 @@ public class VideoController extends BaseController {
                                                 @RequestParam(value = "title") String title,
                                                 @RequestParam(value = "description") String description,
                                                 @RequestParam(value = "categoryId") int categoryId,
-                                                HttpSession session) throws VideoException, AuthorizationException {
+                                                HttpSession session) throws AuthorizationException,
+            BadRequestException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
+
+        Validator.validateVideoInformation(title, categoryId);
         Video video = new Video();
         video.setTitle(title);
         video.setDescription(description);
@@ -59,8 +65,10 @@ public class VideoController extends BaseController {
     }
 
     @DeleteMapping(value = "videos/delete/{id}")
-    public ResponseEntity<String> deleteVideo(@PathVariable("id") int id, HttpSession session) throws VideoException, AuthorizationException {
-         if (!SessionManager.validateLogged(session)) {
+    public ResponseEntity<String> deleteVideo(@PathVariable("id") int id, HttpSession session)
+            throws AuthorizationException, NotFoundException, SQLException {
+
+        if (!SessionManager.validateLogged(session)) {
              throw new AuthorizationException();
          }
 
@@ -75,14 +83,15 @@ public class VideoController extends BaseController {
     }
 
     @GetMapping(value = "videos/get/{id}")
-    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") int id) throws VideoException {
+    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") int id) throws NotFoundException, SQLException {
          VideoDto video = videoDAO.getById(id).toVideoDto();
 
          return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
     @GetMapping(value = "videos/get/title/{title}")
-    public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title) throws VideoException {
+    public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title)
+            throws NotFoundException, SQLException {
         List<VideoDto> videos =  new ArrayList<>();
         for (Video video : videoDAO.getAllByTitle(title)) {
             videos.add(video.toVideoDto());
@@ -92,7 +101,8 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/like/{id}")
-    public ResponseEntity<String> likeVideo(@PathVariable("id") int videoId, HttpSession session) throws VideoException, AuthorizationException {
+    public ResponseEntity<String> likeVideo(@PathVariable("id") int videoId, HttpSession session)
+            throws AuthorizationException, NotFoundException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -106,7 +116,7 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/dislike/{id}")
-    public ResponseEntity<String> dislikeVideo(@PathVariable("id") int videoId, HttpSession session) throws VideoException, AuthorizationException {
+    public ResponseEntity<String> dislikeVideo(@PathVariable("id") int videoId, HttpSession session) throws AuthorizationException, NotFoundException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -120,8 +130,8 @@ public class VideoController extends BaseController {
     }
 
     @GetMapping(value = "videos/by/user/{userId}")
-    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") int userId) throws
-            VideoException, NotFoundException, SQLException {
+    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") int userId)
+            throws NotFoundException, SQLException {
         User user = userDAO.getById(userId);
         List<VideoDto> videos = new ArrayList<>();
 
