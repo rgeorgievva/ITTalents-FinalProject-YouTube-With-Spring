@@ -1,6 +1,5 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.CommentException;
 import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;

@@ -38,4 +38,13 @@ public abstract class BaseController {
                 LocalDateTime.now(),
                 e.getClass().getName());
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public ErrorDto handleAuthorizationException(AuthorizationException e) {
+        return new ErrorDto(e.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
 }

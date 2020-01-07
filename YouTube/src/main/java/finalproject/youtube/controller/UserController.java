@@ -2,6 +2,7 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.Validator;
+import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dao.UserDAO;
@@ -52,9 +53,9 @@ public class UserController extends BaseController {
     }
 
     @PutMapping(value = "users/profile/edit")
-    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user) throws UserException {
+    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user) throws UserException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized");
+            throw new AuthorizationException();
         }
         long loggedUserId = SessionManager.getLoggedUser(session).getId();
         user.setId(loggedUserId);
@@ -75,9 +76,9 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/subscribe/{id}")
         public ResponseEntity<String> subscribeToUser(@PathVariable("id") int subscribedToId, HttpSession session)
-            throws UserException {
+            throws UserException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized");
+            throw new AuthorizationException();
         }
 
         User subscriber = SessionManager.getLoggedUser(session);
@@ -87,9 +88,9 @@ public class UserController extends BaseController {
     }
 
     @DeleteMapping(value = "users/unsubscribe/{id}")
-    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session) throws UserException {
+    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session) throws UserException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized");
+            throw new AuthorizationException();
         }
 
         User subscriber = SessionManager.getLoggedUser(session);

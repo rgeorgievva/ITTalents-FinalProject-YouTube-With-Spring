@@ -2,6 +2,7 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.AmazonClient;
 import finalproject.youtube.SessionManager;
+import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.dao.UserDAO;
@@ -36,9 +37,9 @@ public class VideoController extends BaseController {
                                                 @RequestParam(value = "title") String title,
                                                 @RequestParam(value = "description") String description,
                                                 @RequestParam(value = "categoryId") int categoryId,
-                                                HttpSession session) throws VideoException, UserException {
+                                                HttpSession session) throws VideoException, UserException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized!");
+            throw new AuthorizationException();
         }
         Video video = new Video();
         video.setTitle(title);
@@ -57,9 +58,9 @@ public class VideoController extends BaseController {
     }
 
     @DeleteMapping(value = "videos/delete/{id}")
-    public ResponseEntity<String> deleteVideo(@PathVariable("id") int id, HttpSession session) throws UserException, VideoException {
+    public ResponseEntity<String> deleteVideo(@PathVariable("id") int id, HttpSession session) throws UserException, VideoException, AuthorizationException {
          if (!SessionManager.validateLogged(session)) {
-             throw new UserException("Unauthorized");
+             throw new AuthorizationException();
          }
 
          User owner = SessionManager.getLoggedUser(session);
@@ -90,9 +91,9 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/like/{id}")
-    public ResponseEntity<String> likeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException {
+    public ResponseEntity<String> likeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized");
+            throw new AuthorizationException();
         }
 
         User currentUser = SessionManager.getLoggedUser(session);
@@ -104,9 +105,9 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/dislike/{id}")
-    public ResponseEntity<String> dislikeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException {
+    public ResponseEntity<String> dislikeVideo(@PathVariable("id") int videoId, HttpSession session) throws UserException, VideoException, AuthorizationException {
         if (!SessionManager.validateLogged(session)) {
-            throw new UserException("Unauthorized");
+            throw new AuthorizationException();
         }
 
         User currentUser = SessionManager.getLoggedUser(session);

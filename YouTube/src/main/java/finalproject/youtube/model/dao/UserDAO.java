@@ -1,6 +1,5 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.UserException;
 import finalproject.youtube.model.dto.NoPasswordUserDto;
 import finalproject.youtube.model.entity.User;

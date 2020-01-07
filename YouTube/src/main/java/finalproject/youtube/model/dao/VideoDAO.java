@@ -1,6 +1,5 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.db.DBManager;
 import finalproject.youtube.exceptions.VideoException;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
