@@ -18,21 +18,21 @@ public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column
+    @Column(name = "title")
     private String title;
-    @Column
+    @Column(name = "description")
     private String description;
-    @Column
+    @Column(name = "video_url")
     private String videoUrl;
-    @Column
+    @Column(name = "thumbnail_url")
     private String thumbnailUrl;
-    @Column
+    @Column(name = "duration")
     private long duration;
-    @Column
+    @Column(name = "date_uploaded")
     private LocalDateTime dateUploaded;
-    @Column
+    @Column(name = "owner_id")
     private long ownerId;
-    @Column
+    @Column(name = "category_id")
     private int categoryId;
 
     public Video(long id, String title, String description, String videoUrl, String thumbnailUrl, long duration,

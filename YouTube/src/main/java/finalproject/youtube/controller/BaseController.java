@@ -47,4 +47,14 @@ public abstract class BaseController {
                 LocalDateTime.now(),
                 e.getClass().getName());
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleAllExceptions(Exception e){
+        return new ErrorDto(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
 }
