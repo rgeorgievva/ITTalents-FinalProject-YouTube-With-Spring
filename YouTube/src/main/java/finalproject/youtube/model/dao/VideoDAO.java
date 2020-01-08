@@ -21,10 +21,10 @@ public class VideoDAO {
 
     // add video
     public int uploadVideo(Video video) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
                 " duration, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, video.getTitle());
             statement.setString(2, video.getDescription());
             statement.setString(3, video.getVideoUrl());
@@ -44,9 +44,9 @@ public class VideoDAO {
 
     // remove video
     public void removeVideo(long videoId) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "DELETE FROM videos WHERE id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, videoId);
             statement.executeUpdate();
         }
@@ -54,10 +54,10 @@ public class VideoDAO {
 
     // get video by id
     public Video getById(long id) throws SQLException, NotFoundException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
                 "thumbnail_url FROM videos WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             ResultSet resultSet = statement.executeQuery();
 
@@ -80,10 +80,10 @@ public class VideoDAO {
     // get all videos by title
     public List<Video> getAllByTitle(String title) throws SQLException, NotFoundException {
         List<Video> videos = new ArrayList<>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
                 "thumbnail_url FROM videos WHERE title = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, title);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -111,72 +111,73 @@ public class VideoDAO {
     }
 
     // like video
-    public void likeVideo(Video video, User user) throws SQLException {
+    public void likeVideo(long videoId, User user) throws SQLException {
         // if the user has already liked this video -> remove like
-        if (hasUserLikedVideo(user, video)) {
-            removeLike(user, video);
+        if (hasUserLikedVideo(user, videoId)) {
+            removeLike(user, videoId);
             return;
         }
 
         // if the user has disliked this video -> remove the dislike and like the video
-        if (hasUserDislikedVideo(user, video)) {
-            removeDislikeAndLike(user, video);
+        if (hasUserDislikedVideo(user, videoId)) {
+            removeDislikeAndLike(user, videoId);
             return;
         }
 
         // like the video
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
+
         String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
-        try (PreparedStatement statement = connection.prepareStatement(likeVideo);
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(likeVideo);
         ) {
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             statement.executeUpdate();
         }
     }
 
     // dislike video
-    public void dislikeVideo(Video video, User user) throws SQLException {
+    public void dislikeVideo(long videoId, User user) throws SQLException {
         // if the user has already disliked this video -> remove dislike
-        if (hasUserDislikedVideo(user, video)) {
-            removeDislike(user, video);
+        if (hasUserDislikedVideo(user, videoId)) {
+            removeDislike(user, videoId);
             return;
         }
 
         // if the user has liked this video -> remove the like and dislike the video
-        if (hasUserLikedVideo(user, video)) {
-            removeLikeAndDislike(user, video);
+        if (hasUserLikedVideo(user, videoId)) {
+            removeLikeAndDislike(user, videoId);
             return;
         }
 
         // dislike the video
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
-        try (PreparedStatement statement = connection.prepareStatement(dislikeVideo);
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(dislikeVideo);
         ) {
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             statement.executeUpdate();
         }
     }
 
-    private boolean hasUserLikedVideo(User user, Video video) throws SQLException {
+    private boolean hasUserLikedVideo(User user, long videoId) throws SQLException {
         String hasUserLikedVideo = "SELECT user_id, video_id FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
 
-        return checkForReactionOfVideo(hasUserLikedVideo, user, video);
+        return checkForReactionOfVideo(hasUserLikedVideo, user, videoId);
     }
 
-    private boolean hasUserDislikedVideo(User user, Video video) throws SQLException {
+    private boolean hasUserDislikedVideo(User user, long videoId) throws SQLException {
         String hasUserDislikedVideo = "SELECT user_id, video_id FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
 
-        return checkForReactionOfVideo(hasUserDislikedVideo, user, video);
+        return checkForReactionOfVideo(hasUserDislikedVideo, user, videoId);
     }
 
-    private boolean checkForReactionOfVideo(String sql, User user, Video video) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+    private boolean checkForReactionOfVideo(String sql, User user, long videoId) throws SQLException {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) {
                 return false;
@@ -185,53 +186,54 @@ public class VideoDAO {
         }
     }
 
-    private void removeDislike(User user, Video video) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
+    private void removeDislike(User user, long videoId) throws SQLException {
         String sql = "DELETE FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             statement.executeUpdate();
         }
     }
 
-    private void removeLike(User user, Video video) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
+    private void removeLike(User user, long videoId) throws SQLException {
         String sql = "DELETE FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             statement.executeUpdate();
         }
     }
 
-    private void removeDislikeAndLike(User user, Video video) throws SQLException {
+    private void removeDislikeAndLike(User user, long videoId) throws SQLException {
         String removeDislike = "DELETE FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
         String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
 
-        executeTwoUpdatesInTransaction(removeDislike, likeVideo, user, video);
+        executeTwoUpdatesInTransaction(removeDislike, likeVideo, user, videoId);
     }
 
-    private void removeLikeAndDislike(User user, Video video) throws SQLException {
+    private void removeLikeAndDislike(User user, long videoId) throws SQLException {
         String removeLike = "DELETE FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
         String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
 
-        executeTwoUpdatesInTransaction(removeLike, dislikeVideo, user, video);
+        executeTwoUpdatesInTransaction(removeLike, dislikeVideo, user, videoId);
     }
 
-    private void executeTwoUpdatesInTransaction(String sql1, String sql2, User user, Video video) throws SQLException {
+    private void executeTwoUpdatesInTransaction(String sql1, String sql2, User user, long videoId) throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
+
         try (PreparedStatement statement = connection.prepareStatement(sql1);
              PreparedStatement statement2 = connection.prepareStatement(sql2);
         ) {
             connection.setAutoCommit(false);
 
             statement.setLong(1, user.getId());
-            statement.setLong(2, video.getId());
+            statement.setLong(2, videoId);
             statement.executeUpdate();
 
             statement2.setLong(1, user.getId());
-            statement2.setLong(2, video.getId());
+            statement2.setLong(2, videoId);
             statement2.executeUpdate();
 
             connection.commit();
@@ -240,16 +242,17 @@ public class VideoDAO {
             throw e;
         } finally {
             connection.setAutoCommit(true);
+            connection.close();
         }
     }
 
     // get all videos uploaded by user
     public List<Video> getAllVideosByOwner(User user) throws SQLException, NotFoundException {
         List<Video> videosByOwner = new ArrayList<>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
                 "thumbnail_url FROM videos WHERE owner_id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -276,13 +279,13 @@ public class VideoDAO {
     // get all videos sorted by time uploaded and number likes
     public List<Video> getAllByDateUploadedAndNumberLikes() throws NotFoundException, SQLException {
         List<Video> videos = new ArrayList<>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT v.*, COUNT(*) AS total_likes " +
                 "FROM users_liked_videos AS l " +
                 "JOIN videos AS v ON l.video_id = v.id " +
                 "GROUP BY l.video_id " +
                 "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet result = statement.executeQuery();
             while (result.next()) {
                 Video video = new Video(result.getLong("id"),

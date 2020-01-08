@@ -85,7 +85,7 @@ public class VideoController extends BaseController {
 
         amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
-        
+
         return new ResponseEntity<>("Successfully deleted video with id " + id + "!", HttpStatus.OK);
     }
 
@@ -125,9 +125,8 @@ public class VideoController extends BaseController {
         }
 
         User currentUser = SessionManager.getLoggedUser(session);
-        Video video = videoDAO.getById(videoId);
 
-        videoDAO.likeVideo(video, currentUser);
+        videoDAO.likeVideo(videoId, currentUser);
 
         return new ResponseEntity<>("Successfully liked video!", HttpStatus.OK);
     }
@@ -141,7 +140,7 @@ public class VideoController extends BaseController {
         User currentUser = SessionManager.getLoggedUser(session);
         Video video = videoDAO.getById(videoId);
 
-        videoDAO.dislikeVideo(video, currentUser);
+        videoDAO.dislikeVideo(videoId, currentUser);
 
         return new ResponseEntity<>("Successfully disliked video!", HttpStatus.OK);
     }

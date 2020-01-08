@@ -26,10 +26,10 @@ public class UserDAO {
             throw new BadRequestException("Duplicate email!");
         }
 
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "INSERT INTO users (user_name, first_name, last_name, email, password, date_created)" +
                 " VALUES (?, ?, ?, ?, ?, ?);";
-        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getFirstName());
             statement.setString(3, user.getLastName());
@@ -47,9 +47,9 @@ public class UserDAO {
 
     // check if the email is unique
     private boolean isDuplicateEmail(String email) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT * FROM users WHERE email = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next() == false) {
@@ -61,9 +61,9 @@ public class UserDAO {
 
     // login user
     public int loginUser(String email, String password) throws SQLException, BadRequestException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id FROM users WHERE email = ? AND password = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             statement.setString(2, password);
             ResultSet resultSet = statement.executeQuery();
@@ -76,10 +76,10 @@ public class UserDAO {
     }
 
     public User getById(long userId) throws SQLException, NotFoundException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id, user_name, first_name, last_name, email, password, date_created " +
                 "FROM users WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, userId);
             ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) {
@@ -101,10 +101,10 @@ public class UserDAO {
 
     // edit user profile
     public void editProfile(User user) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "UPDATE users SET  user_name = ?, first_name = ?, last_name = ?, email = ?, password = md5(?) " +
                 "WHERE id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getFirstName());
             statement.setString(3, user.getLastName());
@@ -118,9 +118,9 @@ public class UserDAO {
     // find all users with given username
     public List<NoPasswordUserDto> findByUsername(String username) throws SQLException {
         List<NoPasswordUserDto> users = new ArrayList<>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "SELECT id, user_name, first_name, last_name, email, password, date_created FROM users WHERE user_name = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -143,9 +143,9 @@ public class UserDAO {
 
     // subscribe to user
     public void subscribeToUser(User subscriber, long subscribedToId) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) VALUES (?, ?);";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, subscriber.getId());
             statement.setLong(2, subscribedToId);
             statement.executeUpdate();
@@ -154,9 +154,9 @@ public class UserDAO {
 
     // unsubscribe from user
     public void unsubscribeFromUser(User subscriber, long unsubscribeFromId) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "DELETE FROM subscriptions WHERE subscriber_id = ? AND subscribed_to_id = ?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, subscriber.getId());
             statement.setLong(2, unsubscribeFromId);
             statement.executeUpdate();
