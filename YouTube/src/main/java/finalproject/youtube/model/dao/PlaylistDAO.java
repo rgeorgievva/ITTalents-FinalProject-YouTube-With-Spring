@@ -2,6 +2,7 @@ package finalproject.youtube.model.dao;
 
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.entity.Playlist;
+import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.Video;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,7 +115,8 @@ public class PlaylistDAO {
                     resultSet.getString("thumbnail_url"),
                     resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
                     resultSet.getInt("owner_id"),
-                    resultSet.getInt("category_id"));
+                    resultSet.getInt("category_id"),
+                    Status.valueOf(resultSet.getString("status")));
             videos.add(video);
         }
         return Collections.unmodifiableList(videos);
