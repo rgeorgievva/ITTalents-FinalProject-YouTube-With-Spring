@@ -1,6 +1,7 @@
 package finalproject.youtube.model.entity;
 
 import finalproject.youtube.model.dto.VideoDto;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -26,27 +28,14 @@ public class Video {
     private String videoUrl;
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
-    @Column(name = "duration")
-    private long duration;
     @Column(name = "date_uploaded")
     private LocalDateTime dateUploaded;
     @Column(name = "owner_id")
     private long ownerId;
     @Column(name = "category_id")
-    private int categoryId;
-
-    public Video(long id, String title, String description, String videoUrl, String thumbnailUrl, long duration,
-                 LocalDateTime dateUploaded, long ownerId, int categoryId) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.videoUrl = videoUrl;
-        this.thumbnailUrl = thumbnailUrl;
-        this.duration = duration;
-        this.dateUploaded = dateUploaded;
-        this.ownerId = ownerId;
-        this.categoryId = categoryId;
-    }
+    private long categoryId;
+    @Column(name = "status")
+    private Status status;
 
     public VideoDto toVideoDto() {
         VideoDto videoDto = new VideoDto();
@@ -55,25 +44,12 @@ public class Video {
         videoDto.setDescription(this.description);
         videoDto.setVideoUrl(this.videoUrl);
         videoDto.setThumbnailUrl(this.thumbnailUrl);
-        videoDto.setDuration(this.duration);
         videoDto.setDateUploaded(this.dateUploaded);
         videoDto.setOwnerId(this.ownerId);
         videoDto.setCategoryId(this.categoryId);
+        videoDto.setStatus(this.status);
 
         return videoDto;
     }
 
-    @Override
-    public String toString() {
-        return "Video{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", videoUrl='" + videoUrl + '\'' +
-                ", thumbnailUrl='" + thumbnailUrl + '\'' +
-                ", duration=" + duration +
-                ", dateUploaded=" + dateUploaded +
-                ", ownerId=" + ownerId +
-                ", categoryId=" + categoryId +
-                '}';
-    }
 }

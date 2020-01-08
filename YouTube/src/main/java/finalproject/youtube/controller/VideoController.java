@@ -9,6 +9,7 @@ import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.VideoDto;
+import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ public class VideoController extends BaseController {
         video.setTitle(title);
         video.setDescription(description);
         video.setCategoryId(categoryId);
+        video.setStatus(Status.PENDING);
 
         User owner = SessionManager.getLoggedUser(session);
         video.setOwnerId(owner.getId());
@@ -145,7 +147,7 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>("Successfully disliked video!", HttpStatus.OK);
     }
 
-    @GetMapping(value = "videos/by/user/{userId}")
+    @GetMapping(value = "users/by/user/{userId}")
     public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") int userId)
             throws NotFoundException, SQLException {
         User user = userDAO.getById(userId);

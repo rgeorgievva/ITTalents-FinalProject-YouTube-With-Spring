@@ -1,6 +1,7 @@
 package finalproject.youtube.model.dao;
 
 import finalproject.youtube.exceptions.NotFoundException;
+import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class VideoDAO {
     // add video
     public int uploadVideo(Video video) throws SQLException {
         String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
-                " duration, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                " thumbnail_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, video.getTitle());
@@ -31,13 +32,14 @@ public class VideoDAO {
             video.setDateUploaded(LocalDateTime.now());
             statement.setTimestamp(4, Timestamp.valueOf(video.getDateUploaded()));
             statement.setLong(5, video.getOwnerId());
-            statement.setInt(6, video.getCategoryId());
-            statement.setLong(7, video.getDuration());
-            statement.setString(8, video.getThumbnailUrl());
+            statement.setLong(6, video.getCategoryId());
+            statement.setString(7, video.getThumbnailUrl());
+            statement.setString(8, video.getStatus().toString());
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             generatedKeys.next();
             int videoId = generatedKeys.getInt(1);
+
             return videoId;
         }
     }
@@ -54,8 +56,8 @@ public class VideoDAO {
 
     // get video by id
     public Video getById(long id) throws SQLException, NotFoundException {
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                "thumbnail_url FROM videos WHERE id = ?";
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
+                "thumbnail_url, status FROM videos WHERE id = ?";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
@@ -64,6 +66,7 @@ public class VideoDAO {
             if (!resultSet.next()) {
                 throw new NotFoundException("No video with this id found!");
             }
+
             Video video = new Video();
             video.setTitle(resultSet.getString("title"));
             video.setDescription(resultSet.getString("description"));
@@ -71,8 +74,9 @@ public class VideoDAO {
             video.setDateUploaded(resultSet.getTimestamp("date_uploaded").toLocalDateTime());
             video.setOwnerId(resultSet.getLong("owner_id"));
             video.setCategoryId(resultSet.getInt("category_id"));
-            video.setDuration(resultSet.getLong("duration"));
             video.setThumbnailUrl(resultSet.getString("thumbnail_url"));
+            video.setStatus(Status.valueOf(resultSet.getString("status")));
+
             return video;
         }
     }
@@ -80,24 +84,24 @@ public class VideoDAO {
     // get all videos by title
     public List<Video> getAllByTitle(String title) throws SQLException, NotFoundException {
         List<Video> videos = new ArrayList<>();
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                "thumbnail_url FROM videos WHERE title = ?;";
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
+                "thumbnail_url, status FROM videos WHERE title = ?;";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, title);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int id = resultSet.getInt("id");
+                long id = resultSet.getLong("id");
                 String description = resultSet.getString("description");
                 String url = resultSet.getString("video_url");
                 LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                int ownerId = resultSet.getInt("owner_id");
-                int categoryId = resultSet.getInt("category_id");
-                long duration = resultSet.getLong("duration");
+                long ownerId = resultSet.getLong("owner_id");
+                long categoryId = resultSet.getLong("category_id");
                 String thumbnailUrl = resultSet.getString("thumbnail_url");
+                Status status = Status.valueOf(resultSet.getString("status"));
 
-                Video video = new Video(id, title, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
-                        categoryId);
+                Video video = new Video(id, title, description, url, thumbnailUrl, dateUploaded, ownerId,
+                        categoryId, status);
 
                 videos.add(video);
             }
@@ -125,7 +129,6 @@ public class VideoDAO {
         }
 
         // like the video
-
         String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(likeVideo);
@@ -249,8 +252,8 @@ public class VideoDAO {
     // get all videos uploaded by user
     public List<Video> getAllVideosByOwner(User user) throws SQLException, NotFoundException {
         List<Video> videosByOwner = new ArrayList<>();
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, duration, " +
-                "thumbnail_url FROM videos WHERE owner_id = ?;";
+        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
+                "thumbnail_url, status FROM videos WHERE owner_id = ?;";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
@@ -263,10 +266,11 @@ public class VideoDAO {
                 LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
                 long ownerId = resultSet.getLong("owner_id");
                 int categoryId = resultSet.getInt("category_id");
-                long duration = resultSet.getLong("duration");
                 String thumbnailUrl = resultSet.getString("thumbnail_url");
-                Video video = new Video(id, videoTitle, description, url, thumbnailUrl, duration, dateUploaded, ownerId,
-                        categoryId);
+                Status status = Status.valueOf(resultSet.getString("status"));
+
+                Video video = new Video(id, videoTitle, description, url, thumbnailUrl, dateUploaded, ownerId,
+                        categoryId, status);
                 videosByOwner.add(video);
             }
             if (videosByOwner.isEmpty()) {
@@ -293,10 +297,11 @@ public class VideoDAO {
                         result.getString("description"),
                         result.getString("video_url"),
                         result.getString("thumbnail_url"),
-                        result.getLong("duration"),
                         result.getTimestamp("date_uploaded").toLocalDateTime(),
                         result.getLong("owner_id"),
-                        result.getInt("category_id"));
+                        result.getLong("category_id"),
+                        Status.valueOf(result.getString("status"))
+                );
                 videos.add(video);
             }
             if (videos.isEmpty()) {

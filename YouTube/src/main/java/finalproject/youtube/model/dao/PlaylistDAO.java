@@ -107,9 +107,11 @@ public class PlaylistDAO {
         preparedStatement.setLong(1, playlist.getId());
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
-            Video video = new Video(resultSet.getInt("id"), resultSet.getString("title"),
-                    resultSet.getString("description"), resultSet.getString("video_url"),
-                    resultSet.getString("thumbnail_url"), resultSet.getLong("duration"),
+            Video video = new Video(resultSet.getInt("id"),
+                    resultSet.getString("title"),
+                    resultSet.getString("description"),
+                    resultSet.getString("video_url"),
+                    resultSet.getString("thumbnail_url"),
                     resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
                     resultSet.getInt("owner_id"),
                     resultSet.getInt("category_id"));

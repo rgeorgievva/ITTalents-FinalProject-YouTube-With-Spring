@@ -1,5 +1,6 @@
 package finalproject.youtube.model.dto;
 
+import finalproject.youtube.model.entity.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,8 +15,8 @@ public class VideoDto {
     private String description;
     private String videoUrl;
     private String thumbnailUrl;
-    private long duration;
     private LocalDateTime dateUploaded;
     private long ownerId;
-    private int categoryId;
+    private long categoryId;
+    private Status status;
 }
