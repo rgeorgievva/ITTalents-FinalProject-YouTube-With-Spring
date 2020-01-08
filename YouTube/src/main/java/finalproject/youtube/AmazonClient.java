@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.Video;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +21,6 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Date;
 
 @Service
@@ -51,21 +51,22 @@ public class AmazonClient {
     }
 
 
-    public String uploadFile(MultipartFile multipartFile, Video video, boolean isThumbnail) {
+    public String uploadFile(File file, Video video, boolean isThumbnail) {
         String fileUrl = "";
         try {
-            File file = convertMultiPartToFile(multipartFile);
-            String fileName = generateFileName(multipartFile, video, isThumbnail);
+            System.out.println("here");
+            String fileName = generateFileName(file, video, isThumbnail);
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
             file.delete();
         } catch (Exception e) {
+            video.setStatus(Status.FAILED.toString());
             logger.error(e.getMessage(), e);
         }
         return fileUrl;
     }
 
-    private File convertMultiPartToFile(MultipartFile file) throws IOException {
+    public File convertMultiPartToFile(MultipartFile file) throws IOException {
         File convFile = new File(file.getOriginalFilename());
         FileOutputStream fos = new FileOutputStream(convFile);
         fos.write(file.getBytes());
@@ -73,10 +74,10 @@ public class AmazonClient {
         return convFile;
     }
 
-    private String generateFileName(MultipartFile multiPart, Video video, boolean isThumbnail) {
+    private String generateFileName(File file, Video video, boolean isThumbnail) {
         String addedSting = isThumbnail ? "thumbnail-" : "";
         return new Date().getTime() + "-" + video.getOwnerId() + "-" + addedSting +
-                multiPart.getOriginalFilename().replace(" ", "_");
+                file.getName().replace(" ", "_");
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {

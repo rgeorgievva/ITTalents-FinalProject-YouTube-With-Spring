@@ -35,7 +35,7 @@ public class Video {
     @Column(name = "category_id")
     private long categoryId;
     @Column(name = "status")
-    private Status status;
+    private String  status;
 
     public VideoDto toVideoDto() {
         VideoDto videoDto = new VideoDto();

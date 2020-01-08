@@ -34,7 +34,7 @@ public class VideoDAO {
             statement.setLong(5, video.getOwnerId());
             statement.setLong(6, video.getCategoryId());
             statement.setString(7, video.getThumbnailUrl());
-            statement.setString(8, video.getStatus().toString());
+            statement.setString(8, video.getStatus());
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             generatedKeys.next();
@@ -75,7 +75,7 @@ public class VideoDAO {
             video.setOwnerId(resultSet.getLong("owner_id"));
             video.setCategoryId(resultSet.getInt("category_id"));
             video.setThumbnailUrl(resultSet.getString("thumbnail_url"));
-            video.setStatus(Status.valueOf(resultSet.getString("status")));
+            video.setStatus(resultSet.getString("status"));
 
             return video;
         }
@@ -98,7 +98,7 @@ public class VideoDAO {
                 long ownerId = resultSet.getLong("owner_id");
                 long categoryId = resultSet.getLong("category_id");
                 String thumbnailUrl = resultSet.getString("thumbnail_url");
-                Status status = Status.valueOf(resultSet.getString("status"));
+                String status = resultSet.getString("status");
 
                 Video video = new Video(id, title, description, url, thumbnailUrl, dateUploaded, ownerId,
                         categoryId, status);
@@ -267,7 +267,7 @@ public class VideoDAO {
                 long ownerId = resultSet.getLong("owner_id");
                 int categoryId = resultSet.getInt("category_id");
                 String thumbnailUrl = resultSet.getString("thumbnail_url");
-                Status status = Status.valueOf(resultSet.getString("status"));
+                String  status = resultSet.getString("status");
 
                 Video video = new Video(id, videoTitle, description, url, thumbnailUrl, dateUploaded, ownerId,
                         categoryId, status);
@@ -300,7 +300,7 @@ public class VideoDAO {
                         result.getTimestamp("date_uploaded").toLocalDateTime(),
                         result.getLong("owner_id"),
                         result.getLong("category_id"),
-                        Status.valueOf(result.getString("status"))
+                        result.getString("status")
                 );
                 videos.add(video);
             }

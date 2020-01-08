@@ -18,5 +18,5 @@ public class VideoDto {
     private LocalDateTime dateUploaded;
     private long ownerId;
     private long categoryId;
-    private Status status;
+    private String status;
 }

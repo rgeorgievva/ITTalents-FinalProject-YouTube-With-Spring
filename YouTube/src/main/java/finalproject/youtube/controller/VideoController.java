@@ -10,8 +10,10 @@ import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.VideoDto;
 import finalproject.youtube.model.entity.Status;
+import finalproject.youtube.model.entity.Uploader;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,9 @@ public class VideoController extends BaseController {
 
     @Autowired
     AmazonClient amazonClient;
+
+    @Autowired
+    VideoRepository videoRepository;
 
     @PostMapping(value = "videos/upload")
     public ResponseEntity<VideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
@@ -54,16 +60,23 @@ public class VideoController extends BaseController {
         video.setTitle(title);
         video.setDescription(description);
         video.setCategoryId(categoryId);
-        video.setStatus(Status.PENDING);
+        video.setStatus(Status.PENDING.toString());
+        video.setVideoUrl("");
+        video.setThumbnailUrl("");
 
         User owner = SessionManager.getLoggedUser(session);
         video.setOwnerId(owner.getId());
 
-        video.setVideoUrl(amazonClient.uploadFile(multipartFile, video, false));
-        video.setThumbnailUrl(amazonClient.uploadFile(thumbnail, video, true));
-
         long id = videoDAO.uploadVideo(video);
         video.setId(id);
+
+        try {
+            Thread uploader = new Uploader(video, amazonClient.convertMultiPartToFile(multipartFile),
+                    amazonClient.convertMultiPartToFile(thumbnail), amazonClient, videoRepository);
+            uploader.start();
+        } catch (IOException e) {
+            video.setStatus(Status.FAILED.toString());
+        }
 
         return new ResponseEntity<>(video.toVideoDto(), HttpStatus.OK);
     }
