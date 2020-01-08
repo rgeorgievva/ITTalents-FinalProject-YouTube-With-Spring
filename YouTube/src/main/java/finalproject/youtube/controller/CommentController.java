@@ -30,7 +30,6 @@ public class CommentController extends BaseController{
     VideoRepository videoRepository;
 
 
-    //todo test
     @SneakyThrows
     @GetMapping(value = "/{video_id}/comments/{comment_id}")
     public ResponseEntity <ResponseCommentDto> getCommentById(HttpSession session,
@@ -48,7 +47,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity(new ResponseCommentDto(comment),HttpStatus.OK) ;
     }
 
-    //todo test
     @SneakyThrows
     @PostMapping(value = "/{video_id}/comments/submit")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
@@ -69,7 +67,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
-    //todo test
     @SneakyThrows
     @PostMapping(value = "/{video_id}/comments/{parent_comment_id}/reply")
     public ResponseEntity<ResponseCommentDto> submitReply(HttpSession session,
@@ -97,7 +94,6 @@ public class CommentController extends BaseController{
 
     }
 
-    //todo test
     @SneakyThrows
     @PostMapping(value = "/{videoId}/comments/{commentId}/edit")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
@@ -129,7 +125,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
-    //todo test
     @SneakyThrows
     @DeleteMapping(value = "/{videoId}/comments/{commentId}/delete")
     public ResponseEntity<String> deleteComment(HttpSession session,
@@ -158,7 +153,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
 
-    //todo string??? test
     @SneakyThrows
     @PostMapping(value = "/{videoId}/comments/{commentId}/like")
     public ResponseEntity<String> likeComment(HttpSession session,
@@ -179,12 +173,11 @@ public class CommentController extends BaseController{
         //like comment
         Comment comment = commentRepository.getCommentById(commentId);
         User currentUser = SessionManager.getLoggedUser(session);
-        commentDAO.likeComment(currentUser, comment);
+        String message = commentDAO.likeComment(currentUser, comment);
 
-        return new ResponseEntity <>("Comment liked!", HttpStatus.OK);
+        return new ResponseEntity <>(message, HttpStatus.OK);
     }
 
-    //todo string?? test
     @SneakyThrows
     @PostMapping(value = "/{videoId}/comments/{commentId}/dislike")
     public ResponseEntity<String> dislikeComment(HttpSession session,
@@ -205,8 +198,8 @@ public class CommentController extends BaseController{
         //dislike comment
         Comment comment = commentRepository.getCommentById(commentId);
         User currentUser = SessionManager.getLoggedUser(session);
-        commentDAO.dislikeComment(currentUser, comment);
+        String message = commentDAO.dislikeComment(currentUser, comment);
 
-        return new ResponseEntity <>("Comment disliked!", HttpStatus.OK);
+        return new ResponseEntity <>(message, HttpStatus.OK);
     }
 }
