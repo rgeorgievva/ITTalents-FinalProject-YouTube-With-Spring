@@ -24,25 +24,6 @@ public class PlaylistDAO {
     }
 
     @SneakyThrows
-    public void createPlaylist(Playlist playlist){
-
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "insert into youtube.playlists " +
-                    "(title, date_created, owner_id) " +
-                     "values (?,?,?);";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, playlist.getTitle());
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(playlist.getDateCreated()));
-            preparedStatement.setLong(3, playlist.getOwnerId());
-            preparedStatement.executeUpdate();
-            ResultSet resultSet = preparedStatement.getGeneratedKeys();
-            resultSet.next();
-            int result_id = resultSet.getInt(1);
-            playlist.setId(result_id);
-
-    }
-
-    @SneakyThrows
     public void editPlaylist(Playlist playlist, String title){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "update youtube.playlists set title = ? where id = ?";
@@ -124,7 +105,7 @@ public class PlaylistDAO {
         return Collections.unmodifiableList(videos);
     }
 
-    @SneakyThrows
+   /* @SneakyThrows
     public List<Playlist> getPlaylistsByTitle(String title){
             List<Playlist> playlists = new ArrayList <>();
             Connection connection = jdbcTemplate.getDataSource().getConnection();
@@ -140,5 +121,5 @@ public class PlaylistDAO {
                 playlists.add(playlist);
             }
             return Collections.unmodifiableList(playlists);
-    }
+    }*/
 }
