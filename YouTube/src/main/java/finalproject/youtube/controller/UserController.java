@@ -10,9 +10,12 @@ import finalproject.youtube.model.dto.LoginUserDto;
 import finalproject.youtube.model.dto.NoPasswordUserDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -25,11 +28,18 @@ public class UserController extends BaseController {
     @Autowired
     UserDAO userDAO;
 
+    @Autowired
+    UserRepository userRepository;
+
     @PostMapping(value = "users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws BadRequestException, SQLException {
+
         Validator.validateRegisterDto(registerUser);
 
         User user = User.registerDtoToUser(registerUser);
+        String encodedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        System.out.println("Encoded password: " + encodedPassword);
+        user.setPassword(encodedPassword);
         user.setId(userDAO.registerUser(user));
 
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.CREATED);
@@ -37,10 +47,18 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/login")
     public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser)
-            throws BadRequestException, SQLException, NotFoundException {
-        int userId = userDAO.loginUser(loginUser.getEmail(), loginUser.getPassword());
+            throws BadRequestException {
 
-        User user = userDAO.getById(userId);
+        User user = userRepository.getByEmail(loginUser.getEmail());
+        if (user == null) {
+            System.out.println("User is null");
+            throw new BadRequestException("Invalid email or password!");
+        }
+
+        if (!BCrypt.checkpw(loginUser.getPassword(), user.getPassword())) {
+            throw new BadRequestException("Invalid email or password!");
+        }
+
         SessionManager.logUser(session, user);
 
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);

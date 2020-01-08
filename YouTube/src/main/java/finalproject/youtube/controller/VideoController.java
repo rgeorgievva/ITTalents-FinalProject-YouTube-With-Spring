@@ -1,8 +1,5 @@
 package finalproject.youtube.controller;
 
-import com.xuggle.mediatool.IMediaReader;
-import com.xuggle.mediatool.ToolFactory;
-import com.xuggle.xuggler.IContainer;
 import finalproject.youtube.AmazonClient;
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.Validator;
@@ -79,14 +76,16 @@ public class VideoController extends BaseController {
 
         User owner = SessionManager.getLoggedUser(session);
         Video video = videoDAO.getById(id);
-        video.setOwnerId(owner.getId());
+
+        if (video.getOwnerId() != owner.getId()) {
+            throw new AuthorizationException("Unauthorized");
+        }
 
         videoDAO.removeVideo(id);
 
         amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
-
-
+        
         return new ResponseEntity<>("Successfully deleted video with id " + id + "!", HttpStatus.OK);
     }
 

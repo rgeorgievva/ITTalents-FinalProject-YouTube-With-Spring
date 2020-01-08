@@ -28,7 +28,7 @@ public class UserDAO {
 
         Connection connection = jdbcTemplate.getDataSource().getConnection();
         String sql = "INSERT INTO users (user_name, first_name, last_name, email, password, date_created)" +
-                " VALUES (?, ?, ?, ?, md5(?), ?);";
+                " VALUES (?, ?, ?, ?, ?, ?);";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getFirstName());
@@ -62,7 +62,7 @@ public class UserDAO {
     // login user
     public int loginUser(String email, String password) throws SQLException, BadRequestException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "SELECT id FROM users WHERE email = ? AND password = md5(?);";
+        String sql = "SELECT id FROM users WHERE email = ? AND password = ?;";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             statement.setString(2, password);
