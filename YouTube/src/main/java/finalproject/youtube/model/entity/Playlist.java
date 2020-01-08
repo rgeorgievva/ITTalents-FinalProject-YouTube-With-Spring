@@ -1,5 +1,6 @@
 package finalproject.youtube.model.entity;
 
+import finalproject.youtube.model.dto.RequestPlaylistDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,28 +16,25 @@ import java.time.LocalDateTime;
 public class Playlist {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long   id;
     @Column(name = "title")
     private String title;
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
-    @Column(name = "owner_id")
-    private long          ownerId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User        owner;
 
-    public Playlist(int id, String title, LocalDateTime dateCreated, int ownerId) {
+    public Playlist(int id, String title, LocalDateTime dateCreated, User owner) {
         this.id = id;
         this.title = title;
         this.dateCreated = dateCreated;
-        this.ownerId = ownerId;
+        this.owner = owner;
     }
 
-    @Override
-    public String toString() {
-        return "Playlist{ " +
-                "title = '" + title + '\'' +
-                ", dateCreated = " + dateCreated +
-                ", ownerId = " + ownerId +
-                '}';
+    public Playlist(RequestPlaylistDto requestPlaylist) {
+        this.setTitle(requestPlaylist.getTitle());
+        this.setDateCreated(LocalDateTime.now());
     }
 }

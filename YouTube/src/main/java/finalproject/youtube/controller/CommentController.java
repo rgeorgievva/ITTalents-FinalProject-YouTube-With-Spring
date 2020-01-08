@@ -32,8 +32,7 @@ public class CommentController extends BaseController{
 
     @SneakyThrows
     @GetMapping(value = "/{video_id}/comments/{comment_id}")
-    public ResponseEntity <ResponseCommentDto> getCommentById(HttpSession session,
-                                                              @PathVariable("video_id") long videoId,
+    public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("video_id") long videoId,
                                                               @PathVariable("comment_id") long commentId){
         //checks for video availability
         if(!videoRepository.existsVideoById(videoId)){
