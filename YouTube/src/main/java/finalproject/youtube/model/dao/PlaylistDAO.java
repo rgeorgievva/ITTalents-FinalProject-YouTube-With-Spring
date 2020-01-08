@@ -1,8 +1,9 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.exceptions.PlaylistException;
+import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.Video;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,9 @@ public class PlaylistDAO {
     private PlaylistDAO() {
     }
 
-    public void createPlaylist(Playlist playlist) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public void createPlaylist(Playlist playlist){
+
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.playlists " +
                     "(title, date_created, owner_id) " +
@@ -36,13 +38,11 @@ public class PlaylistDAO {
             resultSet.next();
             int result_id = resultSet.getInt(1);
             playlist.setId(result_id);
-        } catch (SQLException e) {
-            throw new PlaylistException("Playlist could not be created.", e);
-        }
+
     }
 
-    public void editPlaylist(Playlist playlist, String title) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public void editPlaylist(Playlist playlist, String title){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "update youtube.playlists set title = ? where id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -50,14 +50,11 @@ public class PlaylistDAO {
             preparedStatement.setString(1, playlist.getTitle());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new PlaylistException("Could not edit playlist. Please, try again later.", e);
-        }
 
     }
 
-    public void deletePlaylist(Playlist playlist) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public void deletePlaylist(Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String deletePlaylistSql = "delete from youtube.playlists where id = ?;";
             try(PreparedStatement deletePlaylist = connection.prepareStatement(deletePlaylistSql)){
@@ -70,71 +67,59 @@ public class PlaylistDAO {
                 connection.commit();
             }catch (SQLException e) {
                 connection.rollback();
-                throw  new PlaylistException("Something went wrong with deleting the playlist", e);
+                throw  new BadRequestException("Something went wrong with deleting the playlist");
             }
             finally {
                 connection.setAutoCommit(true);
             }
-        } catch (SQLException e) {
-           throw  new PlaylistException("Could not delete playlist", e);
-        }
     }
 
-    public void addVideoToPlaylist(Video video, Playlist playlist) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public void addVideoToPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new PlaylistException("Could not add video to playlist.", e);
-        }
     }
 
-    public void removeVideoFromPlaylist(Video video, Playlist playlist) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public void removeVideoFromPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "delete from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new PlaylistException("Could not remove video from playlist", e);
-        }
     }
 
-    public List<Video> getAllVideosFromPlaylist(Playlist playlist) throws PlaylistException {
-        try{
-            List<Video> videos = new ArrayList <>();
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "select *\n" +
-                    "from youtube.videos as v\n" +
-                    "join youtube.videos_in_playlist as vp\n" +
-                    "on v.id = vp.video_id\n" +
-                    "where vp.playlist_id = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, playlist.getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                Video video = new Video(resultSet.getInt("id"), resultSet.getString("title"),
-                        resultSet.getString("description"), resultSet.getString("video_url"),
-                        resultSet.getString("thumbnail_url"), resultSet.getLong("duration"),
-                        resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
-                        resultSet.getInt("owner_id"),
-                        resultSet.getInt("category_id"));
-                videos.add(video);
-            }
-            return Collections.unmodifiableList(videos);
-        } catch (SQLException e) {
-            throw  new PlaylistException("Could not view all videos from playlist", e);
+    @SneakyThrows
+    public List<Video> getAllVideosFromPlaylist(Playlist playlist) {
+        List <Video> videos = new ArrayList <>();
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "select *\n" +
+                "from youtube.videos as v\n" +
+                "join youtube.videos_in_playlist as vp\n" +
+                "on v.id = vp.video_id\n" +
+                "where vp.playlist_id = ?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setLong(1, playlist.getId());
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            Video video = new Video(resultSet.getInt("id"), resultSet.getString("title"),
+                    resultSet.getString("description"), resultSet.getString("video_url"),
+                    resultSet.getString("thumbnail_url"), resultSet.getLong("duration"),
+                    resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
+                    resultSet.getInt("owner_id"),
+                    resultSet.getInt("category_id"));
+            videos.add(video);
         }
+        return Collections.unmodifiableList(videos);
     }
 
-    public List<Playlist> getPlaylistsByTitle(String title) throws PlaylistException {
-        try {
+    @SneakyThrows
+    public List<Playlist> getPlaylistsByTitle(String title){
             List<Playlist> playlists = new ArrayList <>();
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "select * from youtube.playlists where title = ?;";
@@ -149,8 +134,5 @@ public class PlaylistDAO {
                 playlists.add(playlist);
             }
             return Collections.unmodifiableList(playlists);
-        } catch (SQLException e) {
-            throw new PlaylistException("Could not get playlist by title", e);
-        }
     }
 }

@@ -11,15 +11,6 @@ import java.time.LocalDateTime;
 
 public abstract class BaseController {
 
-    @ExceptionHandler({CommentException.class})
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public String handleCommentException(CommentException e){ return e.getMessage();}
-
-    @ExceptionHandler({PlaylistException.class})
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public String handlePlaylistException(PlaylistException e){return e.getMessage();}
-
-
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorDto handleBadRequest(BadRequestException e) {
@@ -50,11 +41,10 @@ public abstract class BaseController {
     @ExceptionHandler(SQLException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDto handleSQLExceptions(SQLException e){
-        ErrorDto errorDTO = new ErrorDto(
+        return new ErrorDto(
                 e.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
-        return errorDTO;
     }
 }
