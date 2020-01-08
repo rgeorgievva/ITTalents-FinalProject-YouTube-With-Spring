@@ -14,4 +14,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     boolean existsVideoById(long id);
 
     List<Video> getAllByOwnerId(long ownerId);
+
+    void deleteById(long id);
+
+    List<Video> getAllByTitle(String title);
 }
+

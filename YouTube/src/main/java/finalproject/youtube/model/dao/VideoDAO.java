@@ -44,76 +44,6 @@ public class VideoDAO {
         }
     }
 
-    // remove video
-    public void removeVideo(long videoId) throws SQLException {
-        String sql = "DELETE FROM videos WHERE id = ?;";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, videoId);
-            statement.executeUpdate();
-        }
-    }
-
-    // get video by id
-    public Video getById(long id) throws SQLException, NotFoundException {
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
-                "thumbnail_url, status FROM videos WHERE id = ?";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
-            ResultSet resultSet = statement.executeQuery();
-
-            if (!resultSet.next()) {
-                throw new NotFoundException("No video with this id found!");
-            }
-
-            Video video = new Video();
-            video.setTitle(resultSet.getString("title"));
-            video.setDescription(resultSet.getString("description"));
-            video.setVideoUrl(resultSet.getString("video_url"));
-            video.setDateUploaded(resultSet.getTimestamp("date_uploaded").toLocalDateTime());
-            video.setOwnerId(resultSet.getLong("owner_id"));
-            video.setCategoryId(resultSet.getInt("category_id"));
-            video.setThumbnailUrl(resultSet.getString("thumbnail_url"));
-            video.setStatus(resultSet.getString("status"));
-
-            return video;
-        }
-    }
-
-    // get all videos by title
-    public List<Video> getAllByTitle(String title) throws SQLException, NotFoundException {
-        List<Video> videos = new ArrayList<>();
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
-                "thumbnail_url, status FROM videos WHERE title = ?;";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, title);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                String description = resultSet.getString("description");
-                String url = resultSet.getString("video_url");
-                LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                long ownerId = resultSet.getLong("owner_id");
-                long categoryId = resultSet.getLong("category_id");
-                String thumbnailUrl = resultSet.getString("thumbnail_url");
-                String status = resultSet.getString("status");
-
-                Video video = new Video(id, title, description, url, thumbnailUrl, dateUploaded, ownerId,
-                        categoryId, status);
-
-                videos.add(video);
-            }
-
-            if (videos.isEmpty()) {
-                throw new NotFoundException("No videos with title " + title + " found!");
-            }
-
-            return videos;
-        }
-    }
-
     // like video
     public void likeVideo(long videoId, User user) throws SQLException {
         // if the user has already liked this video -> remove like
@@ -249,39 +179,8 @@ public class VideoDAO {
         }
     }
 
-    // get all videos uploaded by user
-    public List<Video> getAllVideosByOwner(User user) throws SQLException, NotFoundException {
-        List<Video> videosByOwner = new ArrayList<>();
-        String sql = "SELECT id, title, description, video_url, date_uploaded, owner_id, category_id, " +
-                "thumbnail_url, status FROM videos WHERE owner_id = ?;";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, user.getId());
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                String videoTitle = resultSet.getString("title");
-                String description = resultSet.getString("description");
-                String url = resultSet.getString("video_url");
-                LocalDateTime dateUploaded = resultSet.getTimestamp("date_uploaded").toLocalDateTime();
-                long ownerId = resultSet.getLong("owner_id");
-                int categoryId = resultSet.getInt("category_id");
-                String thumbnailUrl = resultSet.getString("thumbnail_url");
-                String  status = resultSet.getString("status");
-
-                Video video = new Video(id, videoTitle, description, url, thumbnailUrl, dateUploaded, ownerId,
-                        categoryId, status);
-                videosByOwner.add(video);
-            }
-            if (videosByOwner.isEmpty()) {
-                throw new NotFoundException("User " + user.getUsername() + " has no uploaded videos!");
-            }
-            return videosByOwner;
-        }
-    }
-
     // get all videos sorted by time uploaded and number likes
-    public List<Video> getAllByDateUploadedAndNumberLikes() throws NotFoundException, SQLException {
+    public List<Video> getAllByDateUploadedAndNumberLikes() throws SQLException {
         List<Video> videos = new ArrayList<>();
         String sql = "SELECT v.*, COUNT(*) AS total_likes " +
                 "FROM users_liked_videos AS l " +
@@ -304,10 +203,8 @@ public class VideoDAO {
                 );
                 videos.add(video);
             }
-            if (videos.isEmpty()) {
-                throw new NotFoundException("No videos uploaded!");
-            }
-            return Collections.unmodifiableList(videos);
+
+            return videos;
         }
     }
 
