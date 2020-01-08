@@ -56,7 +56,7 @@ public class PlaylistDAO {
             }
     }
 
-    @SneakyThrows
+   /* @SneakyThrows
     public void addVideoToPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
@@ -64,7 +64,7 @@ public class PlaylistDAO {
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
-    }
+    }*/
 
     @SneakyThrows
     public void removeVideoFromPlaylist(Video video, Playlist playlist){

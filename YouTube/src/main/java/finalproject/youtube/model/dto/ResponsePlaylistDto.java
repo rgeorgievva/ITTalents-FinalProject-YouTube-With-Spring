@@ -20,8 +20,6 @@ public class ResponsePlaylistDto {
     private LocalDateTime dateCreated;
     private List<Video> videos;
 
-
-
     public ResponsePlaylistDto(Playlist playlist) {
         this.setDateCreated(playlist.getDateCreated());
         this.setOwnerUsername(playlist.getOwner().getUsername());
