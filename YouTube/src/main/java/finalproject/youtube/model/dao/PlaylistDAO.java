@@ -118,6 +118,7 @@ public class PlaylistDAO {
                     resultSet.getInt("category_id"),
                     resultSet.getString("status")
             );
+
             videos.add(video);
         }
         return Collections.unmodifiableList(videos);
