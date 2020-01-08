@@ -13,6 +13,7 @@ import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.Uploader;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class VideoController extends BaseController {
@@ -33,7 +35,7 @@ public class VideoController extends BaseController {
     VideoDAO videoDAO;
 
     @Autowired
-    UserDAO userDAO;
+    UserRepository userRepository;
 
     @Autowired
     AmazonClient amazonClient;
@@ -160,16 +162,4 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>("Successfully disliked video!", HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/by/user/{userId}")
-    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") int userId)
-            throws NotFoundException, SQLException {
-        User user = userDAO.getById(userId);
-        List<VideoDto> videos = new ArrayList<>();
-
-        for (Video video : videoDAO.getAllVideosByOwner(user)) {
-            videos.add(video.toVideoDto());
-        }
-
-        return new ResponseEntity<>(videos, HttpStatus.OK);
-    }
 }

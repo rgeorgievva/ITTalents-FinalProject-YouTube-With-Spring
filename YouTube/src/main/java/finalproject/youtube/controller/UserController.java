@@ -6,21 +6,22 @@ import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
-import finalproject.youtube.model.dto.LoginUserDto;
-import finalproject.youtube.model.dto.NoPasswordUserDto;
-import finalproject.youtube.model.dto.RegisterUserDto;
+import finalproject.youtube.model.dto.*;
 import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.UserRepository;
+import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserController extends BaseController {
@@ -31,14 +32,31 @@ public class UserController extends BaseController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    VideoRepository videoRepository;
+
+    //check if the given email is unique
+    private boolean isDuplicateEmail(String email) {
+        User user = userRepository.getByEmail(email);
+        if (user != null) {
+            return true;
+        }
+
+        return false;
+    }
+
     @PostMapping(value = "users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws BadRequestException, SQLException {
 
         Validator.validateRegisterDto(registerUser);
 
+        if (isDuplicateEmail(registerUser.getEmail())) {
+            throw new BadRequestException("There is already an account with this email.");
+        }
+
         User user = User.registerDtoToUser(registerUser);
         String encodedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-        System.out.println("Encoded password: " + encodedPassword);
+
         user.setPassword(encodedPassword);
         user.setId(userDAO.registerUser(user));
 
@@ -50,8 +68,7 @@ public class UserController extends BaseController {
             throws BadRequestException {
 
         User user = userRepository.getByEmail(loginUser.getEmail());
-        if (user == null) {
-            System.out.println("User is null");
+        if (user == null || loginUser.getPassword() == null) {
             throw new BadRequestException("Invalid email or password!");
         }
 
@@ -71,27 +88,34 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);
     }
 
-    @PutMapping(value = "users/profile/edit")
-    public ResponseEntity<User> editUserProfile(HttpSession session, @RequestBody User user)
-            throws AuthorizationException, SQLException {
+    @PutMapping(value = "/users/password")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto passwordDto, HttpSession session)
+            throws AuthorizationException, BadRequestException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
-        long loggedUserId = SessionManager.getLoggedUser(session).getId();
-        user.setId(loggedUserId);
-        userDAO.editProfile(user);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        User user = SessionManager.getLoggedUser(session);
+        Validator.validateChangePasswordInformation(passwordDto, user);
+        user.setPassword(BCrypt.hashpw(passwordDto.getNewPassword(), BCrypt.gensalt()));
+        userRepository.save(user);
+
+        return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
     @GetMapping(value = "users/{username}")
-    public List<NoPasswordUserDto> getByUsername(@PathVariable("username") String username) throws NotFoundException, SQLException {
-        List<NoPasswordUserDto> users = userDAO.findByUsername(username);
+    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) throws NotFoundException, SQLException {
+        List<User> users = userRepository.getAllByUsername(username);
         if (users.isEmpty()) {
             throw new NotFoundException("No users with username " + username + " found!");
         }
 
-        return users;
+        List<NoPasswordUserDto> usersWithoutPass = new ArrayList<>();
+        for (User user : users) {
+            usersWithoutPass.add(user.toNoPasswordUserDto());
+        }
+
+        return new ResponseEntity<>(usersWithoutPass, HttpStatus.OK);
     }
 
     @PostMapping(value = "users/subscribe/{id}")
@@ -118,6 +142,29 @@ public class UserController extends BaseController {
         userDAO.unsubscribeFromUser(subscriber, unsubscribeFromId);
 
         return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);
+    }
+
+
+    @GetMapping(value = "users/{userId}/videos")
+    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId)
+            throws NotFoundException {
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User not found!");
+        }
+
+        List<VideoDto> videos = new ArrayList<>();
+
+        for (Video video : videoRepository.getAllByOwnerId(userId)) {
+            videos.add(video.toVideoDto());
+        }
+
+        if (videos.isEmpty()) {
+            throw new NotFoundException("User has no videos!");
+        }
+
+        return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
 }

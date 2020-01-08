@@ -1,8 +1,11 @@
 package finalproject.youtube;
 
 import finalproject.youtube.exceptions.BadRequestException;
+import finalproject.youtube.model.dto.ChangePasswordDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.entity.Category;
+import finalproject.youtube.model.entity.User;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,6 +71,34 @@ public class Validator {
         }
 
         if (!validateConfirmPassword(password, confirmPassword)) {
+            throw new BadRequestException("Confirm password should match password!");
+        }
+    }
+
+    public static void validateChangePasswordInformation(ChangePasswordDto passwordDto, User user) throws BadRequestException {
+        String oldPassword = passwordDto.getOldPassword();
+        String newPassword = passwordDto.getNewPassword();
+        String confirmPassword = passwordDto.getConfirmPassword();
+
+        if (oldPassword == null || newPassword == null || confirmPassword == null) {
+            throw new BadRequestException("Missing field!");
+        }
+
+        if (!BCrypt.checkpw(passwordDto.getOldPassword(), user.getPassword())) {
+            throw new BadRequestException("Wrong old password");
+        }
+
+        if (!validatePasswordStrength(newPassword)) {
+            throw new BadRequestException("Password should contain at least 8 chars including at least 1 digit, " +
+                    "1 upper case, 1 lower case letter, 1 special char (@, #, %, $, ^)  and should NOT contain " +
+                    "spaces or tabs!");
+        }
+
+        if (validateConfirmPassword(oldPassword, newPassword)) {
+            throw new BadRequestException("New password must be different from the old one!");
+        }
+
+        if (!validateConfirmPassword(newPassword, confirmPassword)) {
             throw new BadRequestException("Confirm password should match password!");
         }
     }
