@@ -28,16 +28,14 @@ public class Comment {
     private long videoId;
     @Column(name = "owner_id")
     private long ownerId;
-    @Column(name = "replied_to_id")
-    private long repliedTo;
+    @ManyToOne
+    @JoinColumn(name = "replied_to_id")
+    private Comment repliedTo;
 
     public Comment(RequestCommentDto requestCommentDto){
         this.setText(requestCommentDto.getText());
         this.setTimePosted(LocalDateTime.now());
         this.setVideoId(requestCommentDto.getVideoId());
-        if(requestCommentDto.getRepliedToCommentId() != null){
-            this.setRepliedTo(requestCommentDto.getRepliedToCommentId());
-        }
     }
 
 }

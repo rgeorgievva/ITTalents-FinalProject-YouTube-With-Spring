@@ -49,9 +49,19 @@ public class CommentController extends BaseController{
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
         }
-        //sets up comment
+        //check if there's a parent comment and if it is valid
         Comment comment = new Comment(requestCommentDto);
+        Long parentCommentId = requestCommentDto.getRepliedToCommentId();
+        if(parentCommentId != null){
+            Optional<Comment> optionalParentComment = commentRepository.findById(parentCommentId);
+            if(!optionalParentComment.isPresent()){
+                throw new NotFoundException("Parent comment with id="+ parentCommentId +" does not exist!");
+            }
+            comment.setRepliedTo(optionalParentComment.get());
+        }
+        //sets up comment
         comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
+
         commentRepository.save(comment);
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
@@ -107,7 +117,7 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/comments/{commentId}/like")
+    @GetMapping(value = "/comments/{commentId}/like")
     public ResponseEntity<String> likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
@@ -128,7 +138,7 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/comments/{commentId}/dislike")
+    @GetMapping(value = "/comments/{commentId}/dislike")
     public ResponseEntity<String> dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
