@@ -20,12 +20,30 @@ public class VideoDAO {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos (title, description, video_url," +
+            " date_uploaded, owner_id, category_id," +
+            " thumbnail_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String LIKE_VIDEO_SQL = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
+    private static final String DISLIKE_VIDEO_SQL = "INSERT INTO users_disliked_videos (user_id, video_id) " +
+            "VALUES (?, ?);";
+    private static final String HAS_USER_LIKED_VIDEO = "SELECT user_id, video_id FROM users_liked_videos WHERE " +
+            "user_id = ? AND video_id = ?;";
+    private static final String HAS_USER_DISLIKED_VIDEO = "INSERT INTO users_disliked_videos (user_id, video_id) " +
+            "VALUES (?, ?);";
+    private static final String REMOVE_LIKE_SQL = "DELETE FROM users_liked_videos " +
+            "WHERE user_id = ? AND video_id = ?;";
+    private static final String REMOVE_DISLIKE_SQL = "DELETE FROM users_disliked_videos" +
+            " WHERE user_id = ? AND video_id = ?;";
+    private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT v.*, COUNT(*) AS total_likes " +
+            "FROM users_liked_videos AS l " +
+            "JOIN videos AS v ON l.video_id = v.id " +
+            "GROUP BY l.video_id " +
+            "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
+
     // add video
     public int uploadVideo(Video video) throws SQLException {
-        String sql = "INSERT INTO videos (title, description, video_url, date_uploaded, owner_id, category_id," +
-                " thumbnail_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(UPLOAD_VIDEO_SQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, video.getTitle());
             statement.setString(2, video.getDescription());
             statement.setString(3, video.getVideoUrl());
@@ -59,9 +77,8 @@ public class VideoDAO {
         }
 
         // like the video
-        String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(likeVideo);
+             PreparedStatement statement = connection.prepareStatement(LIKE_VIDEO_SQL);
         ) {
             statement.setLong(1, user.getId());
             statement.setLong(2, videoId);
@@ -84,9 +101,8 @@ public class VideoDAO {
         }
 
         // dislike the video
-        String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(dislikeVideo);
+             PreparedStatement statement = connection.prepareStatement(DISLIKE_VIDEO_SQL);
         ) {
             statement.setLong(1, user.getId());
             statement.setLong(2, videoId);
@@ -95,15 +111,11 @@ public class VideoDAO {
     }
 
     private boolean hasUserLikedVideo(User user, long videoId) throws SQLException {
-        String hasUserLikedVideo = "SELECT user_id, video_id FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
-
-        return checkForReactionOfVideo(hasUserLikedVideo, user, videoId);
+        return checkForReactionOfVideo(HAS_USER_LIKED_VIDEO, user, videoId);
     }
 
     private boolean hasUserDislikedVideo(User user, long videoId) throws SQLException {
-        String hasUserDislikedVideo = "SELECT user_id, video_id FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
-
-        return checkForReactionOfVideo(hasUserDislikedVideo, user, videoId);
+        return checkForReactionOfVideo(HAS_USER_DISLIKED_VIDEO, user, videoId);
     }
 
     private boolean checkForReactionOfVideo(String sql, User user, long videoId) throws SQLException {
@@ -140,17 +152,11 @@ public class VideoDAO {
     }
 
     private void removeDislikeAndLike(User user, long videoId) throws SQLException {
-        String removeDislike = "DELETE FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
-        String likeVideo = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
-
-        executeTwoUpdatesInTransaction(removeDislike, likeVideo, user, videoId);
+        executeTwoUpdatesInTransaction(REMOVE_DISLIKE_SQL, LIKE_VIDEO_SQL, user, videoId);
     }
 
     private void removeLikeAndDislike(User user, long videoId) throws SQLException {
-        String removeLike = "DELETE FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
-        String dislikeVideo = "INSERT INTO users_disliked_videos (user_id, video_id) VALUES (?, ?);";
-
-        executeTwoUpdatesInTransaction(removeLike, dislikeVideo, user, videoId);
+        executeTwoUpdatesInTransaction(REMOVE_LIKE_SQL, DISLIKE_VIDEO_SQL, user, videoId);
     }
 
     private void executeTwoUpdatesInTransaction(String sql1, String sql2, User user, long videoId) throws SQLException {
@@ -182,13 +188,8 @@ public class VideoDAO {
     // get all videos sorted by time uploaded and number likes
     public List<Video> getAllByDateUploadedAndNumberLikes() throws SQLException {
         List<Video> videos = new ArrayList<>();
-        String sql = "SELECT v.*, COUNT(*) AS total_likes " +
-                "FROM users_liked_videos AS l " +
-                "JOIN videos AS v ON l.video_id = v.id " +
-                "GROUP BY l.video_id " +
-                "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES)) {
             ResultSet result = statement.executeQuery();
             while (result.next()) {
                 Video video = new Video(result.getLong("id"),
