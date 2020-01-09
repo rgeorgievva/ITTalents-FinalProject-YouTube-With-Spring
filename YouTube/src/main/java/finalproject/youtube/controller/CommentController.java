@@ -8,6 +8,7 @@ import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
 import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.CommentRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import lombok.SneakyThrows;
@@ -27,6 +28,8 @@ public class CommentController extends BaseController{
     CommentDAO commentDAO;
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    VideoController videoController;
 
 
     @SneakyThrows
@@ -42,26 +45,30 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/comments/")
+    @PostMapping(value = "/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
                               @RequestBody RequestCommentDto requestCommentDto){
+        //check for videoID
+        Video video = videoController.getVideo(requestCommentDto.getVideoId());
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
         }
-        //check if there's a parent comment and if it is valid
+        //get comment from dto
         Comment comment = new Comment(requestCommentDto);
-        Long parentCommentId = requestCommentDto.getRepliedToCommentId();
-        if(parentCommentId != null){
-            Optional<Comment> optionalParentComment = commentRepository.findById(parentCommentId);
+        //check if there's a parent comment and if it is valid
+        Long parentCommentId = requestCommentDto.getRepliedTo();
+        if( parentCommentId!= null) {
+            Optional <Comment> optionalParentComment =
+                    commentRepository.findById(parentCommentId);
             if(!optionalParentComment.isPresent()){
-                throw new NotFoundException("Parent comment with id="+ parentCommentId +" does not exist!");
+                throw new NotFoundException("Parent comment with id="+parentCommentId+" does not exist!");
             }
             comment.setRepliedTo(optionalParentComment.get());
         }
         //sets up comment
         comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
-
+        comment.setVideoId(video.getId());
         commentRepository.save(comment);
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }

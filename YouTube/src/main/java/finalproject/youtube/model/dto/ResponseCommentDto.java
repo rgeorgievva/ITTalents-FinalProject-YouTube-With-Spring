@@ -7,6 +7,9 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+
+//todo BIG TODO ADD LIKES AND DISLIKES
+
 @Setter
 @Getter
 public class ResponseCommentDto {
@@ -23,20 +26,12 @@ public class ResponseCommentDto {
 
     public ResponseCommentDto(Comment comment){
 
-        this.createFromComment(comment);
-        if(comment.getRepliedTo() != null){
-            this.createReply(comment);
-        }
-    }
-
-    private void createFromComment(Comment comment){
         this.setText(comment.getText());
         this.setTimePosted(comment.getTimePosted());
         this.setOwnerId(comment.getOwnerId());
         this.setVideoId(comment.getVideoId());
-    }
-
-    private void createReply(Comment comment){
-        this.setRepliedTo(comment.getRepliedTo());
+        if(comment.getRepliedTo() != null){
+            this.setRepliedTo(comment.getRepliedTo());
+        }
     }
 }

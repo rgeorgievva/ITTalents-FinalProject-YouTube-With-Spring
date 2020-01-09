@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class PlaylistController extends BaseController {
@@ -37,36 +38,38 @@ public class PlaylistController extends BaseController {
     @GetMapping(value = "/playlists/{playlist_id}")
     public ResponseEntity<ResponsePlaylistDto> getPlaylistById(@PathVariable("playlist_id") long playlistId){
         //checks for playlist existence
-        if(!playlistRepository.existsPlaylistById(playlistId)){
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
             throw new NotFoundException("Playlist with id="+playlistId+" not found!");
         }
         //return playlist with all videos in it
-        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        Playlist playlist = optionalPlaylist.get();
         List <Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         return new ResponseEntity <>( new ResponsePlaylistDto(playlist, videos), HttpStatus.OK);
     }
 
-
     @SneakyThrows
-    @GetMapping(value = "/playlists/title/{playlist_title}")
+    @GetMapping(value = "/playlists/byTitle/{playlist_title}")
     public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsByTitle(@PathVariable("playlist_title") String title){
+        Optional<List<Playlist>> optionalPlaylists = playlistRepository.findAllByTitleContaining(title);
         //checks for playlist existence
-        if(!playlistRepository.existsPlaylistByTitle(title)){
-            throw new NotFoundException("Playlists with title \""+title+"\" not found!");
+        if(!optionalPlaylists.isPresent()){
+            throw new NotFoundException("Playlists with title like "+title+" not found!");
         }
-        //return a list of playlists with all videos in them
-        List<Playlist> playlists = playlistRepository.getAllByTitle(title);
+        //return a list of playlists
+        List<Playlist> playlists = optionalPlaylists.get();
+        // get all playlists with all videos in them
         List<ResponsePlaylistDto> responseDTOs = new LinkedList <>();
+        //load response dto
         for (Playlist p: playlists) {
             List <Video> videos = playlistDAO.getAllVideosFromPlaylist(p);
             responseDTOs.add(new ResponsePlaylistDto(p,videos));
         }
-
         return new ResponseEntity <>( responseDTOs, HttpStatus.OK);
     }
 
     @SneakyThrows
-    @PostMapping(value = "/playlists/create")
+    @PostMapping(value = "/playlists")
     public ResponseEntity<ResponsePlaylistDto> createPlaylist(HttpSession session,
                                                               @RequestBody RequestPlaylistDto requestPlaylist){
         //checks for being logged in
@@ -91,25 +94,28 @@ public class PlaylistController extends BaseController {
     public ResponseEntity<ResponsePlaylistDto> addVideoToPlaylist(HttpSession session,
                                                                   @PathVariable("playlist_id") long playlistId,
                                                                   @PathVariable("video_id") long videoId){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to add videos to playlist!");
-        }
-        //check if playlist exists
-        if(!playlistRepository.existsPlaylistById(playlistId)){
+
+        //checks for playlist existence
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
             throw new NotFoundException("Playlist with id="+playlistId+" not found!");
         }
         //check if video exists
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
+        Optional<Video> optionalVideo = videoRepository.findById(videoId);
+        if(!optionalVideo.isPresent()){
+            throw new NotFoundException("Video not found!");
+        }
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to add video to playlist!");
         }
         //check if you're the owner of the playlist
-        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //check if the video is already in the playlist
-        Video video = videoRepository.getVideoById(videoId);
+        Video video = optionalVideo.get();
         if(playlistDAO.isVideoInPlaylist(video, playlist)){
             throw new BadRequestException("This video is already in this playlist!");
         }
@@ -120,22 +126,21 @@ public class PlaylistController extends BaseController {
 
         return new ResponseEntity <>(responsePlaylistDto, HttpStatus.OK);
     }
-
-
     @SneakyThrows
-    @DeleteMapping(value = "/playlists/{playlist_id}/delete")
+    @DeleteMapping(value = "/playlists/{playlist_id}")
     public ResponseEntity<String> deletePlaylist(HttpSession session,
                                                  @PathVariable("playlist_id") long playlistId){
+        //checks for playlist existence
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
+            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
+        }
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to delete playlist!");
         }
-        //check if playlist exists
-        if(!playlistRepository.existsPlaylistById(playlistId)){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
         //check if you're the owner of the playlist
-        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
@@ -145,32 +150,32 @@ public class PlaylistController extends BaseController {
         return new ResponseEntity <>("Playlist with id="+playlistId+" deleted!", HttpStatus.OK);
     }
 
-
-
     @SneakyThrows
     @DeleteMapping("/playlists/{playlist_id}/remove/{video_id}")
     public ResponseEntity<ResponsePlaylistDto> removeVideoFromPlaylist(HttpSession session,
                                                            @PathVariable("playlist_id") long playlistId,
                                                            @PathVariable("video_id") long videoId){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to remove videos from playlist!");
-        }
-        //check if playlist exists
-        if(!playlistRepository.existsPlaylistById(playlistId)){
+        //checks for playlist existence
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
             throw new NotFoundException("Playlist with id="+playlistId+" not found!");
         }
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to remove a video from the playlist!");
+        }
         //check if video exists
-        if(!videoRepository.existsVideoById(videoId)){
+        Optional<Video> optionalVideo = videoRepository.findById(videoId);
+        if(!optionalVideo.isPresent()){
             throw new NotFoundException("Video with id "+videoId+" not found!");
         }
         //check if you're the owner of the playlist
-        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //check if the video is already in the playlist
-        Video video = videoRepository.getVideoById(videoId);
+        Video video = optionalVideo.get();
         if(!playlistDAO.isVideoInPlaylist(video, playlist)){
             throw new BadRequestException("The video is not in this playlist!");
         }
@@ -178,33 +183,32 @@ public class PlaylistController extends BaseController {
         playlistDAO.removeVideoFromPlaylist(video, playlist);
         List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
 
-        return new ResponseEntity(new ResponsePlaylistDto(playlist,videos),HttpStatus.OK);
+        return new ResponseEntity <>(new ResponsePlaylistDto(playlist,videos),HttpStatus.OK);
     }
 
-
     @SneakyThrows
-    @PostMapping(value = "/playlists/{playlist_id}/rename/{new_title}")
-    public ResponseEntity<String> editPlaylistName(HttpSession session,
-                                                                @PathVariable("playlist_id") long playlistId,
-                                                                @PathVariable("new_title") String title){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to edit playlist name!");
-        }
-        //check if playlist exists
-        if(!playlistRepository.existsPlaylistById(playlistId)){
+    @PutMapping(value = "/playlists/{playlist_id}")
+    public ResponseEntity <String> editPlaylistName(HttpSession session,
+                                                    @PathVariable("playlist_id") long playlistId,
+                                                    @RequestBody RequestPlaylistDto playlistDto){
+        //checks for playlist existence
+        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
             throw new NotFoundException("Playlist with id="+playlistId+" not found!");
         }
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to edit playlist!");
+        }
         //check if you're the owner of the playlist
-        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
-        //todo should i throw an exception if the name is the same?
         //change name
-        playlist.setTitle(title);
+        playlist.setTitle(playlistDto.getTitle());
         playlistRepository.save(playlist);
 
-        return new ResponseEntity("Playlist name changed successfully!", HttpStatus.OK);
+        return new ResponseEntity <>("Playlist name changed successfully!", HttpStatus.OK);
     }
 }

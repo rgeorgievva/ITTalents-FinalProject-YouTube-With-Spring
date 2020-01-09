@@ -82,7 +82,7 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(video.toVideoDto(), HttpStatus.OK);
     }
 
-    private Video getVideo(long videoId) throws NotFoundException {
+    public Video getVideo(long videoId) throws NotFoundException {
         Optional<Video> optionalVideo = videoRepository.findById(videoId);
         if (!optionalVideo.isPresent()) {
             throw new NotFoundException("Video not found!");

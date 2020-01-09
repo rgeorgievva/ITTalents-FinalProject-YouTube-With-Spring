@@ -12,5 +12,5 @@ public class RequestCommentDto {
     private String text;
     @NotNull
     private long videoId;
-    private Long repliedToCommentId;
+    private Long repliedTo;
 }
