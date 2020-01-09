@@ -2,6 +2,7 @@ package finalproject.youtube;
 
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.ChangePasswordDto;
+import finalproject.youtube.model.dto.EditProfileDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.entity.Category;
 import finalproject.youtube.model.entity.User;
@@ -124,6 +125,19 @@ public class Validator {
 
         if (!validateConfirmPassword(newPassword, confirmPassword)) {
             throw new BadRequestException("Confirm password should match password!");
+        }
+    }
+
+    public static void validateEditProfileInformation(EditProfileDto profileDto, User user) throws BadRequestException {
+        String firstName = profileDto.getFirstName();
+        String lastName = profileDto.getLastName();
+
+        //validate if first or last name match name format
+        //and are different from current first and last name of the user
+        if (firstName != null && (!validateName(firstName) || firstName.equals(user.getFirstName())) ||
+            lastName != null  && (!validateName(lastName) || lastName.equals(user.getLastName()))) {
+            throw new BadRequestException("First name and last name should contain at least 3 chars including only " +
+                    "latin letters and be different from current first and last name.");
         }
     }
 

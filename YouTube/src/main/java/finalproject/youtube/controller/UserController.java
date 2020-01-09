@@ -88,6 +88,28 @@ public class UserController extends BaseController {
     }
 
     //TODO edit profile
+    @PutMapping(value = "/users")
+    public ResponseEntity<NoPasswordUserDto> editProfile(@RequestBody EditProfileDto profileDto, HttpSession session)
+            throws AuthorizationException, BadRequestException {
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException();
+        }
+
+        User user = SessionManager.getLoggedUser(session);
+        Validator.validateEditProfileInformation(profileDto, user);
+        String firstName = profileDto.getFirstName();
+        String lastName = profileDto.getLastName();
+        //if first or last name is null -> the user doesn't want to change it
+        if (firstName != null) {
+            user.setFirstName(firstName);
+        }
+        if (lastName != null) {
+            user.setLastName(lastName);
+        }
+        userRepository.save(user);
+
+        return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
+    }
 
     @GetMapping(value = "users/{username}")
     public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) throws NotFoundException {
