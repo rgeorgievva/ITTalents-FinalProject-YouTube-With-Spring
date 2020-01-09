@@ -1,7 +1,6 @@
 package finalproject.youtube.model.repository;
 
 import finalproject.youtube.model.entity.Playlist;
-import finalproject.youtube.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +15,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     boolean existsPlaylistByTitle(String s);
 
-    Playlist getPlaylistByTitle(String s);
+    List<Playlist> getAllByTitle(String s);
 
     boolean existsPlaylistByOwnerIdAndTitle(long ownerId, String title);
 

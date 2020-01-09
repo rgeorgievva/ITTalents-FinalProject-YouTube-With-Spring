@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.LinkedList;
 import java.util.List;
 
 @RestController
@@ -45,6 +46,25 @@ public class PlaylistController extends BaseController {
         return new ResponseEntity <>( new ResponsePlaylistDto(playlist, videos), HttpStatus.OK);
     }
 
+
+    @SneakyThrows
+    @GetMapping(value = "/playlists/title/{playlist_title}")
+    public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsByTitle(@PathVariable("playlist_title") String title){
+        //checks for playlist existence
+        if(!playlistRepository.existsPlaylistByTitle(title)){
+            throw new NotFoundException("Playlists with title \""+title+"\" not found!");
+        }
+        //return a list of playlists with all videos in them
+        List<Playlist> playlists = playlistRepository.getAllByTitle(title);
+        List<ResponsePlaylistDto> responseDTOs = new LinkedList <>();
+        for (Playlist p: playlists) {
+            List <Video> videos = playlistDAO.getAllVideosFromPlaylist(p);
+            responseDTOs.add(new ResponsePlaylistDto(p,videos));
+        }
+
+        return new ResponseEntity <>( responseDTOs, HttpStatus.OK);
+    }
+
     @SneakyThrows
     @PostMapping(value = "/playlists/create")
     public ResponseEntity<ResponsePlaylistDto> createPlaylist(HttpSession session,
@@ -66,7 +86,6 @@ public class PlaylistController extends BaseController {
         return new ResponseEntity<>(new ResponsePlaylistDto(playlist),HttpStatus.OK);
     }
 
-    //todo test
     @SneakyThrows
     @PostMapping(value = "/playlists/{playlist_id}/add/{video_id}")
     public ResponseEntity<ResponsePlaylistDto> addVideoToPlaylist(HttpSession session,
@@ -90,13 +109,13 @@ public class PlaylistController extends BaseController {
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //check if the video is already in the playlist
-        List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         Video video = videoRepository.getVideoById(videoId);
-        if(videos.contains(video)){
+        if(playlistDAO.isVideoInPlaylist(video, playlist)){
             throw new BadRequestException("This video is already in this playlist!");
         }
         //add video to playlist
-        videos.add(video);
+        playlistDAO.addVideoToPlaylist(video, playlist);
+        List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         ResponsePlaylistDto responsePlaylistDto = new ResponsePlaylistDto(playlist, videos);
 
         return new ResponseEntity <>(responsePlaylistDto, HttpStatus.OK);
@@ -128,5 +147,64 @@ public class PlaylistController extends BaseController {
 
 
 
-    //todo removeVideoFromPlaylist, editPlaylistName, deletePlaylist, getPlaylistByTitle
+    @SneakyThrows
+    @DeleteMapping("/playlists/{playlist_id}/remove/{video_id}")
+    public ResponseEntity<ResponsePlaylistDto> removeVideoFromPlaylist(HttpSession session,
+                                                           @PathVariable("playlist_id") long playlistId,
+                                                           @PathVariable("video_id") long videoId){
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to remove videos from playlist!");
+        }
+        //check if playlist exists
+        if(!playlistRepository.existsPlaylistById(playlistId)){
+            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
+        }
+        //check if video exists
+        if(!videoRepository.existsVideoById(videoId)){
+            throw new NotFoundException("Video with id "+videoId+" not found!");
+        }
+        //check if you're the owner of the playlist
+        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
+            throw new AuthorizationException("You are not the owner of this playlist!");
+        }
+        //check if the video is already in the playlist
+        Video video = videoRepository.getVideoById(videoId);
+        if(!playlistDAO.isVideoInPlaylist(video, playlist)){
+            throw new BadRequestException("The video is not in this playlist!");
+        }
+        //remove video from playlist
+        playlistDAO.removeVideoFromPlaylist(video, playlist);
+        List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
+
+        return new ResponseEntity(new ResponsePlaylistDto(playlist,videos),HttpStatus.OK);
+    }
+
+
+    @SneakyThrows
+    @PostMapping(value = "/playlists/{playlist_id}/rename/{new_title}")
+    public ResponseEntity<String> editPlaylistName(HttpSession session,
+                                                                @PathVariable("playlist_id") long playlistId,
+                                                                @PathVariable("new_title") String title){
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to edit playlist name!");
+        }
+        //check if playlist exists
+        if(!playlistRepository.existsPlaylistById(playlistId)){
+            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
+        }
+        //check if you're the owner of the playlist
+        Playlist playlist = playlistRepository.getPlaylistById(playlistId);
+        if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
+            throw new AuthorizationException("You are not the owner of this playlist!");
+        }
+        //todo should i throw an exception if the name is the same?
+        //change name
+        playlist.setTitle(title);
+        playlistRepository.save(playlist);
+
+        return new ResponseEntity("Playlist name changed successfully!", HttpStatus.OK);
+    }
 }

@@ -1,8 +1,6 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.entity.Playlist;
-import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.Video;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -23,40 +20,7 @@ public class PlaylistDAO {
     private PlaylistDAO() {
     }
 
-    @SneakyThrows
-    public void editPlaylist(Playlist playlist, String title){
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "update youtube.playlists set title = ? where id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            playlist.setTitle(title);
-            preparedStatement.setString(1, playlist.getTitle());
-            preparedStatement.setLong(2, playlist.getId());
-            preparedStatement.executeUpdate();
-
-    }
-
-    @SneakyThrows
-    public void deletePlaylist(Playlist playlist){
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String deletePlaylistSql = "delete from youtube.playlists where id = ?;";
-            try(PreparedStatement deletePlaylist = connection.prepareStatement(deletePlaylistSql)){
-
-                connection.setAutoCommit(false);
-
-                deletePlaylist.setLong(1, playlist.getId());
-                deletePlaylist.executeUpdate();
-
-                connection.commit();
-            }catch (SQLException e) {
-                connection.rollback();
-                throw  new BadRequestException("Something went wrong with deleting the playlist");
-            }
-            finally {
-                connection.setAutoCommit(true);
-            }
-    }
-
-   /* @SneakyThrows
+   @SneakyThrows
     public void addVideoToPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
             String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
@@ -64,7 +28,7 @@ public class PlaylistDAO {
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
-    }*/
+    }
 
     @SneakyThrows
     public void removeVideoFromPlaylist(Video video, Playlist playlist){
@@ -102,24 +66,35 @@ public class PlaylistDAO {
 
             videos.add(video);
         }
-        return Collections.unmodifiableList(videos);
+        return videos;
     }
 
-   /* @SneakyThrows
-    public List<Playlist> getPlaylistsByTitle(String title){
-            List<Playlist> playlists = new ArrayList <>();
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "select * from youtube.playlists where title = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, title);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()){
-                Playlist playlist = new Playlist(resultSet.getInt("id"),
-                        resultSet.getString("title"),
-                        resultSet.getTimestamp("date_created").toLocalDateTime(),
-                        resultSet.getInt("owner_id"));
-                playlists.add(playlist);
+    @SneakyThrows
+    public boolean isVideoInPlaylist(Video video, Playlist playlist) {
+        String sql = "select * from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setLong(1, video.getId());
+                preparedStatement.setLong(2, playlist.getId());
+                ResultSet result = preparedStatement.executeQuery();
+                while (result.next()) {
+                   /* Video videoFromPlaylist = new Video(result.getLong("id"),
+                            result.getString("title"),
+                            result.getString("description"),
+                            result.getString("video_url"),
+                            result.getString("thumbnail_url"),
+                            result.getTimestamp("date_uploaded").toLocalDateTime(),
+                            result.getLong("owner_id"),
+                            result.getLong("category_id"),
+                            result.getString("status")
+                    );*/
+                   long currentVideoInPlaylistID = result.getLong("video_id");
+                    if(currentVideoInPlaylistID == video.getId()){
+                        return true;
+                    }
+                }
+                return false;
             }
-            return Collections.unmodifiableList(playlists);
-    }*/
+        }
+    }
 }
