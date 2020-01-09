@@ -10,4 +10,7 @@ import javax.validation.constraints.NotNull;
 public class RequestCommentDto {
     @NotNull
     private String text;
+    @NotNull
+    private long videoId;
+    private Long repliedToCommentId;
 }

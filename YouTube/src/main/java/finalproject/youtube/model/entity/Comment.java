@@ -28,30 +28,16 @@ public class Comment {
     private long videoId;
     @Column(name = "owner_id")
     private long ownerId;
-    @ManyToOne
-    @JoinColumn(name = "replied_to_id")
-    private Comment repliedTo;
+    @Column(name = "replied_to_id")
+    private long repliedTo;
 
-    public Comment(RequestCommentDto requestCommentDto, long requestVideoId){
-        this.createCommentFromRequestDto(requestCommentDto, requestVideoId);
-    }
-
-    public Comment(RequestCommentDto requestCommentDto, long requestVideoId, Comment requestRepliedTo){
-            this.createReplyFromRequestDto(requestCommentDto, requestVideoId, requestRepliedTo);
-    }
-
-    private void createCommentFromRequestDto(RequestCommentDto requestCommentDto,
-                                            long requestVideoId){
+    public Comment(RequestCommentDto requestCommentDto){
         this.setText(requestCommentDto.getText());
         this.setTimePosted(LocalDateTime.now());
-        this.setVideoId(requestVideoId);
-    }
-
-    private void createReplyFromRequestDto(RequestCommentDto requestCommentDto,
-                                          long requestVideoId,
-                                          Comment requestRepliedTo){
-        this.createCommentFromRequestDto(requestCommentDto, requestVideoId);
-        this.setRepliedTo(requestRepliedTo);
+        this.setVideoId(requestCommentDto.getVideoId());
+        if(requestCommentDto.getRepliedToCommentId() != null){
+            this.setRepliedTo(requestCommentDto.getRepliedToCommentId());
+        }
     }
 
 }

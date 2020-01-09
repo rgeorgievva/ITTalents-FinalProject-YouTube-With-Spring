@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.Optional;
 
 
 @RestController
@@ -26,18 +27,11 @@ public class CommentController extends BaseController{
     CommentDAO commentDAO;
     @Autowired
     CommentRepository commentRepository;
-    @Autowired
-    VideoRepository videoRepository;
 
 
     @SneakyThrows
-    @GetMapping(value = "/{video_id}/comments/{comment_id}")
-    public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("video_id") long videoId,
-                                                              @PathVariable("comment_id") long commentId){
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
+    @GetMapping(value = "/comments/{comment_id}")
+    public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("comment_id") long commentId){
         //gets comment
         if(!commentRepository.existsCommentById(commentId)){
             throw new NotFoundException("Comment with id="+commentId+" not found!");
@@ -47,77 +41,40 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/{video_id}/comments/submit")
+    @PostMapping(value = "/comments/")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
-                              @RequestBody RequestCommentDto requestCommentDto,
-                              @PathVariable("video_id") long videoId) {
+                              @RequestBody RequestCommentDto requestCommentDto){
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
         }
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
         //sets up comment
-        Comment comment = new Comment(requestCommentDto, videoId);
+        Comment comment = new Comment(requestCommentDto);
         comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
         commentRepository.save(comment);
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
     @SneakyThrows
-    @PostMapping(value = "/{video_id}/comments/{parent_comment_id}/reply")
-    public ResponseEntity<ResponseCommentDto> submitReply(HttpSession session,
-                            @RequestBody RequestCommentDto requestReplyDto,
-                            @PathVariable("parent_comment_id") long parentCommentId,
-                            @PathVariable("video_id") long videoId){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to post a reply to comment!");
-        }
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
-        //check if parent comment exists
-        if(!commentRepository.existsCommentById(parentCommentId)){
-            throw new NotFoundException("Parent comment with id "+parentCommentId+" not found");
-        }
-        //sets up reply
-        Comment parentComment =  commentRepository.getCommentById(parentCommentId);
-        Comment comment = new Comment(requestReplyDto, videoId, parentComment);
-        comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
-        commentRepository.save(comment);
-        return new ResponseEntity <>(new ResponseCommentDto(comment), HttpStatus.OK);
-
-    }
-
-    @SneakyThrows
-    @PostMapping(value = "/{videoId}/comments/{commentId}/edit")
+    @PutMapping(value = "/comments/{commentId}")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
                             @RequestBody RequestCommentDto requestCommentDto,
-                            @PathVariable("videoId") long videoId,
                             @PathVariable("commentId") long commentId){
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        //check for comment availability
+        if(!optionalComment.isPresent()){
+            throw new NotFoundException("Comment with id "+commentId+" not found!");
+        }
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to edit comment!");
         }
-        //checks for video availability
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
-        //check for comment availability
-        if(!commentRepository.existsCommentById(commentId)){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = commentRepository.getCommentById(commentId);
+        Comment comment = optionalComment.get();
         //check for user authorization
         if(comment.getOwnerId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this comment to edit it");
         }
-        //changes text
+        //edits text
         comment.setText(requestCommentDto.getText());
         commentRepository.save(comment);
 
@@ -125,23 +82,19 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @DeleteMapping(value = "/{videoId}/comments/{commentId}/delete")
+    @DeleteMapping(value = "/comments/{commentId}")
     public ResponseEntity<String> deleteComment(HttpSession session,
-                              @PathVariable("videoId") long videoId,
                               @PathVariable("commentId") long commentId){
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        //check for comment availability
+        if(!optionalComment.isPresent()){
+            throw new NotFoundException("Comment with id "+commentId+" not found!");
+        }
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to delete comment!");
         }
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
-        //check for comment availability
-        if(!commentRepository.existsCommentById(commentId)){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = commentRepository.getCommentById(commentId);
+        Comment comment = optionalComment.get();
         //check for user authorization
         if(comment.getOwnerId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this comment to delete it");
@@ -153,24 +106,20 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/{videoId}/comments/{commentId}/like")
+    @PostMapping(value = "/comments/{commentId}/like")
     public ResponseEntity<String> likeComment(HttpSession session,
-                            @PathVariable("videoId") long videoId,
                             @PathVariable("commentId") long commentId){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to like a comment!");
-        }
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
-        if(!commentRepository.existsCommentById(commentId)){
+        if(!optionalComment.isPresent()){
             throw new NotFoundException("Comment with id "+commentId+" not found!");
         }
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to like comment!");
+        }
+        Comment comment = optionalComment.get();
         //like comment
-        Comment comment = commentRepository.getCommentById(commentId);
         User currentUser = SessionManager.getLoggedUser(session);
         String message = commentDAO.likeComment(currentUser, comment);
 
@@ -178,24 +127,20 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/{videoId}/comments/{commentId}/dislike")
+    @PostMapping(value = "/comments/{commentId}/dislike")
     public ResponseEntity<String> dislikeComment(HttpSession session,
-                            @PathVariable("videoId") long videoId,
                             @PathVariable("commentId") long commentId){
-        //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to dislike a comment!");
-        }
-        //checks for video availability
-        if(!videoRepository.existsVideoById(videoId)){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
-        if(!commentRepository.existsCommentById(commentId)){
+        if(!optionalComment.isPresent()){
             throw new NotFoundException("Comment with id "+commentId+" not found!");
         }
+        //checks for being logged in
+        if (!SessionManager.validateLogged(session)) {
+            throw new AuthorizationException("Please login to dislike comment!");
+        }
+        Comment comment = optionalComment.get();
         //dislike comment
-        Comment comment = commentRepository.getCommentById(commentId);
         User currentUser = SessionManager.getLoggedUser(session);
         String message = commentDAO.dislikeComment(currentUser, comment);
 
