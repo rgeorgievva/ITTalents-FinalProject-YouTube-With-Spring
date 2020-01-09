@@ -33,10 +33,11 @@ public class CommentController extends BaseController{
     @GetMapping(value = "/comments/{comment_id}")
     public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("comment_id") long commentId){
         //gets comment
-        if(!commentRepository.existsCommentById(commentId)){
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if(!optionalComment.isPresent()){
             throw new NotFoundException("Comment with id="+commentId+" not found!");
         }
-        Comment comment = commentRepository.getCommentById(commentId);
+        Comment comment = optionalComment.get();
         return new ResponseEntity(new ResponseCommentDto(comment),HttpStatus.OK) ;
     }
 
