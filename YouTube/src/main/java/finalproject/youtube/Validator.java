@@ -18,6 +18,8 @@ public class Validator {
             Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$");
     private static final Pattern VALID_USERNAME_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._-]{3,}$");
+    private static final Pattern VALID_NAME_FORMAT =
+            Pattern.compile("^[a-zA-Z]{3,}$");
     private static final Pattern VALID_VIDEO_TITLE_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._ -]{5,}$");
 
@@ -43,6 +45,11 @@ public class Validator {
         return matcher.find();
     }
 
+    private static boolean validateName(String name) {
+        Matcher matcher = VALID_NAME_FORMAT.matcher(name);
+        return matcher.find();
+    }
+
     private static boolean validateVideoTitle(String title) {
         Matcher matcher = VALID_VIDEO_TITLE_FORMAT.matcher(title);
         return matcher.find();
@@ -51,9 +58,26 @@ public class Validator {
 
     public static void validateRegisterDto(RegisterUserDto registerUserDto) throws BadRequestException {
         String username = registerUserDto.getUsername();
+        String firstName = registerUserDto.getFirstName();
+        String lastName = registerUserDto.getLastName();
         String email = registerUserDto.getEmail();
         String password = registerUserDto.getPassword();
         String confirmPassword = registerUserDto.getConfirmPassword();
+
+        if (username == null ||
+            email == null ||
+            password == null ||
+            confirmPassword == null ||
+            firstName == null ||
+            lastName == null
+        )    {
+            throw new BadRequestException("Username,first name, last name, email, password and confirm password are required fields!");
+        }
+
+        if (!validateName(firstName) || !validateName(lastName)) {
+            throw new BadRequestException("First name and last name should contain at least 3 chars including only " +
+                    "latin letters");
+        }
 
         if (!validateUsername(username)) {
             throw new BadRequestException("Username should be at least 3 chars and should contain only " +

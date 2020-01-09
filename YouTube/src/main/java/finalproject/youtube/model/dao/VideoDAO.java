@@ -1,7 +1,5 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.exceptions.NotFoundException;
-import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +9,12 @@ import org.springframework.stereotype.Component;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
 public class VideoDAO {
+
+    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -36,12 +35,15 @@ public class VideoDAO {
             " WHERE user_id = ? AND video_id = ?;";
     private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT v.*, COUNT(*) AS total_likes " +
             "FROM users_liked_videos AS l " +
-            "JOIN videos AS v ON l.video_id = v.id " +
-            "GROUP BY l.video_id " +
-            "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC;";
+            "RIGHT JOIN videos AS v ON l.video_id = v.id " +
+            "WHERE v.status='UPLOADED' " +
+            "GROUP BY v.id " +
+            "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC " +
+            "LIMIT ? " +
+            "OFFSET ?;";
 
     // add video
-    public int uploadVideo(Video video) throws SQLException {
+    public long uploadVideo(Video video) throws SQLException {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(UPLOAD_VIDEO_SQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, video.getTitle());
@@ -56,9 +58,9 @@ public class VideoDAO {
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             generatedKeys.next();
-            int videoId = generatedKeys.getInt(1);
+            video.setId(generatedKeys.getInt(1));
 
-            return videoId;
+            return video.getId();
         }
     }
 
@@ -186,10 +188,12 @@ public class VideoDAO {
     }
 
     // get all videos sorted by time uploaded and number likes
-    public List<Video> getAllByDateUploadedAndNumberLikes() throws SQLException {
+    public List<Video> getAllByDateUploadedAndNumberLikes(int pageNumber) throws SQLException {
         List<Video> videos = new ArrayList<>();
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES)) {
+            statement.setInt(1, NUMBER_VIDEOS_PER_PAGE);
+            statement.setInt(2, pageNumber*NUMBER_VIDEOS_PER_PAGE);
             ResultSet result = statement.executeQuery();
             while (result.next()) {
                 Video video = new Video(result.getLong("id"),

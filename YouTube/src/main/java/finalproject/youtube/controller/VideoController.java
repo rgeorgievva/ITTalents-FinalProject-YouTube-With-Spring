@@ -6,7 +6,6 @@ import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
-import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.VideoDto;
 import finalproject.youtube.model.entity.Status;
@@ -16,6 +15,7 @@ import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +30,8 @@ import java.util.Optional;
 
 @RestController
 public class VideoController extends BaseController {
+
+    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
 
     @Autowired
     VideoDAO videoDAO;
@@ -65,12 +67,9 @@ public class VideoController extends BaseController {
         video.setStatus(Status.PENDING.toString());
         video.setVideoUrl("");
         video.setThumbnailUrl("");
-
         User owner = SessionManager.getLoggedUser(session);
         video.setOwnerId(owner.getId());
-
-        long id = videoDAO.uploadVideo(video);
-        video.setId(id);
+        videoDAO.uploadVideo(video);
 
         try {
             Thread uploader = new Uploader(video, amazonClient.convertMultiPartToFile(multipartFile),
@@ -85,32 +84,33 @@ public class VideoController extends BaseController {
 
     private Video getVideo(long videoId) throws NotFoundException {
         Optional<Video> optionalVideo = videoRepository.findById(videoId);
-
         if (!optionalVideo.isPresent()) {
             throw new NotFoundException("Video not found!");
         }
 
-        return optionalVideo.get();
+        Video video = optionalVideo.get();
+        String status = video.getStatus();
+        if (status == null || !status.equals(Status.UPLOADED.toString())) {
+            throw new NotFoundException("Video not found!");
+        }
+
+        return video;
     }
 
     @DeleteMapping(value = "videos/delete/{id}")
     public ResponseEntity<Video> deleteVideo(@PathVariable("id") long videoId, HttpSession session)
             throws AuthorizationException, NotFoundException {
-
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
 
         User owner = SessionManager.getLoggedUser(session);
-
         Video video  = getVideo(videoId);
 
         if (video.getOwnerId() != owner.getId()) {
             throw new AuthorizationException("Unauthorized");
         }
-
         videoRepository.deleteById(videoId);
-
         amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
 
@@ -125,18 +125,21 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
-    @GetMapping(value = "videos/title/{title}")
-    public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title)
+    @GetMapping(value = "videos/title/{title}/{page}")
+    public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title,
+                                                           @PathVariable("page") int page)
             throws NotFoundException {
-        List<Video> videos = videoRepository.getAllByTitle(title);
+        List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Status.UPLOADED.toString(),
+                PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
 
         if (videos.isEmpty()) {
-            throw new NotFoundException("No videos with title " + title + " found");
+            throw new NotFoundException("No videos found!");
         }
 
-        List<VideoDto> videoDtos =  new ArrayList<>();
+        List<VideoDto> videoDtos = new ArrayList<>();
         for (Video video : videos) {
             videoDtos.add(video.toVideoDto());
+
         }
 
         return new ResponseEntity<>(videoDtos, HttpStatus.OK);
@@ -169,9 +172,10 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>("Successfully disliked video!", HttpStatus.OK);
     }
 
-    @GetMapping("/videos")
-    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes() throws SQLException, NotFoundException {
-        List<Video> videos = videoDAO.getAllByDateUploadedAndNumberLikes();
+    @GetMapping("/videos/page/{page}")
+    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page)
+            throws SQLException, NotFoundException {
+        List<Video> videos = videoDAO.getAllByDateUploadedAndNumberLikes(page);
 
         if (videos.isEmpty()) {
             throw new NotFoundException("Videos not found!");

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -40,6 +41,10 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
+    }
+
+    public void setPassword(String password) {
+        this.password = BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     public static User registerDtoToUser(RegisterUserDto userDto) {

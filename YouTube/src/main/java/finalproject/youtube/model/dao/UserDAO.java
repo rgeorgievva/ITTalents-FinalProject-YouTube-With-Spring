@@ -41,8 +41,9 @@ public class UserDAO {
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             generatedKeys.next();
-            long userId = generatedKeys.getLong(1);
-            return userId;
+            user.setId(generatedKeys.getLong(1));
+
+            return user.getId();
         }
     }
 

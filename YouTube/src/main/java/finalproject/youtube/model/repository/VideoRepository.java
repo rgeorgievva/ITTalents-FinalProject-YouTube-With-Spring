@@ -1,6 +1,8 @@
 package finalproject.youtube.model.repository;
 
 import finalproject.youtube.model.entity.Video;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +19,8 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     void deleteById(long id);
 
-    List<Video> getAllByTitle(String title);
+    List<Video> findAllByTitleContainingAndStatus(String title,String status, Pageable pageable);
+    List<Video> findAllByTitleContainingAndStatus(String title, String status);
+
 }
 

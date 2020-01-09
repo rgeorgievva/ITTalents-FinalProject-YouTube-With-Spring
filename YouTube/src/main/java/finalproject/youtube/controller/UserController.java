@@ -35,30 +35,14 @@ public class UserController extends BaseController {
     @Autowired
     VideoRepository videoRepository;
 
-    //check if the given email is unique
-    private boolean isDuplicateEmail(String email) {
-        User user = userRepository.getByEmail(email);
-        if (user != null) {
-            return true;
-        }
-
-        return false;
-    }
-
     @PostMapping(value = "users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws BadRequestException, SQLException {
-
         Validator.validateRegisterDto(registerUser);
-
-        if (isDuplicateEmail(registerUser.getEmail())) {
+        if (userRepository.getByEmail(registerUser.getEmail()) != null) {
             throw new BadRequestException("There is already an account with this email.");
         }
-
         User user = User.registerDtoToUser(registerUser);
-        String encodedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-
-        user.setPassword(encodedPassword);
-        user.setId(userDAO.registerUser(user));
+        userDAO.registerUser(user);
 
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.CREATED);
     }
@@ -97,17 +81,19 @@ public class UserController extends BaseController {
 
         User user = SessionManager.getLoggedUser(session);
         Validator.validateChangePasswordInformation(passwordDto, user);
-        user.setPassword(BCrypt.hashpw(passwordDto.getNewPassword(), BCrypt.gensalt()));
+        user.setPassword(passwordDto.getNewPassword());
         userRepository.save(user);
 
         return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
+    //TODO edit profile
+
     @GetMapping(value = "users/{username}")
-    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) throws NotFoundException, SQLException {
-        List<User> users = userRepository.getAllByUsername(username);
+    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) throws NotFoundException {
+        List<User> users = userRepository.findAllByUsernameContaining(username);
         if (users.isEmpty()) {
-            throw new NotFoundException("No users with username " + username + " found!");
+            throw new NotFoundException("No users found!");
         }
 
         List<NoPasswordUserDto> usersWithoutPass = new ArrayList<>();
@@ -119,7 +105,7 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "users/subscribe/{id}")
-        public ResponseEntity<String> subscribeToUser(@PathVariable("id") int subscribedToId, HttpSession session)
+        public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session)
             throws AuthorizationException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
@@ -132,7 +118,7 @@ public class UserController extends BaseController {
     }
 
     @DeleteMapping(value = "users/unsubscribe/{id}")
-    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") int unsubscribeFromId, HttpSession session)
+    public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") long unsubscribeFromId, HttpSession session)
             throws AuthorizationException, SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
