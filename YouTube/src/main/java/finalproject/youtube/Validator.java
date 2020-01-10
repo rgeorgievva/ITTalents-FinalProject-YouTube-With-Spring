@@ -4,7 +4,6 @@ import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.ChangePasswordDto;
 import finalproject.youtube.model.dto.EditProfileDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
-import finalproject.youtube.model.entity.Category;
 import finalproject.youtube.model.entity.User;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -141,14 +140,10 @@ public class Validator {
         }
     }
 
-    public static void validateVideoInformation(String title, long id) throws BadRequestException {
+    public static void validateVideoInformation(String title) throws BadRequestException {
         if (!validateVideoTitle(title)) {
             throw new BadRequestException("Video title should be at least 5 chars and should contain only " +
                     "latin letters, digits, points, dashes, underscores and spaces");
-        }
-
-        if (!Category.isValidId(id)) {
-            throw new BadRequestException("Invalid category id!");
         }
     }
 }

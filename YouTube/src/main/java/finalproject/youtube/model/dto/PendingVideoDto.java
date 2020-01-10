@@ -8,16 +8,13 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class VideoDto {
+public class PendingVideoDto {
 
     private long id;
     private String title;
     private String description;
-    private String videoUrl;
-    private String thumbnailUrl;
     private LocalDateTime dateUploaded;
     private NoPasswordUserDto owner;
     private Category category;
-    private int numberLikes;
-    private int numberDislikes;
+    private String status;
 }

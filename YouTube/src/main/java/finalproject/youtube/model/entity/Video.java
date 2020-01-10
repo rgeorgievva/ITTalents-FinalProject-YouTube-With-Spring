@@ -1,5 +1,6 @@
 package finalproject.youtube.model.entity;
 
+import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 public class Video {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "title")
     private String title;
@@ -30,10 +31,12 @@ public class Video {
     private String thumbnailUrl;
     @Column(name = "date_uploaded")
     private LocalDateTime dateUploaded;
-    @Column(name = "owner_id")
-    private long ownerId;
-    @Column(name = "category_id")
-    private long categoryId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false, updatable = false)
+    private User owner;
+    @ManyToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false, updatable = false)
+    private Category category;
     @Column(name = "status")
     private String  status;
     @Column(name = "number_likes")
@@ -49,13 +52,24 @@ public class Video {
         videoDto.setVideoUrl(this.videoUrl);
         videoDto.setThumbnailUrl(this.thumbnailUrl);
         videoDto.setDateUploaded(this.dateUploaded);
-        videoDto.setOwnerId(this.ownerId);
-        videoDto.setCategoryId(this.categoryId);
-        videoDto.setStatus(this.status);
+        videoDto.setOwner(this.owner.toNoPasswordUserDto());
+        videoDto.setCategory(this.category);
         videoDto.setNumberLikes(this.numberLikes);
         videoDto.setNumberDislikes(this.numberDislikes);
 
         return videoDto;
     }
 
+    public PendingVideoDto toPendingVideoDto() {
+        PendingVideoDto videoDto = new PendingVideoDto();
+        videoDto.setId(this.id);
+        videoDto.setTitle(this.title);
+        videoDto.setDescription(this.description);
+        videoDto.setDateUploaded(this.dateUploaded);
+        videoDto.setOwner(this.owner.toNoPasswordUserDto());
+        videoDto.setCategory(this.category);
+        videoDto.setStatus(this.getStatus());
+
+        return videoDto;
+    }
 }

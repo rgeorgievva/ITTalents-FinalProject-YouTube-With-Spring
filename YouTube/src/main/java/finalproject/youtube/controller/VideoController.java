@@ -7,11 +7,10 @@ import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.VideoDAO;
+import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
-import finalproject.youtube.model.entity.Status;
-import finalproject.youtube.model.entity.Uploader;
-import finalproject.youtube.model.entity.User;
-import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.entity.*;
+import finalproject.youtube.model.repository.CategoryRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,9 @@ public class VideoController extends BaseController {
     UserRepository userRepository;
 
     @Autowired
+    CategoryRepository categoryRepository;
+
+    @Autowired
     AmazonClient amazonClient;
 
     @Autowired
@@ -55,26 +57,28 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/upload")
-    public ResponseEntity<VideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
-                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail,
-                                                @RequestParam(value = "title") String title,
-                                                @RequestParam(value = "description") String description,
-                                                @RequestParam(value = "categoryId") int categoryId,
+    public ResponseEntity<PendingVideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
+                                                       @RequestPart(value = "thumbnail") MultipartFile thumbnail,
+                                                       @RequestParam(value = "title") String title,
+                                                       @RequestParam(value = "description") String description,
+                                                       @RequestParam(value = "categoryId") long categoryId,
 
-                                                HttpSession session) throws SQLException {
+                                                       HttpSession session) throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
-
-        Validator.validateVideoInformation(title, categoryId);
-
+        Validator.validateVideoInformation(title);
         Video video = new Video();
         setInitialValuesToVideo(video);
         video.setTitle(title);
         video.setDescription(description);
-        video.setCategoryId(categoryId);
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        if (!optionalCategory.isPresent()) {
+            throw new BadRequestException("Invalid category id!");
+        }
+        video.setCategory(optionalCategory.get());
         User owner = SessionManager.getLoggedUser(session);
-        video.setOwnerId(owner.getId());
+        video.setOwner(owner);
         videoDAO.uploadVideo(video);
 
         try {
@@ -85,7 +89,7 @@ public class VideoController extends BaseController {
             video.setStatus(Status.FAILED.toString());
         }
 
-        return new ResponseEntity<>(video.toVideoDto(), HttpStatus.OK);
+        return new ResponseEntity<>(video.toPendingVideoDto(), HttpStatus.OK);
     }
 
     public Video validateAndGetVideo(long videoId) {
@@ -111,8 +115,7 @@ public class VideoController extends BaseController {
 
         User owner = SessionManager.getLoggedUser(session);
         Video video  = validateAndGetVideo(videoId);
-
-        if (video.getOwnerId() != owner.getId()) {
+        if (video.getOwner().getId() != owner.getId()) {
             throw new AuthorizationException("Unauthorized");
         }
         videoRepository.deleteById(videoId);
@@ -177,10 +180,10 @@ public class VideoController extends BaseController {
     }
 
     @GetMapping("/videos/page/{page}")
-    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page)
-            throws SQLException {
+    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page) {
 
-        List<Video> videos = videoDAO.getAllByDateUploadedAndNumberLikes(page);
+      List<Video> videos = videoRepository.findAllByStatusOrderByNumberLikesDescDateUploadedDesc(Status.UPLOADED.toString(),
+              PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
         if (videos.isEmpty()) {
             throw new NotFoundException("Videos not found!");
         }

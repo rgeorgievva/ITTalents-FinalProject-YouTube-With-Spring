@@ -54,7 +54,6 @@ public class AmazonClient {
     public String uploadFile(File file, Video video, boolean isThumbnail) {
         String fileUrl = "";
         try {
-            System.out.println("here");
             String fileName = generateFileName(file, video, isThumbnail);
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
@@ -76,13 +75,12 @@ public class AmazonClient {
 
     private String generateFileName(File file, Video video, boolean isThumbnail) {
         String addedSting = isThumbnail ? "thumbnail-" : "";
-        return new Date().getTime() + "-" + video.getOwnerId() + "-" + addedSting +
+        return new Date().getTime() + "-" + video.getOwner().getId() + "-" + addedSting +
                 file.getName().replace(" ", "_");
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {
         s3client.putObject(new PutObjectRequest(bucketName, fileName, file));
-//                .withCannedAcl(CannedAccessControlList.PublicRead));
     }
 
     public String deleteFileFromS3Bucket(String fileUrl) {

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class VideoDAO {
@@ -60,8 +58,8 @@ public class VideoDAO {
             statement.setString(3, video.getVideoUrl());
             video.setDateUploaded(LocalDateTime.now());
             statement.setTimestamp(4, Timestamp.valueOf(video.getDateUploaded()));
-            statement.setLong(5, video.getOwnerId());
-            statement.setLong(6, video.getCategoryId());
+            statement.setLong(5, video.getOwner().getId());
+            statement.setLong(6, video.getCategory().getId());
             statement.setString(7, video.getThumbnailUrl());
             statement.setString(8, video.getStatus());
             statement.executeUpdate();
@@ -201,31 +199,31 @@ public class VideoDAO {
         }
     }
 
-    // get all videos sorted by time uploaded and number likes
-    public List<Video> getAllByDateUploadedAndNumberLikes(int pageNumber) throws SQLException {
-        List<Video> videos = new ArrayList<>();
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES)) {
-            statement.setInt(1, NUMBER_VIDEOS_PER_PAGE);
-            statement.setInt(2, pageNumber * NUMBER_VIDEOS_PER_PAGE);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                Video video = new Video(result.getLong("id"),
-                        result.getString("title"),
-                        result.getString("description"),
-                        result.getString("video_url"),
-                        result.getString("thumbnail_url"),
-                        result.getTimestamp("date_uploaded").toLocalDateTime(),
-                        result.getLong("owner_id"),
-                        result.getLong("category_id"),
-                        result.getString("status"),
-                        result.getInt("number_likes"),
-                        result.getInt("number_dislikes")
-                );
-                videos.add(video);
-            }
-
-            return videos;
-        }
-    }
+//    // get all videos sorted by time uploaded and number likes
+//    public List<Video> getAllByDateUploadedAndNumberLikes(int pageNumber) throws SQLException {
+//        List<Video> videos = new ArrayList<>();
+//        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+//             PreparedStatement statement = connection.prepareStatement(GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES)) {
+//            statement.setInt(1, NUMBER_VIDEOS_PER_PAGE);
+//            statement.setInt(2, pageNumber * NUMBER_VIDEOS_PER_PAGE);
+//            ResultSet result = statement.executeQuery();
+//            while (result.next()) {
+//                Video video = new Video(result.getLong("id"),
+//                        result.getString("title"),
+//                        result.getString("description"),
+//                        result.getString("video_url"),
+//                        result.getString("thumbnail_url"),
+//                        result.getTimestamp("date_uploaded").toLocalDateTime(),
+//                        result.getLong("owner_id"),
+//                        result.getLong("category_id"),
+//                        result.getString("status"),
+//                        result.getInt("number_likes"),
+//                        result.getInt("number_dislikes")
+//                );
+//                videos.add(video);
+//            }
+//
+//            return videos;
+//        }
+//    }
 }
