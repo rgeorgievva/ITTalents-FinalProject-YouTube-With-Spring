@@ -44,12 +44,10 @@ public class VideoDAO {
             "user_id = ? AND video_id = ?;";
     private static final String CHANGE_REACTION_TO_VIDEO = "UPDATE videos_reactions SET reaction = ? WHERE " +
             "user_id = ? AND video_id = ?;";
-    private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT v.*, COUNT(*) AS total_likes " +
-            "FROM users_liked_videos AS l " +
-            "RIGHT JOIN videos AS v ON l.video_id = v.id " +
-            "WHERE v.status='UPLOADED' " +
-            "GROUP BY v.id " +
-            "ORDER BY DATE(v.date_uploaded) DESC, total_likes DESC " +
+    private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT * FROM videos " +
+            "WHERE status='UPLOADED' " +
+            "ORDER BY number_likes DESC, " +
+            "date_uploaded DESC " +
             "LIMIT ? " +
             "OFFSET ?;";
 

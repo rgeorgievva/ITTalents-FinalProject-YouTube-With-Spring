@@ -52,6 +52,8 @@ public class Video {
         videoDto.setOwnerId(this.ownerId);
         videoDto.setCategoryId(this.categoryId);
         videoDto.setStatus(this.status);
+        videoDto.setNumberLikes(this.numberLikes);
+        videoDto.setNumberDislikes(this.numberDislikes);
 
         return videoDto;
     }

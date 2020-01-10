@@ -16,6 +16,7 @@ import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,8 +61,7 @@ public class VideoController extends BaseController {
                                                 @RequestParam(value = "description") String description,
                                                 @RequestParam(value = "categoryId") int categoryId,
 
-                                                HttpSession session) throws AuthorizationException,
-            BadRequestException, SQLException {
+                                                HttpSession session) throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -88,7 +88,7 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(video.toVideoDto(), HttpStatus.OK);
     }
 
-    public Video validateAndGetVideo(long videoId) throws NotFoundException {
+    public Video validateAndGetVideo(long videoId) {
         Optional<Video> optionalVideo = videoRepository.findById(videoId);
         if (!optionalVideo.isPresent()) {
             throw new NotFoundException("Video not found!");
@@ -104,8 +104,7 @@ public class VideoController extends BaseController {
     }
 
     @DeleteMapping(value = "videos/{id}")
-    public ResponseEntity<Video> deleteVideo(@PathVariable("id") long videoId, HttpSession session)
-            throws AuthorizationException, NotFoundException {
+    public ResponseEntity<Video> deleteVideo(@PathVariable("id") long videoId, HttpSession session) {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -125,7 +124,7 @@ public class VideoController extends BaseController {
 
 
     @GetMapping(value = "videos/{id}")
-    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") long videoId) throws NotFoundException {
+    public ResponseEntity<VideoDto> getVideoById(@PathVariable("id") long videoId) {
         VideoDto video  = validateAndGetVideo(videoId).toVideoDto();
 
         return new ResponseEntity<>(video, HttpStatus.OK);
@@ -133,8 +132,7 @@ public class VideoController extends BaseController {
 
     @GetMapping(value = "videos/title/{title}/{page}")
     public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title,
-                                                           @PathVariable("page") int page)
-            throws NotFoundException {
+                                                           @PathVariable("page") int page) {
         List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
 
@@ -153,7 +151,7 @@ public class VideoController extends BaseController {
 
     @PostMapping(value = "videos/{id}/like")
     public ResponseEntity<String> likeVideo(@PathVariable("id") long videoId, HttpSession session)
-            throws AuthorizationException, SQLException, NotFoundException {
+            throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -166,11 +164,11 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/{id}/dislike")
-    public ResponseEntity<String> dislikeVideo(@PathVariable("id") long videoId, HttpSession session) throws AuthorizationException, NotFoundException, SQLException {
+    public ResponseEntity<String> dislikeVideo(@PathVariable("id") long videoId, HttpSession session)
+            throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
-
         Video video = validateAndGetVideo(videoId);
         User currentUser = SessionManager.getLoggedUser(session);
         videoDAO.setReactionToVideo(video, currentUser.getId(), VideoDAO.DISLIKE);
@@ -180,18 +178,16 @@ public class VideoController extends BaseController {
 
     @GetMapping("/videos/page/{page}")
     public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page)
-            throws SQLException, NotFoundException {
-        List<Video> videos = videoDAO.getAllByDateUploadedAndNumberLikes(page);
+            throws SQLException {
 
+        List<Video> videos = videoDAO.getAllByDateUploadedAndNumberLikes(page);
         if (videos.isEmpty()) {
             throw new NotFoundException("Videos not found!");
         }
-
         List<VideoDto> videoDtos = new ArrayList<>();
         for (Video video : videos) {
             videoDtos.add(video.toVideoDto());
         }
-
         return new ResponseEntity<>(videoDtos, HttpStatus.OK);
     }
 }

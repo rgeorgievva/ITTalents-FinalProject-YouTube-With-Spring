@@ -19,4 +19,6 @@ public class VideoDto {
     private long ownerId;
     private long categoryId;
     private String status;
+    private int numberLikes;
+    private int numberDislikes;
 }

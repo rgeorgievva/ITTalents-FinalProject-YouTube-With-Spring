@@ -36,7 +36,7 @@ public class UserController extends BaseController {
     VideoRepository videoRepository;
 
     @PostMapping(value = "users/register")
-    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws BadRequestException, SQLException {
+    public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws SQLException {
         Validator.validateRegisterDto(registerUser);
         if (userRepository.getByEmail(registerUser.getEmail()) != null) {
             throw new BadRequestException("There is already an account with this email.");
@@ -48,18 +48,14 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "users/login")
-    public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser)
-            throws BadRequestException {
-
+    public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) {
         User user = userRepository.getByEmail(loginUser.getEmail());
         if (user == null || loginUser.getPassword() == null) {
             throw new BadRequestException("Invalid email or password!");
         }
-
         if (!BCrypt.checkpw(loginUser.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password!");
         }
-
         SessionManager.logUser(session, user);
 
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
@@ -73,12 +69,10 @@ public class UserController extends BaseController {
     }
 
     @PutMapping(value = "/users/password")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto passwordDto, HttpSession session)
-            throws AuthorizationException, BadRequestException {
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto passwordDto, HttpSession session) {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
-
         User user = SessionManager.getLoggedUser(session);
         Validator.validateChangePasswordInformation(passwordDto, user);
         user.setPassword(passwordDto.getNewPassword());
@@ -88,8 +82,7 @@ public class UserController extends BaseController {
     }
 
     @PutMapping(value = "/users")
-    public ResponseEntity<NoPasswordUserDto> editProfile(@RequestBody EditProfileDto profileDto, HttpSession session)
-            throws AuthorizationException, BadRequestException {
+    public ResponseEntity<NoPasswordUserDto> editProfile(@RequestBody EditProfileDto profileDto, HttpSession session) {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -111,7 +104,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping(value = "users/{username}")
-    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) throws NotFoundException {
+    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) {
         List<User> users = userRepository.findAllByUsernameContaining(username);
         if (users.isEmpty()) {
             throw new NotFoundException("No users found!");
@@ -127,7 +120,7 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "users/subscribe/{id}")
         public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session)
-            throws AuthorizationException, SQLException {
+            throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -140,7 +133,7 @@ public class UserController extends BaseController {
 
     @DeleteMapping(value = "users/unsubscribe/{id}")
     public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") long unsubscribeFromId, HttpSession session)
-            throws AuthorizationException, SQLException {
+            throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -153,8 +146,7 @@ public class UserController extends BaseController {
 
 
     @GetMapping(value = "users/{userId}/videos")
-    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId)
-            throws NotFoundException {
+    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
 
         if (!optionalUser.isPresent()) {
