@@ -17,12 +17,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.List;
 import java.util.Optional;
 
 
 @RestController
 public class CommentController extends BaseController{
+
+    public static final int LIKE_REACTION    = 1;
+    public static final int DISLIKE_REACTION = -1;
 
     @Autowired
     CommentDAO commentDAO;
@@ -31,8 +33,6 @@ public class CommentController extends BaseController{
     @Autowired
     VideoController videoController;
 
-
-    //todo tested
     @SneakyThrows
     @GetMapping(value = "/comments/{comment_id}")
     public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("comment_id") long commentId){
@@ -45,7 +45,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity(new ResponseCommentDto(comment),HttpStatus.OK) ;
     }
 
-    //todo tested
     @SneakyThrows
     @PostMapping(value = "/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
@@ -74,7 +73,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
-    //todo tested
     @SneakyThrows
     @PutMapping(value = "/comments/{commentId}")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
@@ -101,7 +99,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
-    //todo tested
     @SneakyThrows
     @DeleteMapping(value = "/comments/{commentId}")
     public ResponseEntity<String> deleteComment(HttpSession session,
@@ -126,10 +123,9 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
 
-    //todo test
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/like")
-    public ResponseEntity<String> likeComment(HttpSession session,
+    public ResponseEntity<ResponseCommentDto> likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
@@ -142,16 +138,17 @@ public class CommentController extends BaseController{
         }
         Comment comment = optionalComment.get();
         //like comment
-        User currentUser = SessionManager.getLoggedUser(session);
-        String message = commentDAO.likeComment(currentUser, comment);
+        long currentUser = SessionManager.getLoggedUser(session).getId();
+        commentDAO.react(currentUser, comment, LIKE_REACTION);
 
-        return new ResponseEntity <>(message, HttpStatus.OK);
+        //todo when you move to service ->call getCommentById to sout the proper number of likes on comment
+
+        return new ResponseEntity <>(new ResponseCommentDto(commentRepository.findById(commentId).get()), HttpStatus.OK);
     }
 
-    //todo test
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/dislike")
-    public ResponseEntity<String> dislikeComment(HttpSession session,
+    public ResponseEntity<ResponseCommentDto> dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
@@ -164,10 +161,12 @@ public class CommentController extends BaseController{
         }
         Comment comment = optionalComment.get();
         //dislike comment
-        User currentUser = SessionManager.getLoggedUser(session);
-        String message = commentDAO.dislikeComment(currentUser, comment);
+        long currentUser = SessionManager.getLoggedUser(session).getId();
+        commentDAO.react(currentUser, comment, DISLIKE_REACTION);
 
-        return new ResponseEntity <>(message, HttpStatus.OK);
+        //todo when you move to service ->call getCommentById to sout the proper number of dislikes on comment
+
+        return new ResponseEntity <>(new ResponseCommentDto(commentRepository.findById(commentId).get()), HttpStatus.OK);
     }
 
     //todo get all comments for video

@@ -1,135 +1,178 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.entity.Comment;
-import finalproject.youtube.model.entity.User;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 
 @Component
 public class CommentDAO {
+
+    public static final  int    DISLIKE             = -1;
+    public static final  int    LIKE                = 1;
+    private static final String HAS_IT_BEEN_REACTED =
+            "select * from comments_reactions where user_id = ? and comment_id = ?";
+    private static final String REACT_TO_COMMENT    =
+            "insert into comments_reactions (user_id, comment_id, reaction) values (?, ?, ?);";
+    private static final String ADD_LIKE            =
+            "update comments set likes = ? where id = ?;";
+    private static final String ADD_DISLIKE         =
+            "update comments set dislikes = ? where id = ?;";
+    public static final  String CHANGE_REACTION     =
+            "update comments_reactions set reaction = ? where user_id = ? and comment_id = ?;";
+    public static final  String UPDATE_REACTIONS =
+            "update comments set likes = ?, dislikes = ? where id = ?;";
+    private static final String REMOVE_REACTION   =
+            "delete from comments_reactions where user_id = ? and comment_id = ?;";
+    private static final String LIKED = "Liked!";
+    private static final String DISLIKED = "Disliked!";
+    private static final String UNLIKED = "Un-liked!";
+    private static final String UNDISLIKED = "Un-disliked!";
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
     private CommentDAO(){}
 
-    //todo fix
+    //liking and disliking a comment, based on reaction int
     @SneakyThrows
-    public String likeComment(User user, Comment comment){
-            try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-                //removes comment from liked comments
-                if (commentIsAlreadyLiked(user, comment)) {
-                    String unlike = "delete from youtube.users_liked_comments where user_id = ? and comment_id = ?";
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(unlike)) {
-                        preparedStatement.setLong(1, user.getId());
-                        preparedStatement.setLong(2, comment.getId());
-                        preparedStatement.executeUpdate();
-                    }
-                    return "Removed like!";
-                } else {
-                    //removes comment from disliked comments
-                    try {
-                        connection.setAutoCommit(false);
-                        if (commentIsAlreadyDisliked(user, comment)) {
-                            String sql = "delete from youtube.users_disliked_comments where user_id = ? and comment_id = ?";
-                            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                                preparedStatement.setLong(1, user.getId());
-                                preparedStatement.setLong(2, comment.getId());
-                                preparedStatement.executeUpdate();
-                            }
-                        }
-                        //adds comment to liked comments
-                        String like = "insert into youtube.users_liked_comments values (? , ?);";
-                        try (PreparedStatement statement = connection.prepareStatement(like)) {
-                            statement.setLong(1, user.getId());
-                            statement.setLong(2, comment.getId());
-                            statement.executeUpdate();
-                        }
-
-                        connection.commit();
-                        connection.setAutoCommit(true);
-
-                        return "Comment liked!";
-                    }
-                    catch (SQLException e){
-                        connection.rollback();
-                        throw  new SQLException("Connection rollback for liking comment!", e);
-                    }
+    public void react(long userId, Comment comment, int reaction) {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(HAS_IT_BEEN_REACTED)){
+            statement.setLong(1, userId);
+            statement.setLong(2, comment.getId());
+            ResultSet resultSet = statement.executeQuery();
+            //no reaction
+            if (!resultSet.next()) {
+                reactToComment(userId, comment, reaction);
+            }
+            else{
+                int currentReaction = resultSet.getInt("reaction");
+                if (currentReaction != reaction) {
+                    //change reaction -> delete previous and set new reaction
+                    changeReaction(userId, comment, reaction);
+                }
+                else {
+                    //remove previous reaction
+                    removeReaction(userId, comment, reaction);
                 }
             }
+        }
     }
 
-    //todo fix
+    //adding like or dislike to comment, and data for how each user reacted to comment
     @SneakyThrows
-    public String dislikeComment(User user, Comment comment) {
+    private void reactToComment(long userId, Comment comment, int reaction) {
+        String changeNumberOfReactions;
+        int reactionsCount;
+        //check if the reaction is a like
+        if (reaction == LIKE) {
+            changeNumberOfReactions = ADD_LIKE;
+            reactionsCount = comment.getLikes() + 1;
+        }
+        //the reaction is dislike
+        else{
+            changeNumberOfReactions = ADD_DISLIKE;
+            reactionsCount = comment.getDislikes() + 1;
+        }
+
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+            try (PreparedStatement reactToCommentStatement = connection.prepareStatement(REACT_TO_COMMENT);
+                 PreparedStatement changeNumberReactionsStatement = connection.prepareStatement(changeNumberOfReactions)) {
+                connection.setAutoCommit(false);
+                reactToCommentStatement.setLong(1, userId);
+                reactToCommentStatement.setLong(2, comment.getId());
+                reactToCommentStatement.setInt(3, reaction);
+                reactToCommentStatement.executeUpdate();
+
+                changeNumberReactionsStatement.setInt(1, reactionsCount);
+                changeNumberReactionsStatement.setLong(2, comment.getId());
+                changeNumberReactionsStatement.executeUpdate();
+
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+                connection.close();
+            }
+        }
+    }
+
+    //removing comment reaction if the user has already reacted this way
+    @SneakyThrows
+    private void removeReaction(long userId, Comment comment, int reaction) {
+        String sql;
+        int updatedNumber;
+        if (reaction == LIKE) {
+            sql = ADD_LIKE;
+            updatedNumber = comment.getLikes() - 1;
+        }
+        else {
+            sql = ADD_DISLIKE;
+            updatedNumber = comment.getDislikes() - 1;
+        }
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-            //removes comment from disliked comments
-            if (commentIsAlreadyDisliked(user, comment)) {
-                String sql = "delete from youtube.users_disliked_comments where user_id = ? and comment_id = ?";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    preparedStatement.setLong(1, user.getId());
-                    preparedStatement.setLong(2, comment.getId());
-                    preparedStatement.executeUpdate();
-                }
-                return "Removed dislike!";
-            } else {
-                //removes comment from liked comments
-                try {
-                    connection.setAutoCommit(false);
-                    if (commentIsAlreadyLiked(user, comment)) {
-                        String unlike = "delete from youtube.users_liked_comments where user_id = ? and comment_id = ?";
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(unlike)) {
-                            preparedStatement.setLong(1, user.getId());
-                            preparedStatement.setLong(2, comment.getId());
-                            preparedStatement.executeUpdate();
-                        }
-                    }
-                    //adds comment to disliked comments
-                    String dislike = "insert into youtube.users_disliked_comments values (? , ?);";
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(dislike)) {
-                        preparedStatement.setLong(1, user.getId());
-                        preparedStatement.setLong(2, comment.getId());
-                        preparedStatement.executeUpdate();
-                    }
+            try (PreparedStatement statement1 = connection.prepareStatement(REMOVE_REACTION);
+                 PreparedStatement statement2 = connection.prepareStatement(sql);
+            ) {
+                connection.setAutoCommit(false);
+                statement1.setLong(1, userId);
+                statement1.setLong(2, comment.getId());
+                statement1.executeUpdate();
 
-                    connection.commit();
-                    connection.setAutoCommit(true);
-                    return "Comment disliked!";
-                }
-                catch (SQLException e){
-                    connection.rollback();
-                    throw new SQLException("Connection rollback for disliking comment!", e);
-                }
+                statement2.setInt(1, updatedNumber);
+                statement2.setLong(2, comment.getId());
+                statement2.executeUpdate();
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+                connection.close();
             }
         }
     }
-    //finds if the current comment is already liked
-    private boolean commentIsAlreadyLiked(User user, Comment comment) throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "select * from youtube.users_liked_comments where user_id = ? and comment_id = ?;";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, comment.getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return resultSet.next();
-        }
-    }
 
-    //finds if the current comment is already disliked
-    private boolean commentIsAlreadyDisliked(User user, Comment comment) throws SQLException {
+    //replacing old reaction with the other reaction
+    @SneakyThrows
+    private void changeReaction(long userId, Comment comment, int reaction) {
+        int numberOfLikes;
+        int numberOfDislikes;
+        if (reaction == LIKE) {
+            numberOfLikes = comment.getLikes() + 1;
+            numberOfDislikes = comment.getDislikes() - 1;
+        }
+        else {
+            numberOfLikes = comment.getLikes() - 1;
+            numberOfDislikes = comment.getDislikes() + 1;
+        }
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "select * from youtube.users_disliked_comments where user_id = ? and comment_id = ?;";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setLong(1, user.getId());
-            preparedStatement.setLong(2, comment.getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return resultSet.next();
+        try (PreparedStatement changeReactionStatement = connection.prepareStatement(CHANGE_REACTION);
+             PreparedStatement updateReactionsStatement = connection.prepareStatement(UPDATE_REACTIONS)
+        ) {
+            connection.setAutoCommit(false);
+            changeReactionStatement.setInt(1, reaction);
+            changeReactionStatement.setLong(2, userId);
+            changeReactionStatement.setLong(3, comment.getId());
+            changeReactionStatement.executeUpdate();
+
+            updateReactionsStatement.setInt(1, numberOfLikes);
+            updateReactionsStatement.setInt(2, numberOfDislikes);
+            updateReactionsStatement.setLong(3, comment.getId());
+            updateReactionsStatement.executeUpdate();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+            connection.close();
         }
     }
 

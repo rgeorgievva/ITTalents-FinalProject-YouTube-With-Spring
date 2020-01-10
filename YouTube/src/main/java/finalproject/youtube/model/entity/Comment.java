@@ -32,6 +32,10 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "replied_to_id")
     private Comment repliedTo;
+    @Column(name = "likes")
+    private int likes;
+    @Column(name = "dislikes")
+    private int dislikes;
 
     public Comment(RequestCommentDto requestCommentDto){
         this.setText(requestCommentDto.getText());
