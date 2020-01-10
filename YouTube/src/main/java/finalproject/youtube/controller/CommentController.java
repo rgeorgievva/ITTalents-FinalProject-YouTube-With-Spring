@@ -10,7 +10,6 @@ import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.CommentRepository;
-import finalproject.youtube.model.repository.VideoRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -49,7 +49,7 @@ public class CommentController extends BaseController{
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
                               @RequestBody RequestCommentDto requestCommentDto){
         //check for videoID
-        Video video = videoController.getVideo(requestCommentDto.getVideoId());
+        Video video = videoController.validateAndGetVideo(requestCommentDto.getVideoId());
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
