@@ -1,6 +1,5 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,25 +13,37 @@ import java.util.List;
 @Component
 public class VideoDAO {
 
-    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
-
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos (title, description, video_url," +
-            " date_uploaded, owner_id, category_id," +
-            " thumbnail_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-    private static final String LIKE_VIDEO_SQL = "INSERT INTO users_liked_videos (user_id, video_id) VALUES (?, ?);";
-    private static final String DISLIKE_VIDEO_SQL = "INSERT INTO users_disliked_videos (user_id, video_id) " +
-            "VALUES (?, ?);";
-    private static final String HAS_USER_LIKED_VIDEO = "SELECT user_id, video_id FROM users_liked_videos WHERE " +
-            "user_id = ? AND video_id = ?;";
-    private static final String HAS_USER_DISLIKED_VIDEO = "INSERT INTO users_disliked_videos (user_id, video_id) " +
-            "VALUES (?, ?);";
-    private static final String REMOVE_LIKE_SQL = "DELETE FROM users_liked_videos " +
-            "WHERE user_id = ? AND video_id = ?;";
-    private static final String REMOVE_DISLIKE_SQL = "DELETE FROM users_disliked_videos" +
+    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
+    public static final int DISLIKE = -1;
+    public static final int LIKE = 1;
+    public static final String CHECK_IF_REACTION_EXISTS_SQL = "SELECT reaction FROM videos_reactions" +
             " WHERE user_id = ? AND video_id = ?;";
+    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos (title," +
+            " description, " +
+            "video_url," +
+            " date_uploaded, " +
+            "owner_id, " +
+            "category_id," +
+            " thumbnail_url, " +
+            "status) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String UPDATE_VIDEO_NUMBER_LIKES_SQL = "UPDATE videos SET number_likes = ? " +
+            "WHERE id = ?;";
+    private static final String INCREASE_VIDEO_NUMBER_DISLIKES_SQL = "UPDATE videos SET number_dislikes = ? " +
+            "WHERE id = ?;";
+    private static final String UPDATE_LIKES_AND_DISLIKES_TO_VIDEO = "UPDATE videos " +
+            "SET number_likes = ?, " +
+            "number_dislikes = ? " +
+            " WHERE id = ?;";
+    private static final String REACT_TO_VIDEO = "INSERT INTO videos_reactions (user_id, video_id, reaction) " +
+            "VALUES (?, ?, ?);";
+    private static final String REMOVE_REACTION_TO_VIDEO = "DELETE FROM videos_reactions WHERE " +
+            "user_id = ? AND video_id = ?;";
+    private static final String CHANGE_REACTION_TO_VIDEO = "UPDATE videos_reactions SET reaction = ? WHERE " +
+            "user_id = ? AND video_id = ?;";
     private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT v.*, COUNT(*) AS total_likes " +
             "FROM users_liked_videos AS l " +
             "RIGHT JOIN videos AS v ON l.video_id = v.id " +
@@ -64,119 +75,124 @@ public class VideoDAO {
         }
     }
 
-    // like video
-    public void likeVideo(long videoId, User user) throws SQLException {
-        // if the user has already liked this video -> remove like
-        if (hasUserLikedVideo(user, videoId)) {
-            removeLike(user, videoId);
-            return;
-        }
-
-        // if the user has disliked this video -> remove the dislike and like the video
-        if (hasUserDislikedVideo(user, videoId)) {
-            removeDislikeAndLike(user, videoId);
-            return;
-        }
-
-        // like the video
+    // react to video
+    public void setReactionToVideo(Video video, long userId, int reaction) throws SQLException {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(LIKE_VIDEO_SQL);
+             PreparedStatement statement = connection.prepareStatement(CHECK_IF_REACTION_EXISTS_SQL);
         ) {
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
-            statement.executeUpdate();
-        }
-    }
-
-    // dislike video
-    public void dislikeVideo(long videoId, User user) throws SQLException {
-        // if the user has already disliked this video -> remove dislike
-        if (hasUserDislikedVideo(user, videoId)) {
-            removeDislike(user, videoId);
-            return;
-        }
-
-        // if the user has liked this video -> remove the like and dislike the video
-        if (hasUserLikedVideo(user, videoId)) {
-            removeLikeAndDislike(user, videoId);
-            return;
-        }
-
-        // dislike the video
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(DISLIKE_VIDEO_SQL);
-        ) {
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
-            statement.executeUpdate();
-        }
-    }
-
-    private boolean hasUserLikedVideo(User user, long videoId) throws SQLException {
-        return checkForReactionOfVideo(HAS_USER_LIKED_VIDEO, user, videoId);
-    }
-
-    private boolean hasUserDislikedVideo(User user, long videoId) throws SQLException {
-        return checkForReactionOfVideo(HAS_USER_DISLIKED_VIDEO, user, videoId);
-    }
-
-    private boolean checkForReactionOfVideo(String sql, User user, long videoId) throws SQLException {
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
+            statement.setLong(1, userId);
+            statement.setLong(2, video.getId());
             ResultSet resultSet = statement.executeQuery();
+            // if there was no reaction to video
             if (!resultSet.next()) {
-                return false;
+                // set the reaction the user wants
+                reactToVideo(video, userId, reaction);
+                return;
             }
-            return true;
+            int currentReaction = resultSet.getInt("reaction");
+            if (currentReaction != reaction) {
+                //change reaction -> delete previous and set new reaction
+                changeReactionToVideo(video, userId, reaction);
+                return;
+            }
+            //remove previous reaction
+            removeReactionToVideo(video, userId, reaction);
         }
     }
 
-    private void removeDislike(User user, long videoId) throws SQLException {
-        String sql = "DELETE FROM users_disliked_videos WHERE user_id = ? AND video_id = ?;";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
-            statement.executeUpdate();
+    private void reactToVideo(Video video, long userId, int reaction) throws SQLException {
+        String sql;
+        int updatedNumber;
+        if (reaction == LIKE) {
+            sql = UPDATE_VIDEO_NUMBER_LIKES_SQL;
+            updatedNumber = video.getNumberLikes() + 1;
         }
-    }
-
-    private void removeLike(User user, long videoId) throws SQLException {
-        String sql = "DELETE FROM users_liked_videos WHERE user_id = ? AND video_id = ?;";
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
-            statement.executeUpdate();
+        else {
+            sql = INCREASE_VIDEO_NUMBER_DISLIKES_SQL;
+            updatedNumber = video.getNumberDislikes() + 1;
         }
-    }
-
-    private void removeDislikeAndLike(User user, long videoId) throws SQLException {
-        executeTwoUpdatesInTransaction(REMOVE_DISLIKE_SQL, LIKE_VIDEO_SQL, user, videoId);
-    }
-
-    private void removeLikeAndDislike(User user, long videoId) throws SQLException {
-        executeTwoUpdatesInTransaction(REMOVE_LIKE_SQL, DISLIKE_VIDEO_SQL, user, videoId);
-    }
-
-    private void executeTwoUpdatesInTransaction(String sql1, String sql2, User user, long videoId) throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-
-        try (PreparedStatement statement = connection.prepareStatement(sql1);
-             PreparedStatement statement2 = connection.prepareStatement(sql2);
+        try (PreparedStatement statement1 = connection.prepareStatement(REACT_TO_VIDEO);
+             PreparedStatement statement2 = connection.prepareStatement(sql);
         ) {
             connection.setAutoCommit(false);
+            statement1.setLong(1, userId);
+            statement1.setLong(2, video.getId());
+            statement1.setInt(3, reaction);
+            statement1.executeUpdate();
 
-            statement.setLong(1, user.getId());
-            statement.setLong(2, videoId);
-            statement.executeUpdate();
-
-            statement2.setLong(1, user.getId());
-            statement2.setLong(2, videoId);
+            statement2.setInt(1, updatedNumber);
+            statement2.setLong(2, video.getId());
             statement2.executeUpdate();
 
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+            connection.close();
+        }
+    }
+
+    private void changeReactionToVideo(Video video, long userId, int reaction) throws SQLException {
+        int updatedNumberLikes;
+        int updatedNumberDislikes;
+        if (reaction == LIKE) {
+            updatedNumberLikes = video.getNumberLikes() + 1;
+            updatedNumberDislikes = video.getNumberDislikes() - 1;
+        }
+        else {
+            updatedNumberLikes = video.getNumberLikes() - 1;
+            updatedNumberDislikes = video.getNumberDislikes() + 1;
+        }
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        try (PreparedStatement statement1 = connection.prepareStatement(CHANGE_REACTION_TO_VIDEO);
+             PreparedStatement statement2 = connection.prepareStatement(UPDATE_LIKES_AND_DISLIKES_TO_VIDEO);
+        ) {
+            connection.setAutoCommit(false);
+            statement1.setInt(1, reaction);
+            statement1.setLong(2, userId);
+            statement1.setLong(3, video.getId());
+            statement1.executeUpdate();
+
+            statement2.setInt(1, updatedNumberLikes);
+            statement2.setInt(2, updatedNumberDislikes);
+            statement2.setLong(3, video.getId());
+            statement2.executeUpdate();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+            connection.close();
+        }
+    }
+
+    private void removeReactionToVideo(Video video, long userId, int reaction) throws SQLException {
+        String sql;
+        int updatedNumber;
+        if (reaction == LIKE) {
+            sql = UPDATE_VIDEO_NUMBER_LIKES_SQL;
+            updatedNumber = video.getNumberLikes() - 1;
+        }
+        else {
+            sql = INCREASE_VIDEO_NUMBER_DISLIKES_SQL;
+            updatedNumber = video.getNumberDislikes() - 1;
+        }
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        try (PreparedStatement statement1 = connection.prepareStatement(REMOVE_REACTION_TO_VIDEO);
+             PreparedStatement statement2 = connection.prepareStatement(sql);
+        ) {
+            connection.setAutoCommit(false);
+            statement1.setLong(1, userId);
+            statement1.setLong(2, video.getId());
+            statement1.executeUpdate();
+
+            statement2.setInt(1, updatedNumber);
+            statement2.setLong(2, video.getId());
+            statement2.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -193,7 +209,7 @@ public class VideoDAO {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES)) {
             statement.setInt(1, NUMBER_VIDEOS_PER_PAGE);
-            statement.setInt(2, pageNumber*NUMBER_VIDEOS_PER_PAGE);
+            statement.setInt(2, pageNumber * NUMBER_VIDEOS_PER_PAGE);
             ResultSet result = statement.executeQuery();
             while (result.next()) {
                 Video video = new Video(result.getLong("id"),
@@ -204,7 +220,9 @@ public class VideoDAO {
                         result.getTimestamp("date_uploaded").toLocalDateTime(),
                         result.getLong("owner_id"),
                         result.getLong("category_id"),
-                        result.getString("status")
+                        result.getString("status"),
+                        result.getInt("number_likes"),
+                        result.getInt("number_dislikes")
                 );
                 videos.add(video);
             }
@@ -212,5 +230,4 @@ public class VideoDAO {
             return videos;
         }
     }
-
 }

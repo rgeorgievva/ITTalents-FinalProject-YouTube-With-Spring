@@ -61,7 +61,9 @@ public class PlaylistDAO {
                     resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
                     resultSet.getInt("owner_id"),
                     resultSet.getInt("category_id"),
-                    resultSet.getString("status")
+                    resultSet.getString("status"),
+                    resultSet.getInt("number_likes"),
+                    resultSet.getInt("number_dislikes")
             );
 
             videos.add(video);

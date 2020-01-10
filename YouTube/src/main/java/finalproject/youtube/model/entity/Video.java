@@ -36,6 +36,10 @@ public class Video {
     private long categoryId;
     @Column(name = "status")
     private String  status;
+    @Column(name = "number_likes")
+    private int numberLikes;
+    @Column(name = "number_dislikes")
+    private int numberDislikes;
 
     public VideoDto toVideoDto() {
         VideoDto videoDto = new VideoDto();

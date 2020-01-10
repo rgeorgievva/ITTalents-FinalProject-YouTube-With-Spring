@@ -87,7 +87,6 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Password changed successfully!", HttpStatus.OK);
     }
 
-    //TODO edit profile
     @PutMapping(value = "/users")
     public ResponseEntity<NoPasswordUserDto> editProfile(@RequestBody EditProfileDto profileDto, HttpSession session)
             throws AuthorizationException, BadRequestException {
