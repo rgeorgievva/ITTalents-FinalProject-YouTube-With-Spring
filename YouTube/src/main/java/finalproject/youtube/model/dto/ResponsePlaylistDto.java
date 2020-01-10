@@ -9,20 +9,25 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
+//todo get videos to be dto
+
 @Setter
 @Getter
 public class ResponsePlaylistDto {
     @NotNull
+    private long id;
+    @NotNull
     private String        title;
     @NotNull
-    private String        ownerUsername;
+    private NoPasswordUserDto        owner;
     @NotNull
     private LocalDateTime dateCreated;
     private List<Video> videos;
 
     public ResponsePlaylistDto(Playlist playlist) {
+        this.setId(playlist.getId());
         this.setDateCreated(playlist.getDateCreated());
-        this.setOwnerUsername(playlist.getOwner().getUsername());
+        this.owner = playlist.getOwner().toNoPasswordUserDto();
         this.setTitle(playlist.getTitle());
     }
 

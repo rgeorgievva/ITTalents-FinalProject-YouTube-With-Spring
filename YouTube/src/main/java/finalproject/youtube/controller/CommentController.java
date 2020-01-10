@@ -32,6 +32,7 @@ public class CommentController extends BaseController{
     VideoController videoController;
 
 
+    //todo tested
     @SneakyThrows
     @GetMapping(value = "/comments/{comment_id}")
     public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("comment_id") long commentId){
@@ -44,6 +45,7 @@ public class CommentController extends BaseController{
         return new ResponseEntity(new ResponseCommentDto(comment),HttpStatus.OK) ;
     }
 
+    //todo tested
     @SneakyThrows
     @PostMapping(value = "/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
@@ -67,12 +69,12 @@ public class CommentController extends BaseController{
             comment.setRepliedTo(optionalParentComment.get());
         }
         //sets up comment
-        comment.setOwnerId(SessionManager.getLoggedUser(session).getId());
-        comment.setVideoId(video.getId());
+        comment.setOwner(SessionManager.getLoggedUser(session));
         commentRepository.save(comment);
         return new ResponseEntity<>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
+    //todo tested
     @SneakyThrows
     @PutMapping(value = "/comments/{commentId}")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
@@ -89,7 +91,7 @@ public class CommentController extends BaseController{
         }
         Comment comment = optionalComment.get();
         //check for user authorization
-        if(comment.getOwnerId() != SessionManager.getLoggedUser(session).getId()){
+        if(comment.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this comment to edit it");
         }
         //edits text
@@ -99,6 +101,7 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>(new ResponseCommentDto(comment), HttpStatus.OK);
     }
 
+    //todo tested
     @SneakyThrows
     @DeleteMapping(value = "/comments/{commentId}")
     public ResponseEntity<String> deleteComment(HttpSession session,
@@ -114,7 +117,7 @@ public class CommentController extends BaseController{
         }
         Comment comment = optionalComment.get();
         //check for user authorization
-        if(comment.getOwnerId() != SessionManager.getLoggedUser(session).getId()){
+        if(comment.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this comment to delete it");
         }
         //delete comment
@@ -123,6 +126,7 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
 
+    //todo test
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/like")
     public ResponseEntity<String> likeComment(HttpSession session,
@@ -144,6 +148,7 @@ public class CommentController extends BaseController{
         return new ResponseEntity <>(message, HttpStatus.OK);
     }
 
+    //todo test
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/dislike")
     public ResponseEntity<String> dislikeComment(HttpSession session,
@@ -164,4 +169,6 @@ public class CommentController extends BaseController{
 
         return new ResponseEntity <>(message, HttpStatus.OK);
     }
+
+    //todo get all comments for video
 }

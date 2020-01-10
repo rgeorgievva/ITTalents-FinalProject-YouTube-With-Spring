@@ -86,7 +86,7 @@ public class PlaylistController extends BaseController {
         playlist.setOwner(currentUser);
         playlistRepository.save(playlist);
 
-        return new ResponseEntity<>(new ResponsePlaylistDto(playlist),HttpStatus.OK);
+        return new ResponseEntity<>(new ResponsePlaylistDto(playlist, null),HttpStatus.OK);
     }
 
     @SneakyThrows

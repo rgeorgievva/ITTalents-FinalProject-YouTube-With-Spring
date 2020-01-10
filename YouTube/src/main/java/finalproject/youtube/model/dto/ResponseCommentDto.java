@@ -1,6 +1,7 @@
 package finalproject.youtube.model.dto;
 
 import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,20 +16,22 @@ import java.time.LocalDateTime;
 public class ResponseCommentDto {
 
     @NotNull
+    private long id;
+    @NotNull
     private String        text;
     @NotNull
     private LocalDateTime timePosted;
     @NotNull
-    private long ownerId;
+    private NoPasswordUserDto owner;
     @NotNull
-    private long videoId;
+    private long          videoId;
     private Comment repliedTo;
 
     public ResponseCommentDto(Comment comment){
-
+        this.setId(comment.getId());
         this.setText(comment.getText());
         this.setTimePosted(comment.getTimePosted());
-        this.setOwnerId(comment.getOwnerId());
+        this.owner = comment.getOwner().toNoPasswordUserDto();
         this.setVideoId(comment.getVideoId());
         if(comment.getRepliedTo() != null){
             this.setRepliedTo(comment.getRepliedTo());

@@ -19,6 +19,7 @@ public class CommentDAO {
 
     private CommentDAO(){}
 
+    //todo fix
     @SneakyThrows
     public String likeComment(User user, Comment comment){
             try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
@@ -64,6 +65,7 @@ public class CommentDAO {
             }
     }
 
+    //todo fix
     @SneakyThrows
     public String dislikeComment(User user, Comment comment) {
         try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {

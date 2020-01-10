@@ -26,8 +26,9 @@ public class Comment {
     private LocalDateTime timePosted;
     @Column(name = "video_id")
     private long videoId;
-    @Column(name = "owner_id")
-    private long ownerId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
     @ManyToOne
     @JoinColumn(name = "replied_to_id")
     private Comment repliedTo;
