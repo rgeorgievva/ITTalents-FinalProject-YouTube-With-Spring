@@ -11,10 +11,6 @@ import java.util.List;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
-    Video getVideoById(long id);
-
-    boolean existsVideoById(long id);
-
     List<Video> getAllByOwnerId(long ownerId);
 
     void deleteById(long id);
