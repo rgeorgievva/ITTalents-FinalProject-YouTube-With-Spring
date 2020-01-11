@@ -10,6 +10,7 @@ import finalproject.youtube.model.entity.Comment;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.CommentRepository;
+import finalproject.youtube.service.VideoService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class CommentController extends BaseController{
     @Autowired
     CommentRepository commentRepository;
     @Autowired
-    VideoController videoController;
+    VideoService videoService;
 
     @SneakyThrows
     @GetMapping(value = "/comments/{comment_id}")
@@ -50,7 +51,7 @@ public class CommentController extends BaseController{
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
                               @RequestBody RequestCommentDto requestCommentDto){
         //check for videoID
-        Video video = videoController.validateAndGetVideo(requestCommentDto.getVideoId());
+        Video video = videoService.validateAndGetVideo(requestCommentDto.getVideoId());
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
