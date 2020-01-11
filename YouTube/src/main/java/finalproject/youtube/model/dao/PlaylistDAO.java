@@ -42,33 +42,34 @@ public class PlaylistDAO {
 
     @SneakyThrows
     public List<Video> getAllVideosFromPlaylist(Playlist playlist) {
-        List <Video> videos = new ArrayList <>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "select *\n" +
-                "from youtube.videos as v\n" +
-                "join youtube.videos_in_playlist as vp\n" +
-                "on v.id = vp.video_id\n" +
-                "where vp.playlist_id = ?;";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setLong(1, playlist.getId());
-        ResultSet resultSet = preparedStatement.executeQuery();
-        while (resultSet.next()) {
-            Video video = new Video(resultSet.getInt("id"),
-                    resultSet.getString("title"),
-                    resultSet.getString("description"),
-                    resultSet.getString("video_url"),
-                    resultSet.getString("thumbnail_url"),
-                    resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
-                    resultSet.getInt("owner_id"),
-                    resultSet.getInt("category_id"),
-                    resultSet.getString("status"),
-                    resultSet.getInt("number_likes"),
-                    resultSet.getInt("number_dislikes")
-            );
-
-            videos.add(video);
-        }
-        return videos;
+//        List <Video> videos = new ArrayList <>();
+//        Connection connection = jdbcTemplate.getDataSource().getConnection();
+//        String sql = "select *\n" +
+//                "from youtube.videos as v\n" +
+//                "join youtube.videos_in_playlist as vp\n" +
+//                "on v.id = vp.video_id\n" +
+//                "where vp.playlist_id = ?;";
+//        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+//        preparedStatement.setLong(1, playlist.getId());
+//        ResultSet resultSet = preparedStatement.executeQuery();
+//        while (resultSet.next()) {
+//            Video video = new Video(resultSet.getInt("id"),
+//                    resultSet.getString("title"),
+//                    resultSet.getString("description"),
+//                    resultSet.getString("video_url"),
+//                    resultSet.getString("thumbnail_url"),
+//                    resultSet.getTimestamp("date_uploaded").toLocalDateTime(),
+//                    resultSet.getInt("owner_id"),
+//                    resultSet.getInt("category_id"),
+//                    resultSet.getString("status"),
+//                    resultSet.getInt("number_likes"),
+//                    resultSet.getInt("number_dislikes"),
+//            );
+//
+//            videos.add(video);
+//        }
+//        return videos;
+        return null;
     }
 
     @SneakyThrows

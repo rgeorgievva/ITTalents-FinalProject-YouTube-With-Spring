@@ -18,6 +18,8 @@ public class UserDAO {
             " password," +
             " date_created)" +
             " VALUES (?, ?, ?, ?, ?, ?);";
+    private static final String CHECK_IF_USER_HAS_SUBSCRIBED_SQL = "SELECT subscriber_id FROM subscriptions WHERE " +
+            "subscriber_id = ? AND subscribed_to_id = ?;";
     private static final String SUBSCRIBE_TO_USER_SQL = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) " +
             "VALUES (?, ?);";
     private static final String UNSUBSCRIBE_FROM_USER_SQL = "DELETE FROM subscriptions WHERE subscriber_id = ? " +
@@ -44,6 +46,20 @@ public class UserDAO {
             user.setId(generatedKeys.getLong(1));
 
             return user.getId();
+        }
+    }
+
+    // check if user has subscribed to another user
+    public boolean hasSubscribedTo(long subscriberId, long subscribedToId) throws SQLException {
+        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
+             PreparedStatement statement = connection.prepareStatement(CHECK_IF_USER_HAS_SUBSCRIBED_SQL)) {
+            statement.setLong(1, subscriberId);
+            statement.setLong(2, subscribedToId);
+            ResultSet resultSet = statement.executeQuery();
+            if (!resultSet.next()) {
+                return false;
+            }
+            return true;
         }
     }
 

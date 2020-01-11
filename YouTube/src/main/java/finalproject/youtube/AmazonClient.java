@@ -1,18 +1,16 @@
 package finalproject.youtube;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import finalproject.youtube.model.entity.Status;
 import finalproject.youtube.model.entity.Video;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,8 +35,6 @@ public class AmazonClient {
     @Value("${amazonProperties.secretKey}")
     private String secretKey;
 
-    private Logger logger = LogManager.getLogger(AmazonClient.class);
-
     @PostConstruct
     private void initializeAmazon() {
         AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
@@ -60,7 +56,6 @@ public class AmazonClient {
             file.delete();
         } catch (Exception e) {
             video.setStatus(Status.FAILED.toString());
-            logger.error(e.getMessage(), e);
         }
         return fileUrl;
     }
@@ -87,8 +82,9 @@ public class AmazonClient {
         try {
             String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
             s3client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+        } catch (SdkClientException e) {
+            System.out.println("Amazon exception:");
+            System.out.println("Message: " + e.getMessage());
         }
         return "Video was deleted successfully!";
     }
