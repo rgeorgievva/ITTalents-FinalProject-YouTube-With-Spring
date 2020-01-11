@@ -9,11 +9,12 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class UserDAO {
 
-    private static final String INSERT_IN_DB_SQL = "INSERT INTO users (user_name," +
+    private static final String INSERT_IN_DB_SQL                 = "INSERT INTO users (user_name," +
             " first_name," +
             " last_name, " +
             "email," +
@@ -22,13 +23,17 @@ public class UserDAO {
             " VALUES (?, ?, ?, ?, ?, ?);";
     private static final String CHECK_IF_USER_HAS_SUBSCRIBED_SQL = "SELECT subscriber_id FROM subscriptions WHERE " +
             "subscriber_id = ? AND subscribed_to_id = ?;";
-    private static final String SUBSCRIBE_TO_USER_SQL = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) " +
+    private static final String SUBSCRIBE_TO_USER_SQL            = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) " +
             "VALUES (?, ?);";
-    private static final String UNSUBSCRIBE_FROM_USER_SQL = "DELETE FROM subscriptions WHERE subscriber_id = ? " +
+    private static final String UNSUBSCRIBE_FROM_USER_SQL        = "DELETE FROM subscriptions WHERE subscriber_id = ? " +
             "AND subscribed_to_id = ?;";
-    private static final String GET_USER_SUBSCRIBERS_SQL = "SELECT u.email FROM subscriptions AS s " +
+    private static final String GET_USER_SUBSCRIBERS_SQL         =
+            "SELECT u.email FROM subscriptions AS s " +
             "JOIN users AS u ON s.subscriber_id = u.id " +
             "WHERE s.subscribed_to_id = ?;";
+    public static final  String VERIFICATION_CODE_WHERE_ID       =
+            "UPDATE youtube.users SET verification_code = ? WHERE id=?;";
+    public static final String VERIFY = "UPDATE youtube.users SET status = ? where verification_code = ? "; //todo come back again
 
 
     @Autowired
@@ -99,6 +104,26 @@ public class UserDAO {
                 subscribersEmails.add(resultSet.getString("email"));
             }
             return subscribersEmails;
+        }
+    }
+
+    // add verification code to db
+    public void addVerificationCode(User user, int verificationCode) throws SQLException {
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection()){
+            try(PreparedStatement preparedStatement = connection.prepareStatement(VERIFICATION_CODE_WHERE_ID)){
+                preparedStatement.setInt(1, verificationCode) ;
+                preparedStatement.setLong(2, user.getId());
+                preparedStatement.executeUpdate();
+            }
+        }
+    }
+
+    //verifies user
+    public void verifyUser(User user, int verificationCode) throws SQLException {
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection()){
+            try(PreparedStatement preparedStatement = connection.prepareStatement(VERIFY)){
+               //todo
+            }
         }
     }
 

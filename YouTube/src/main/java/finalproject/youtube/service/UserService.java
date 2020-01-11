@@ -8,6 +8,7 @@ import finalproject.youtube.model.dto.*;
 import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.mail.ConfirmRegistration;
 import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
@@ -45,7 +46,8 @@ public class UserService {
         }
         User user = User.registerDtoToUser(registerUser);
         userDAO.registerUser(user);
-
+        Thread verificator = new ConfirmRegistration(); //todo add stuff
+        verificator.start();
         return user.toNoPasswordUserDto();
     }
 

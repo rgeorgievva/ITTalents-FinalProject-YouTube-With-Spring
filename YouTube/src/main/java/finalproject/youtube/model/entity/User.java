@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class User {
 
+    private enum UserStatus{
+        VERIFIED, NEW;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -34,6 +38,10 @@ public class User {
     private String password;
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
+    @Column
+    private UserStatus userStatus;
+    @Column
+    private int verificationCode;
 
     public void setPassword(String password) {
         this.password = BCrypt.hashpw(password, BCrypt.gensalt());
@@ -60,17 +68,5 @@ public class User {
         noPasswordUserDto.setDateCreated(this.dateCreated);
 
         return noPasswordUserDto;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", dateCreated=" + dateCreated +
-                '}';
     }
 }
