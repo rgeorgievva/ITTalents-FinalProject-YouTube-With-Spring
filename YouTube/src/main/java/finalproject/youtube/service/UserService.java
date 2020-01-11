@@ -12,6 +12,7 @@ import finalproject.youtube.model.mail.ConfirmRegistration;
 import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -46,7 +47,7 @@ public class UserService {
         }
         User user = User.registerDtoToUser(registerUser);
         userDAO.registerUser(user);
-        Thread verificator = new ConfirmRegistration(); //todo add stuff
+        Thread verificator = new ConfirmRegistration(user, userRepository);
         verificator.start();
         return user.toNoPasswordUserDto();
     }

@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class User {
 
-    private enum UserStatus{
+    public enum UserStatus{
         VERIFIED, NEW;
     }
 
@@ -38,10 +38,10 @@ public class User {
     private String password;
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
-    @Column
-    private UserStatus userStatus;
-    @Column
-    private int verificationCode;
+    @Column(name = "status")
+    private String status;
+    @Column(name = "verification_url")
+    private String verificationURL;
 
     public void setPassword(String password) {
         this.password = BCrypt.hashpw(password, BCrypt.gensalt());
