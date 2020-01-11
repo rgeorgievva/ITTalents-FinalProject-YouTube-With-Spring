@@ -11,11 +11,8 @@ import java.util.List;
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
     List<Video> getAllByOwnerId(long ownerId);
-
     void deleteById(long id);
-
     List<Video> findAllByTitleContainingAndStatus(String title,String status, Pageable pageable);
-    //TODO decide if we will use this or sql
     List<Video> findAllByStatusOrderByNumberLikesDescDateUploadedDesc(String status, Pageable pageable);
 
 }

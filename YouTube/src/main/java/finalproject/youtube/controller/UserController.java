@@ -20,6 +20,7 @@ public class UserController extends BaseController {
     @Autowired
     UserService userService;
 
+
     @PostMapping(value = "users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws SQLException {
         NoPasswordUserDto user = userService.createUser(registerUser);
@@ -103,4 +104,11 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
+    @GetMapping(value = "users/{userId}/playlists/{page}")
+    public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsOfUser(@PathVariable("userId") long userId,
+                                                                        @PathVariable("page") int page) {
+        List<ResponsePlaylistDto> playlists = userService.getPlaylistsByUser(page, userId);
+
+        return new ResponseEntity<>(playlists, HttpStatus.OK);
+    }
 }

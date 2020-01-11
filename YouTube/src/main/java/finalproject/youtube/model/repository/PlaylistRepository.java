@@ -1,6 +1,7 @@
 package finalproject.youtube.model.repository;
 
 import finalproject.youtube.model.entity.Playlist;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     boolean existsPlaylistByOwnerIdAndTitle(long ownerId, String title);
 
-    Optional<List<Playlist>> findAllByOwnerId(long id);
+    List<Playlist> findAllByOwnerId(long id, Pageable pageable);
 
 }

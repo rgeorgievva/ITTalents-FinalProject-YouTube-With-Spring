@@ -5,11 +5,14 @@ import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dto.*;
+import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,11 @@ public class UserService {
 
     @Autowired
     VideoRepository videoRepository;
+
+    @Autowired
+    PlaylistRepository playlistRepository;
+
+    private static final int NUMBER_PLAYLISTS_PER_PAGE = 10;
 
     public NoPasswordUserDto createUser(RegisterUserDto registerUser) throws SQLException {
         Validator.validateRegisterDto(registerUser);
@@ -130,5 +138,19 @@ public class UserService {
         }
 
         return videos;
+    }
+
+    public List<ResponsePlaylistDto> getPlaylistsByUser(int page, long ownerId) {
+        validateUser(ownerId);
+        List<Playlist> playlists = playlistRepository.findAllByOwnerId(ownerId,
+                PageRequest.of(page, NUMBER_PLAYLISTS_PER_PAGE));
+        if (playlists.isEmpty()) {
+            throw new NotFoundException("No playlists found!");
+        }
+        List<ResponsePlaylistDto> playlistDtos = new ArrayList<>();
+        for (Playlist playlist : playlists) {
+            playlistDtos.add(new ResponsePlaylistDto(playlist));
+        }
+        return playlistDtos;
     }
 }
