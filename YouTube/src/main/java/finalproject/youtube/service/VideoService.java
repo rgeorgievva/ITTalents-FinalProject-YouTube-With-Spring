@@ -5,6 +5,7 @@ import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
+import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
@@ -43,6 +44,9 @@ public class VideoService {
     @Autowired
     VideoRepository videoRepository;
 
+    @Autowired
+    UserDAO userDAO;
+
     private void setInitialValuesToVideo(Video video) {
         video.setStatus(Status.PENDING.toString());
         video.setVideoUrl("");
@@ -71,7 +75,7 @@ public class VideoService {
         videoDAO.uploadVideo(video);
         try {
             Thread uploader = new Uploader(video, amazonClient.convertMultiPartToFile(multipartFile),
-                    amazonClient.convertMultiPartToFile(thumbnail), amazonClient, videoRepository);
+                    amazonClient.convertMultiPartToFile(thumbnail), amazonClient, videoRepository, userDAO);
             uploader.start();
         } catch (IOException e) {
             video.setStatus(Status.FAILED.toString());

@@ -7,27 +7,26 @@ import java.util.Properties;
 
 public class MailSender {
 
-    private static final String SENDER = "youtube_talents@gmail.bg"; //todo set up email
-
+    private static final String SENDER = "yt.ittalents@gmail.com";
     public static void sendMail(String to, String subject, String body){
         final String username = SENDER;
-        final String password = "";//todo set email pass
+        final String password = "";//TODO set email pass
 
         Properties prop = new Properties();
+        prop.put("mail.smtp.ssl.trust", "smtp.gmail.com");
         prop.put("mail.smtp.host", "smtp.gmail.com");
         prop.put("mail.smtp.port", "587");
         prop.put("mail.smtp.auth", "true");
         prop.put("mail.smtp.starttls.enable", "true");
 
         Session session = Session.getInstance(prop,
-                new Authenticator() {
+                new javax.mail.Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(username, password);
                     }
                 });
 
         try {
-
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER));
             message.setRecipients(
@@ -36,11 +35,7 @@ public class MailSender {
             );
             message.setSubject(subject);
             message.setText(body);
-
             Transport.send(message);
-
-            System.out.println("Done");
-
         } catch (MessagingException e) {
             e.printStackTrace();
         }
