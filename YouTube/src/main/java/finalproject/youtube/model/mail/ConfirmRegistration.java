@@ -10,7 +10,7 @@ public class ConfirmRegistration extends Thread {
     private static final String SUBJECT = "Welcome to YoutubeTalents!";
     private String BODY    = "To finalize your registration, " +
             "please click on the link below to verify your account:\n"
-            +"yt-ittalents.com/verify/";
+            +"yt-ittalents.com/users/verify/";
     private             User   user;
     private UserRepository userRepository;
     private String verificationURL = RandomStringUtils.randomAlphanumeric(40);
@@ -18,14 +18,14 @@ public class ConfirmRegistration extends Thread {
     public ConfirmRegistration(User user, UserRepository userRepository){
         this.user = user;
         this.userRepository = userRepository;
-        user.setVerificationURL(verificationURL);
-        user.setStatus(User.UserStatus.NEW.toString());
-        BODY = BODY.concat(this.verificationURL);
-        userRepository.save(user);
     }
 
     @Override
     public void run() {
+        this.user.setVerificationURL(verificationURL);
+        this.user.setStatus(User.UserStatus.NEW.toString());
+        BODY = BODY.concat(this.verificationURL);
+        this.userRepository.save(user);
         MailSender.sendMail(user.getEmail(), SUBJECT, BODY);
     }
 }

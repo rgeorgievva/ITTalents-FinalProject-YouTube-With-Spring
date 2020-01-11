@@ -1,6 +1,7 @@
 package finalproject.youtube.service;
 
 import finalproject.youtube.Validator;
+import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
@@ -15,6 +16,8 @@ import finalproject.youtube.model.repository.VideoRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -155,5 +158,21 @@ public class UserService {
             playlistDtos.add(new ResponsePlaylistDto(playlist));
         }
         return playlistDtos;
+    }
+
+    //todo add verification to log in -> if status is new -> throw auth exc
+    //todo maybe send mail when account is verified
+    public ResponseEntity<String> verifyAccount(String verificationURL) {
+        Optional<User> optionalUser = userRepository.findByVerificationURL(verificationURL);
+        if (!optionalUser.isPresent()){
+            throw new BadRequestException("The verification link used is not valid!");
+        }
+        User user = optionalUser.get();
+        if(user.getStatus().equals(User.UserStatus.VERIFIED.toString())){
+            throw new AuthorizationException("This account has already been verified!");
+        }
+        user.setStatus(User.UserStatus.VERIFIED.toString());
+        userRepository.save(user);
+        return new ResponseEntity <>("Account verified!", HttpStatus.OK);
     }
 }

@@ -31,9 +31,6 @@ public class UserDAO {
             "SELECT u.email FROM subscriptions AS s " +
             "JOIN users AS u ON s.subscriber_id = u.id " +
             "WHERE s.subscribed_to_id = ?;";
-    public static final  String VERIFICATION_CODE_WHERE_ID       =
-            "UPDATE youtube.users SET verification_code = ? WHERE id=?;";
-    public static final String VERIFY = "UPDATE youtube.users SET status = ? where verification_code = ? "; //todo come back again
 
 
     @Autowired
@@ -106,25 +103,4 @@ public class UserDAO {
             return subscribersEmails;
         }
     }
-
-    // add verification code to db
-    public void addVerificationCode(User user, int verificationCode) throws SQLException {
-        try(Connection connection = jdbcTemplate.getDataSource().getConnection()){
-            try(PreparedStatement preparedStatement = connection.prepareStatement(VERIFICATION_CODE_WHERE_ID)){
-                preparedStatement.setInt(1, verificationCode) ;
-                preparedStatement.setLong(2, user.getId());
-                preparedStatement.executeUpdate();
-            }
-        }
-    }
-
-    //verifies user
-    public void verifyUser(User user, int verificationCode) throws SQLException {
-        try(Connection connection = jdbcTemplate.getDataSource().getConnection()){
-            try(PreparedStatement preparedStatement = connection.prepareStatement(VERIFY)){
-               //todo
-            }
-        }
-    }
-
 }

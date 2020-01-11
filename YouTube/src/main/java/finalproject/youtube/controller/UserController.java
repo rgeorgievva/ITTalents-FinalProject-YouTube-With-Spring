@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserController extends BaseController {
@@ -110,5 +111,10 @@ public class UserController extends BaseController {
         List<ResponsePlaylistDto> playlists = userService.getPlaylistsByUser(page, userId);
 
         return new ResponseEntity<>(playlists, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/users/verify/{verification_url}")
+    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL){
+        return userService.verifyAccount(verificationURL);
     }
 }
