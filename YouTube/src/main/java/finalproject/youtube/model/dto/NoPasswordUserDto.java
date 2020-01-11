@@ -12,14 +12,9 @@ import java.time.LocalDateTime;
 public class NoPasswordUserDto {
 
     private long id;
-    @NotNull
     private String username;
-    @NotNull
     private String firstName;
-    @NotNull
     private String lastName;
-    @NotNull
     private String email;
-    @NotNull
     private LocalDateTime dateCreated;
 }
