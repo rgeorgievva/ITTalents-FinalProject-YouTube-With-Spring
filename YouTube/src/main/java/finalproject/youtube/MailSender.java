@@ -7,17 +7,17 @@ import java.util.Properties;
 
 public class MailSender {
 
-    private static final String SENDER = "youtube_talents@gmail.bg";
+    private static final String SENDER = "youtube_talents@gmail.bg"; //todo set up email
 
     public static void sendMail(String to, String subject, String body){
         final String username = SENDER;
-        final String password = "";//TODO set email pass
+        final String password = "";//todo set email pass
 
         Properties prop = new Properties();
         prop.put("mail.smtp.host", "smtp.gmail.com");
         prop.put("mail.smtp.port", "587");
         prop.put("mail.smtp.auth", "true");
-        prop.put("mail.smtp.starttls.enable", "true"); //TLS
+        prop.put("mail.smtp.starttls.enable", "true");
 
         Session session = Session.getInstance(prop,
                 new Authenticator() {

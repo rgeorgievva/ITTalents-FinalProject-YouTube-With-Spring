@@ -5,9 +5,10 @@ import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dto.RequestCommentDto;
+import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
+import finalproject.youtube.model.dto.ResponseReplyDto;
 import finalproject.youtube.model.entity.Comment;
-import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.CommentRepository;
 import finalproject.youtube.service.VideoService;
@@ -18,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -46,6 +49,8 @@ public class CommentController extends BaseController{
         return new ResponseEntity(new ResponseCommentDto(comment),HttpStatus.OK) ;
     }
 
+
+    //todo change replied to - test
     @SneakyThrows
     @PostMapping(value = "/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
@@ -66,7 +71,13 @@ public class CommentController extends BaseController{
             if(!optionalParentComment.isPresent()){
                 throw new NotFoundException("Parent comment with id="+parentCommentId+" does not exist!");
             }
-            comment.setRepliedTo(optionalParentComment.get());
+            Comment parentComment = optionalParentComment.get();
+            //check if the parent comment is a reply to another comment
+            if(parentComment.getRepliedTo() != null){
+                //change the replied to to the very first parent comment (where replied to id is null)
+                parentComment = parentComment.getRepliedTo();
+            }
+            comment.setRepliedTo(parentComment);
         }
         //sets up comment
         comment.setOwner(SessionManager.getLoggedUser(session));
@@ -126,7 +137,7 @@ public class CommentController extends BaseController{
 
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/like")
-    public ResponseEntity<ResponseCommentDto> likeComment(HttpSession session,
+    public void likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
@@ -141,15 +152,11 @@ public class CommentController extends BaseController{
         //like comment
         long currentUser = SessionManager.getLoggedUser(session).getId();
         commentDAO.react(currentUser, comment, LIKE_REACTION);
-
-        //todo when you move to service ->call getCommentById to sout the proper number of likes on comment
-
-        return new ResponseEntity <>(new ResponseCommentDto(commentRepository.findById(commentId).get()), HttpStatus.OK);
     }
 
     @SneakyThrows
     @GetMapping(value = "/comments/{commentId}/dislike")
-    public ResponseEntity<ResponseCommentDto> dislikeComment(HttpSession session,
+    public void dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         //check for comment availability
@@ -164,11 +171,42 @@ public class CommentController extends BaseController{
         //dislike comment
         long currentUser = SessionManager.getLoggedUser(session).getId();
         commentDAO.react(currentUser, comment, DISLIKE_REACTION);
-
-        //todo when you move to service ->call getCommentById to sout the proper number of dislikes on comment
-
-        return new ResponseEntity <>(new ResponseCommentDto(commentRepository.findById(commentId).get()), HttpStatus.OK);
     }
 
-    //todo get all comments for video
+    //todo get all comments for video - test
+    @SneakyThrows
+    @GetMapping(value = "/comments/from_video/{video_id}")
+    public ResponseEntity<List <ResponseCommentWithRepliesDto>> getAllCommentsForVideo(
+            @PathVariable("video_id") long videoId){
+
+        //check if video id is valid
+        Video video = videoService.validateAndGetVideo(videoId);
+        //check if there are any parent comments
+        Optional<List<Comment>> commentList = commentRepository.findAllByVideoIdAndRepliedToIsNull(videoId);
+        if(!commentList.isPresent()){
+            return new ResponseEntity <>(null, HttpStatus.OK);
+        }
+        //get all comments, if there are any
+        List<Comment> parentComments = commentList.get();
+        List<ResponseCommentWithRepliesDto> response = new ArrayList <>();
+        //check if the comments have replies
+        for (Comment p: parentComments) {
+            Optional<List<Comment>> repliesToParent = commentRepository.findAllByRepliedToId(p.getId());
+            //if there is a reply
+            if(repliesToParent.isPresent()){
+                List<Comment> replies = repliesToParent.get();
+                List<ResponseReplyDto> repliesDtos = new ArrayList <>();
+                for (Comment r: replies){
+                 repliesDtos.add(r.toReplyDto());
+                }
+                response.add(new ResponseCommentWithRepliesDto(p,repliesDtos));
+            }
+            //if there are no replies
+            else {
+                response.add(new ResponseCommentWithRepliesDto(p));
+            }
+        }
+
+        return new ResponseEntity <>(response, HttpStatus.OK);
+    }
 }

@@ -7,11 +7,13 @@ import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.PlaylistDAO;
 import finalproject.youtube.model.dto.RequestPlaylistDto;
 import finalproject.youtube.model.dto.ResponsePlaylistDto;
+import finalproject.youtube.model.dto.VideoInPlaylistDto;
 import finalproject.youtube.model.entity.Playlist;
 import finalproject.youtube.model.entity.User;
 import finalproject.youtube.model.entity.Video;
 import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.VideoRepository;
+import finalproject.youtube.service.VideoService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,7 +34,8 @@ public class PlaylistController extends BaseController {
     PlaylistDAO playlistDAO;
     @Autowired
     VideoRepository videoRepository;
-
+    @Autowired
+    VideoService videoService;
 
     @SneakyThrows
     @GetMapping(value = "/playlists/{playlist_id}")
@@ -44,7 +47,7 @@ public class PlaylistController extends BaseController {
         }
         //return playlist with all videos in it
         Playlist playlist = optionalPlaylist.get();
-        List <Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
+        List <VideoInPlaylistDto> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         return new ResponseEntity <>( new ResponsePlaylistDto(playlist, videos), HttpStatus.OK);
     }
 
@@ -62,7 +65,7 @@ public class PlaylistController extends BaseController {
         List<ResponsePlaylistDto> responseDTOs = new LinkedList <>();
         //load response dto
         for (Playlist p: playlists) {
-            List <Video> videos = playlistDAO.getAllVideosFromPlaylist(p);
+            List <VideoInPlaylistDto> videos = playlistDAO.getAllVideosFromPlaylist(p);
             responseDTOs.add(new ResponsePlaylistDto(p,videos));
         }
         return new ResponseEntity <>( responseDTOs, HttpStatus.OK);
@@ -101,10 +104,7 @@ public class PlaylistController extends BaseController {
             throw new NotFoundException("Playlist with id="+playlistId+" not found!");
         }
         //check if video exists
-        Optional<Video> optionalVideo = videoRepository.findById(videoId);
-        if(!optionalVideo.isPresent()){
-            throw new NotFoundException("Video not found!");
-        }
+        Video video = videoService.validateAndGetVideo(videoId);
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to add video to playlist!");
@@ -115,13 +115,12 @@ public class PlaylistController extends BaseController {
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //check if the video is already in the playlist
-        Video video = optionalVideo.get();
         if(playlistDAO.isVideoInPlaylist(video, playlist)){
             throw new BadRequestException("This video is already in this playlist!");
         }
         //add video to playlist
         playlistDAO.addVideoToPlaylist(video, playlist);
-        List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
+        List<VideoInPlaylistDto> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         ResponsePlaylistDto responsePlaylistDto = new ResponsePlaylistDto(playlist, videos);
 
         return new ResponseEntity <>(responsePlaylistDto, HttpStatus.OK);
@@ -165,23 +164,19 @@ public class PlaylistController extends BaseController {
             throw new AuthorizationException("Please login to remove a video from the playlist!");
         }
         //check if video exists
-        Optional<Video> optionalVideo = videoRepository.findById(videoId);
-        if(!optionalVideo.isPresent()){
-            throw new NotFoundException("Video with id "+videoId+" not found!");
-        }
+        Video video = videoService.validateAndGetVideo(videoId);
         //check if you're the owner of the playlist
         Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != SessionManager.getLoggedUser(session).getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //check if the video is already in the playlist
-        Video video = optionalVideo.get();
         if(!playlistDAO.isVideoInPlaylist(video, playlist)){
             throw new BadRequestException("The video is not in this playlist!");
         }
         //remove video from playlist
         playlistDAO.removeVideoFromPlaylist(video, playlist);
-        List<Video> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
+        List<VideoInPlaylistDto> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
 
         return new ResponseEntity <>(new ResponsePlaylistDto(playlist,videos),HttpStatus.OK);
     }

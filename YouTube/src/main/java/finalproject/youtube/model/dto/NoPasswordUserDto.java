@@ -1,12 +1,16 @@
 package finalproject.youtube.model.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.time.LocalDateTime;
 
-
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class NoPasswordUserDto {

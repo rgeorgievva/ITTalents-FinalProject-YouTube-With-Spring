@@ -1,6 +1,8 @@
 package finalproject.youtube.model.entity;
 
 import finalproject.youtube.model.dto.RequestCommentDto;
+import finalproject.youtube.model.dto.ResponseCommentDto;
+import finalproject.youtube.model.dto.ResponseReplyDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,4 +45,11 @@ public class Comment {
         this.setVideoId(requestCommentDto.getVideoId());
     }
 
+    public ResponseCommentDto toDto() {
+        return new ResponseCommentDto(this);
+    }
+
+    public ResponseReplyDto toReplyDto() {
+        return new ResponseReplyDto(this);
+    }
 }
