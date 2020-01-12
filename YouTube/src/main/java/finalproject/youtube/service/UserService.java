@@ -157,9 +157,9 @@ public class UserService {
         return playlistDtos;
     }
 
-    public String verifyAccount(long userId, String verificationURL) {
+    public User verifyAccount(long userId, String verificationURL) {
         Optional<User> optionalUser = userRepository.findById(userId);
-        if (!optionalUser.isPresent() || optionalUser.get().getVerificationURL().equals(verificationURL)){
+        if (!optionalUser.isPresent() || !optionalUser.get().getVerificationURL().equals(verificationURL)){
             throw new BadRequestException("The verification link used is not valid!");
         }
         User user = optionalUser.get();
@@ -168,6 +168,6 @@ public class UserService {
         }
         user.setStatus(User.UserStatus.VERIFIED.toString());
         userRepository.save(user);
-        return "Account verified!";
+        return user;
     }
 }

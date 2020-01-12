@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class UserDAO {
 
-    private static final String INSERT_IN_DB_SQL                 = "INSERT INTO users (user_name," +
+    private static final String INSERT_IN_DB_SQL = "INSERT INTO users (user_name," +
             " first_name," +
             " last_name, " +
             "email," +
@@ -22,11 +22,11 @@ public class UserDAO {
             " VALUES (?, ?, ?, ?, ?, ?);";
     private static final String CHECK_IF_USER_HAS_SUBSCRIBED_SQL = "SELECT subscriber_id FROM subscriptions WHERE " +
             "subscriber_id = ? AND subscribed_to_id = ?;";
-    private static final String SUBSCRIBE_TO_USER_SQL            = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) " +
+    private static final String SUBSCRIBE_TO_USER_SQL = "INSERT INTO subscriptions (subscriber_id, subscribed_to_id) " +
             "VALUES (?, ?);";
-    private static final String UNSUBSCRIBE_FROM_USER_SQL        = "DELETE FROM subscriptions WHERE subscriber_id = ? " +
+    private static final String UNSUBSCRIBE_FROM_USER_SQL = "DELETE FROM subscriptions WHERE subscriber_id = ? " +
             "AND subscribed_to_id = ?;";
-    private static final String GET_USER_SUBSCRIBERS_SQL         =
+    private static final String GET_USER_SUBSCRIBERS_SQL =
             "SELECT u.email FROM subscriptions AS s " +
             "JOIN users AS u ON s.subscriber_id = u.id " +
             "WHERE s.subscribed_to_id = ?;";

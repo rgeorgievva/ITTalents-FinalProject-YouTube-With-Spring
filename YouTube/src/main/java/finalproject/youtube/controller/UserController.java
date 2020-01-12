@@ -24,16 +24,26 @@ public class UserController extends BaseController {
     @PostMapping(value = "users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws SQLException {
         NoPasswordUserDto user = userService.createUser(registerUser);
-
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "users/login")
     public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) {
         User user = userService.login(loginUser);
+        if (!user.getStatus().equals(User.UserStatus.VERIFIED.toString())) {
+            throw new AuthorizationException("Account not verified!");
+        }
         SessionManager.logUser(session, user);
-        //todo add verification to log in -> if status is new -> throw auth exc
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/users/verify/{user_id}/{verification_url}")
+    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
+                                                @PathVariable ("user_id") long userId,
+                                                HttpSession session){
+        User verifiedUser = userService.verifyAccount(userId, verificationURL);
+        SessionManager.logUser(session, verifiedUser);
+        return new ResponseEntity <>("Account verified", HttpStatus.OK);
     }
 
     @PostMapping(value = "users/logout")
@@ -50,7 +60,6 @@ public class UserController extends BaseController {
         }
         User user = SessionManager.getLoggedUser(session);
         NoPasswordUserDto userDto = userService.changePassword(passwordDto, user);
-
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
@@ -59,17 +68,14 @@ public class UserController extends BaseController {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
-
         User user = SessionManager.getLoggedUser(session);
         NoPasswordUserDto userDto = userService.editProfile(profileDto, user);
-
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
     @GetMapping(value = "users/{username}")
     public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) {
         List<NoPasswordUserDto> users = userService.getByUsername(username);
-
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -80,7 +86,6 @@ public class UserController extends BaseController {
         }
         User subscriber = SessionManager.getLoggedUser(session);
         userService.subscribeToUser(subscribedToId, subscriber);
-
         return new ResponseEntity<>("Subscribed successfully!", HttpStatus.OK);
     }
 
@@ -92,7 +97,6 @@ public class UserController extends BaseController {
         }
         User subscriber = SessionManager.getLoggedUser(session);
         userService.unsubscribeFromUser(unsubscribeFromId, subscriber);
-
         return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);
     }
 
@@ -100,7 +104,6 @@ public class UserController extends BaseController {
     @GetMapping(value = "users/{userId}/videos")
     public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId) {
         List<VideoDto> videos = userService.getVideosUploadedByUser(userId);
-
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
@@ -108,13 +111,7 @@ public class UserController extends BaseController {
     public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsOfUser(@PathVariable("userId") long userId,
                                                                         @PathVariable("page") int page) {
         List<ResponsePlaylistDto> playlists = userService.getPlaylistsByUser(page, userId);
-
         return new ResponseEntity<>(playlists, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/users/verify/{user_id}/{verification_url}")
-    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
-                                                @PathVariable ("user_id") long userId){
-        return new ResponseEntity <>(userService.verifyAccount(userId, verificationURL), HttpStatus.OK);
-    }
 }
