@@ -63,7 +63,6 @@ public class Validator {
         String email = registerUserDto.getEmail();
         String password = registerUserDto.getPassword();
         String confirmPassword = registerUserDto.getConfirmPassword();
-
         if (username == null ||
             email == null ||
             password == null ||
@@ -73,31 +72,25 @@ public class Validator {
         )    {
             throw new BadRequestException("Username,first name, last name, email, password and confirm password are required fields!");
         }
-
         if (!validateName(firstName) || !validateName(lastName)) {
             throw new BadRequestException("First name and last name should contain at least 3 chars including only " +
                     "latin letters");
         }
-
         if (!validateUsername(username)) {
             throw new BadRequestException("Username should be at least 3 chars and should contain only " +
                     "latin letters, digits, points, dashes and underscores");
         }
-
         if (!validateEmail(email)) {
             throw new BadRequestException("Invalid email!");
         }
-
         if (password.equals(username)) {
             throw new BadRequestException("Password should be different from the username!");
         }
-
         if (!validatePasswordStrength(password)) {
             throw new BadRequestException("Password should contain at least 8 chars including at least 1 digit, " +
                     "1 upper case, 1 lower case letter, 1 special char (@, #, %, $, ^)  and should NOT contain " +
                     "spaces or tabs!");
         }
-
         if (!validateConfirmPassword(password, confirmPassword)) {
             throw new BadRequestException("Confirm password should match password!");
         }
@@ -107,25 +100,20 @@ public class Validator {
         String oldPassword = passwordDto.getOldPassword();
         String newPassword = passwordDto.getNewPassword();
         String confirmPassword = passwordDto.getConfirmPassword();
-
         if (oldPassword == null || newPassword == null || confirmPassword == null) {
             throw new BadRequestException("Missing field!");
         }
-
         if (!BCrypt.checkpw(passwordDto.getOldPassword(), user.getPassword())) {
             throw new BadRequestException("Wrong old password");
         }
-
         if (!validatePasswordStrength(newPassword)) {
             throw new BadRequestException("Password should contain at least 8 chars including at least 1 digit, " +
                     "1 upper case, 1 lower case letter, 1 special char (@, #, %, $, ^)  and should NOT contain " +
                     "spaces or tabs!");
         }
-
         if (validateConfirmPassword(oldPassword, newPassword)) {
             throw new BadRequestException("New password must be different from the old one!");
         }
-
         if (!validateConfirmPassword(newPassword, confirmPassword)) {
             throw new BadRequestException("Confirm password should match password!");
         }
@@ -134,7 +122,6 @@ public class Validator {
     public static void validateEditProfileInformation(EditProfileDto profileDto, User user) throws BadRequestException {
         String firstName = profileDto.getFirstName();
         String lastName = profileDto.getLastName();
-
         //validate if first or last name match name format
         //and are different from current first and last name of the user
         if (firstName != null && (!validateName(firstName) || firstName.equals(user.getFirstName())) ||

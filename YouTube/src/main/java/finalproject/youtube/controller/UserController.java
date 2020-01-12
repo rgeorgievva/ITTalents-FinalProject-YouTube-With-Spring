@@ -49,7 +49,6 @@ public class UserController extends BaseController {
     @PostMapping(value = "users/logout")
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate();
-
         return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);
     }
 

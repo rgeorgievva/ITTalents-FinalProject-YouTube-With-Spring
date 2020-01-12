@@ -87,7 +87,6 @@ public class VideoController extends BaseController {
     @GetMapping("/videos/page/{page}")
     public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page) {
         List<VideoDto> videos = videoService.getAllByDateUploadedAndNumberLikes(page);
-
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 

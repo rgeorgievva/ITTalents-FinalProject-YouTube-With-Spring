@@ -54,7 +54,6 @@ public class User {
         user.setLastName(userDto.getLastName());
         user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());
-
         return user;
     }
 
@@ -66,7 +65,6 @@ public class User {
         noPasswordUserDto.setLastName(this.lastName);
         noPasswordUserDto.setEmail(this.email);
         noPasswordUserDto.setDateCreated(this.dateCreated);
-
         return noPasswordUserDto;
     }
 }

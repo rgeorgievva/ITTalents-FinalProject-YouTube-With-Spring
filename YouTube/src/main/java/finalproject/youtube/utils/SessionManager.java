@@ -13,11 +13,9 @@ public class SessionManager {
         if (session.isNew()) {
             return false;
         }
-
         if (session.getAttribute(LOGGED) == null) {
             return false;
         }
-
         return true;
     }
 
@@ -25,7 +23,6 @@ public class SessionManager {
         if (validateLogged(session)) {
             return (User) session.getAttribute("user");
         }
-
         throw new AuthorizationException("Not logged!");
     }
 

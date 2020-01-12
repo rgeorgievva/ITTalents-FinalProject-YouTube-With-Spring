@@ -28,13 +28,10 @@ public class UserService {
 
     @Autowired
     UserDAO userDAO;
-
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     VideoRepository videoRepository;
-
     @Autowired
     PlaylistRepository playlistRepository;
 
@@ -60,14 +57,12 @@ public class UserService {
         if (!BCrypt.checkpw(loginUser.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password!");
         }
-
         return user;
     }
 
     public NoPasswordUserDto changePassword(ChangePasswordDto passwordDto, User loggedUser) {
         Validator.validateChangePasswordInformation(passwordDto, loggedUser);
         loggedUser.setPassword(passwordDto.getNewPassword());
-
         return userRepository.save(loggedUser).toNoPasswordUserDto();
     }
 
@@ -82,7 +77,6 @@ public class UserService {
         if (lastName != null) {
             loggedUser.setLastName(lastName);
         }
-
         return userRepository.save(loggedUser).toNoPasswordUserDto();
     }
 
@@ -92,12 +86,10 @@ public class UserService {
         if (users.isEmpty()) {
             throw new NotFoundException("No users found!");
         }
-
         List<NoPasswordUserDto> usersWithoutPass = new ArrayList<>();
         for (User user : users) {
             usersWithoutPass.add(user.toNoPasswordUserDto());
         }
-
         return usersWithoutPass;
     }
 

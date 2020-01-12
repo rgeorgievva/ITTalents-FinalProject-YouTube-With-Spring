@@ -20,7 +20,6 @@ public class VideoUploadNotificator extends Thread {
         this.body = "User " + subscribedTo.getUsername() + " uploaded new video! Go check it out!";
     }
 
-
     @SneakyThrows
     @Override
     public void run() {

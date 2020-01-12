@@ -14,40 +14,43 @@ public class VideoDAO {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
     public static final int DISLIKE = -1;
     public static final int LIKE = 1;
-    public static final String CHECK_IF_REACTION_EXISTS_SQL = "SELECT reaction FROM videos_reactions" +
-            " WHERE user_id = ? AND video_id = ?;";
-    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos (title," +
-            " description, " +
-            "video_url," +
-            " date_uploaded, " +
+    public static final String CHECK_IF_REACTION_EXISTS_SQL = "SELECT reaction " +
+            "FROM videos_reactions " +
+            "WHERE user_id = ? " +
+            "AND video_id = ?;";
+    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos " +
+            "(title, " +
+            "description, " +
+            "video_url, " +
+            "date_uploaded, " +
             "owner_id, " +
-            "category_id," +
-            " thumbnail_url, " +
+            "category_id, " +
+            "thumbnail_url, " +
             "status) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-    private static final String UPDATE_VIDEO_NUMBER_LIKES_SQL = "UPDATE videos SET number_likes = ? " +
+    private static final String UPDATE_VIDEO_NUMBER_LIKES_SQL = "UPDATE videos " +
+            "SET number_likes = ? " +
             "WHERE id = ?;";
-    private static final String INCREASE_VIDEO_NUMBER_DISLIKES_SQL = "UPDATE videos SET number_dislikes = ? " +
+    private static final String INCREASE_VIDEO_NUMBER_DISLIKES_SQL = "UPDATE videos " +
+            "SET number_dislikes = ? " +
             "WHERE id = ?;";
     private static final String UPDATE_LIKES_AND_DISLIKES_TO_VIDEO = "UPDATE videos " +
             "SET number_likes = ?, " +
             "number_dislikes = ? " +
             " WHERE id = ?;";
-    private static final String REACT_TO_VIDEO = "INSERT INTO videos_reactions (user_id, video_id, reaction) " +
+    private static final String REACT_TO_VIDEO = "INSERT INTO videos_reactions " +
+            "(user_id, video_id, reaction) " +
             "VALUES (?, ?, ?);";
-    private static final String REMOVE_REACTION_TO_VIDEO = "DELETE FROM videos_reactions WHERE " +
-            "user_id = ? AND video_id = ?;";
-    private static final String CHANGE_REACTION_TO_VIDEO = "UPDATE videos_reactions SET reaction = ? WHERE " +
-            "user_id = ? AND video_id = ?;";
-    private static final String GET_VIDEOS_ORDERED_BY_DATE_AND_NUMBER_LIKES = "SELECT * FROM videos " +
-            "WHERE status='UPLOADED' " +
-            "ORDER BY number_likes DESC, " +
-            "date_uploaded DESC " +
-            "LIMIT ? " +
-            "OFFSET ?;";
+    private static final String REMOVE_REACTION_TO_VIDEO = "DELETE FROM videos_reactions " +
+            "WHERE " +
+            "user_id = ? " +
+            "AND video_id = ?;";
+    private static final String CHANGE_REACTION_TO_VIDEO = "UPDATE videos_reactions " +
+            "SET reaction = ? " +
+            "WHERE user_id = ? " +
+            "AND video_id = ?;";
 
     // add video
     public long uploadVideo(Video video) throws SQLException {
@@ -66,7 +69,6 @@ public class VideoDAO {
             ResultSet generatedKeys = statement.getGeneratedKeys();
             generatedKeys.next();
             video.setId(generatedKeys.getInt(1));
-
             return video.getId();
         }
     }
@@ -116,11 +118,9 @@ public class VideoDAO {
             statement1.setLong(2, video.getId());
             statement1.setInt(3, reaction);
             statement1.executeUpdate();
-
             statement2.setInt(1, updatedNumber);
             statement2.setLong(2, video.getId());
             statement2.executeUpdate();
-
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -151,7 +151,6 @@ public class VideoDAO {
             statement1.setLong(2, userId);
             statement1.setLong(3, video.getId());
             statement1.executeUpdate();
-
             statement2.setInt(1, updatedNumberLikes);
             statement2.setInt(2, updatedNumberDislikes);
             statement2.setLong(3, video.getId());
@@ -185,7 +184,6 @@ public class VideoDAO {
             statement1.setLong(1, userId);
             statement1.setLong(2, video.getId());
             statement1.executeUpdate();
-
             statement2.setInt(1, updatedNumber);
             statement2.setLong(2, video.getId());
             statement2.executeUpdate();

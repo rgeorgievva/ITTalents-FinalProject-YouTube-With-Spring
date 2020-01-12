@@ -10,7 +10,7 @@ public class MailSender {
     private static final String SENDER = "yt.ittalents@gmail.com";
     public static void sendMail(String to, String subject, String body){
         final String username = SENDER;
-        final String password = "Youtube*";//TODO set email pass
+        final String password = "";//TODO set email pass
 
         Properties prop = new Properties();
         prop.put("mail.smtp.ssl.trust", "smtp.gmail.com");

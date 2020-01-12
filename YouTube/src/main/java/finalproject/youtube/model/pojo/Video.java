@@ -55,15 +55,8 @@ public class Video {
         VideoDto videoDto = new VideoDto();
         videoDto.setId(this.id);
         videoDto.setTitle(this.title);
-//        videoDto.setDescription(this.description);
-//        videoDto.setVideoUrl(this.videoUrl);
-//        videoDto.setThumbnailUrl(this.thumbnailUrl);
         videoDto.setDateUploaded(this.dateUploaded);
         videoDto.setOwner(this.owner.toNoPasswordUserDto());
-//        videoDto.setCategory(this.category);
-//        videoDto.setNumberLikes(this.numberLikes);
-//        videoDto.setNumberDislikes(this.numberDislikes);
-
         return videoDto;
     }
 
@@ -76,7 +69,6 @@ public class Video {
         videoDto.setOwner(this.owner.toNoPasswordUserDto());
         videoDto.setCategory(this.category);
         videoDto.setStatus(this.getStatus());
-
         return videoDto;
     }
 
@@ -93,7 +85,6 @@ public class Video {
         videoDto.setNumberLikes(this.numberLikes);
         videoDto.setNumberDislikes(this.numberDislikes);
         videoDto.setComments(comments);
-
         return videoDto;
     }
 }
