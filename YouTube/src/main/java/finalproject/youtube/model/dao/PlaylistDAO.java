@@ -1,5 +1,6 @@
 package finalproject.youtube.model.dao;
 
+import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dto.VideoInPlaylistDto;
 import finalproject.youtube.model.pojo.Playlist;
 import finalproject.youtube.model.pojo.Video;
@@ -14,6 +15,8 @@ import java.util.List;
 
 @Component
 public class PlaylistDAO {
+
+    private static final int MAX_VIDEOS_PER_PAGE = 10;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -89,5 +92,44 @@ public class PlaylistDAO {
                 return false;
             }
         }
+    }
+
+    @SneakyThrows
+    public List<VideoInPlaylistDto> getTenVideosPerPageFromPlaylist(Playlist playlist, int page) {
+        List <VideoInPlaylistDto> videos = new ArrayList <>();
+        Connection connection = jdbcTemplate.getDataSource().getConnection();
+        String sql = "select \n" +
+                "v.id as video_id, v.title, v.video_url, v.thumbnail_url, " +
+                "u.user_name, " +
+                "vp.time_added\n" +
+                "from youtube.videos as v\n" +
+                "join youtube.videos_in_playlist as vp\n" +
+                "on v.id = vp.video_id\n" +
+                "join youtube.playlists as p\n" +
+                "on p.id = vp.playlist_id\n" +
+                "join youtube.users as u\n" +
+                "on v.owner_id=u.id\n" +
+                "where vp.playlist_id = ? " +
+                "limit ? offset ?;\n";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setLong(1, playlist.getId());
+        preparedStatement.setInt(2, MAX_VIDEOS_PER_PAGE);
+        preparedStatement.setInt(3, page*MAX_VIDEOS_PER_PAGE);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if (!resultSet.next()){
+            throw new NotFoundException("There are no videos on this page");
+        }
+        do{
+            VideoInPlaylistDto video = new VideoInPlaylistDto(
+                    resultSet.getInt("video_id"),
+                    resultSet.getString("title"),
+                    resultSet.getString("video_url"),
+                    resultSet.getString("thumbnail_url"),
+                    resultSet.getString("user_name"),
+                    resultSet.getTimestamp("time_added").toLocalDateTime()
+            );
+            videos.add(video);
+        }while (resultSet.next());
+        return videos;
     }
 }

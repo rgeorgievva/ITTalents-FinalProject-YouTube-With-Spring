@@ -42,6 +42,18 @@ public class PlaylistService {
         return new ResponsePlaylistDto(playlist, videos);
     }
 
+    public ResponsePlaylistDto getTenFromPlaylistById(long playlistId, int page) {
+        //checks for playlist existence
+        Optional <Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
+            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
+        }
+        //return playlist with all videos in it
+        Playlist playlist = optionalPlaylist.get();
+        List <VideoInPlaylistDto> videos = playlistDAO.getTenVideosPerPageFromPlaylist(playlist, page);
+        return new ResponsePlaylistDto(playlist, videos);
+    }
+
     public List<ResponsePlaylistDto> getPlaylistsByTitle(String title){
         Optional<List<Playlist>> optionalPlaylists = playlistRepository.findAllByTitleContaining(title);
         //checks for playlist existence

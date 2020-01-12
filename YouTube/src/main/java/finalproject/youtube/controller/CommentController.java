@@ -28,7 +28,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity(commentService.getCommentById(commentId), HttpStatus.OK) ;
     }
 
-
     @SneakyThrows
     @PostMapping(value = "/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
@@ -46,12 +45,10 @@ public class CommentController extends BaseController{
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
                             @RequestBody RequestCommentDto requestCommentDto,
                             @PathVariable("commentId") long commentId){
-
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to edit comment!");
         }
-
         return new ResponseEntity(commentService.editComment(SessionManager.getLoggedUser(session),
                 requestCommentDto,commentId), HttpStatus.OK);
     }
@@ -60,13 +57,11 @@ public class CommentController extends BaseController{
     @DeleteMapping(value = "/comments/{commentId}")
     public ResponseEntity<String> deleteComment(HttpSession session,
                               @PathVariable("commentId") long commentId){
-
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to delete comment!");
         }
         commentService.deleteComment(SessionManager.getLoggedUser(session),commentId);
-
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
 
@@ -74,7 +69,6 @@ public class CommentController extends BaseController{
     @GetMapping(value = "/comments/{commentId}/like")
     public void likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
-
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to like comment!");
@@ -86,7 +80,6 @@ public class CommentController extends BaseController{
     @GetMapping(value = "/comments/{commentId}/dislike")
     public void dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
-
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to dislike comment!");
