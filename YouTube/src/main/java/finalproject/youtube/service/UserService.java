@@ -38,7 +38,7 @@ public class UserService {
     @Autowired
     PlaylistRepository playlistRepository;
 
-    private static final int NUMBER_PLAYLISTS_PER_PAGE = 10;
+    private static final int NUMBER_ITEMS_PER_PAGE = 10;
 
     public NoPasswordUserDto createUser(RegisterUserDto registerUser) throws SQLException {
         Validator.validateRegisterDto(registerUser);
@@ -86,8 +86,9 @@ public class UserService {
         return userRepository.save(loggedUser).toNoPasswordUserDto();
     }
 
-    public List<NoPasswordUserDto> getByUsername(String username) {
-        List<User> users = userRepository.findAllByUsernameContaining(username);
+    public List<NoPasswordUserDto> getByUsername(String username, int page) {
+        List<User> users = userRepository.findAllByUsernameContaining(username,
+                PageRequest.of(page, NUMBER_ITEMS_PER_PAGE));
         if (users.isEmpty()) {
             throw new NotFoundException("No users found!");
         }
@@ -130,10 +131,11 @@ public class UserService {
     }
 
 
-    public List<VideoDto> getVideosUploadedByUser(long userId) {
+    public List<VideoDto> getVideosUploadedByUser(long userId, int page) {
         validateUser(userId);
         List<VideoDto> videos = new ArrayList<>();
-        for (Video video : videoRepository.getAllByOwnerId(userId)) {
+        for (Video video : videoRepository.getAllByOwnerIdOrderByDateUploadedDesc(userId,
+                PageRequest.of(page, NUMBER_ITEMS_PER_PAGE))) {
             videos.add(video.toVideoDto());
         }
         if (videos.isEmpty()) {
@@ -146,7 +148,7 @@ public class UserService {
     public List<ResponsePlaylistDto> getPlaylistsByUser(int page, long ownerId) {
         validateUser(ownerId);
         List<Playlist> playlists = playlistRepository.findAllByOwnerId(ownerId,
-                PageRequest.of(page, NUMBER_PLAYLISTS_PER_PAGE));
+                PageRequest.of(page, NUMBER_ITEMS_PER_PAGE));
         if (playlists.isEmpty()) {
             throw new NotFoundException("No playlists found!");
         }

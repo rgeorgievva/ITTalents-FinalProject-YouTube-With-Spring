@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
-    List<Video> getAllByOwnerId(long ownerId);
+    List<Video> getAllByOwnerIdOrderByDateUploadedDesc(long ownerId, Pageable pageable);
     void deleteById(long id);
     List<Video> findAllByTitleContainingAndStatus(String title,String status, Pageable pageable);
     List<Video> findAllByStatusOrderByNumberLikesDescDateUploadedDesc(String status, Pageable pageable);

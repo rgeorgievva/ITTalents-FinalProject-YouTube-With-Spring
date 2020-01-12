@@ -131,34 +131,34 @@ public class CommentService {
         commentDAO.react(currentUser, comment, DISLIKE_REACTION);
     }
 
-    public List <ResponseCommentWithRepliesDto> getAllCommentsForVideo(long videoId) {
-        //check if video id is valid
-        Video video = videoService.validateAndGetVideo(videoId);
-        //check if there are any parent comments
-        Optional<List <Comment>> commentList = commentRepository.findAllByVideoIdAndRepliedToIsNull(videoId);
-        if(!commentList.isPresent()){
-            return null;
-        }
-        //get all comments, if there are any
-        List<Comment> parentComments = commentList.get();
-        List<ResponseCommentWithRepliesDto> response = new ArrayList <>();
-        //check if the comments have replies
-        for (Comment p: parentComments) {
-            Optional<List<Comment>> repliesToParent = commentRepository.findAllByRepliedToId(p.getId());
-            //if there is a reply
-            if(repliesToParent.isPresent()){
-                List<Comment> replies = repliesToParent.get();
-                List<ResponseReplyDto> repliesDtos = new ArrayList <>();
-                for (Comment r: replies){
-                    repliesDtos.add(r.toReplyDto());
-                }
-                response.add(new ResponseCommentWithRepliesDto(p,repliesDtos));
-            }
-            //if there are no replies
-            else {
-                response.add(new ResponseCommentWithRepliesDto(p));
-            }
-        }
-        return response;
-    }
+//    public List <ResponseCommentWithRepliesDto> getAllCommentsForVideo(long videoId) {
+//        //check if video id is valid
+//        Video video = videoService.validateAndGetVideo(videoId);
+//        //check if there are any parent comments
+//        Optional<List <Comment>> commentList = commentRepository.findAllByVideoIdAndRepliedToIsNull(videoId);
+//        if(!commentList.isPresent()){
+//            return null;
+//        }
+//        //get all comments, if there are any
+//        List<Comment> parentComments = commentList.get();
+//        List<ResponseCommentWithRepliesDto> response = new ArrayList <>();
+//        //check if the comments have replies
+//        for (Comment p: parentComments) {
+//            Optional<List<Comment>> repliesToParent = commentRepository.findAllByRepliedToId(p.getId());
+//            //if there is a reply
+//            if(repliesToParent.isPresent()){
+//                List<Comment> replies = repliesToParent.get();
+//                List<ResponseReplyDto> repliesDtos = new ArrayList <>();
+//                for (Comment r: replies){
+//                    repliesDtos.add(r.toReplyDto());
+//                }
+//                response.add(new ResponseCommentWithRepliesDto(p,repliesDtos));
+//            }
+//            //if there are no replies
+//            else {
+//                response.add(new ResponseCommentWithRepliesDto(p));
+//            }
+//        }
+//        return response;
+//    }
 }

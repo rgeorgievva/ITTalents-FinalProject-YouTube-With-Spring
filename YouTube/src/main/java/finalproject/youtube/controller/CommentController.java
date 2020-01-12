@@ -94,10 +94,4 @@ public class CommentController extends BaseController{
        commentService.dislikeComment(SessionManager.getLoggedUser(session), commentId);
     }
 
-    @SneakyThrows
-    @GetMapping(value = "/comments/video/{video_id}")
-    public ResponseEntity<List <ResponseCommentWithRepliesDto>> getAllCommentsForVideo(
-            @PathVariable("video_id") long videoId){
-        return new ResponseEntity(commentService.getAllCommentsForVideo(videoId), HttpStatus.OK);
-    }
 }

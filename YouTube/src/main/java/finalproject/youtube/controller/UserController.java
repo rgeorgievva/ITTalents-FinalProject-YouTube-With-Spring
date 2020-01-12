@@ -73,9 +73,10 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/{username}")
-    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username) {
-        List<NoPasswordUserDto> users = userService.getByUsername(username);
+    @GetMapping(value = "users/{username}/{page}")
+    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username,
+                                                                 @PathVariable("page") int page) {
+        List<NoPasswordUserDto> users = userService.getByUsername(username, page);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -100,10 +101,10 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);
     }
 
-
-    @GetMapping(value = "users/{userId}/videos")
-    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId) {
-        List<VideoDto> videos = userService.getVideosUploadedByUser(userId);
+    @GetMapping(value = "users/{userId}/videos/{page}")
+    public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId,
+                                                                  @PathVariable("page") int page) {
+        List<VideoDto> videos = userService.getVideosUploadedByUser(userId, page);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 

@@ -1,5 +1,7 @@
 package finalproject.youtube.service;
 
+import finalproject.youtube.model.dto.*;
+import finalproject.youtube.model.repository.CommentRepository;
 import finalproject.youtube.utils.AmazonClient;
 import finalproject.youtube.utils.Uploader;
 import finalproject.youtube.utils.Validator;
@@ -8,8 +10,6 @@ import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
-import finalproject.youtube.model.dto.PendingVideoDto;
-import finalproject.youtube.model.dto.VideoDto;
 import finalproject.youtube.model.pojo.*;
 import finalproject.youtube.model.repository.CategoryRepository;
 import finalproject.youtube.model.repository.UserRepository;
@@ -32,21 +32,18 @@ public class VideoService {
 
     @Autowired
     VideoDAO videoDAO;
-
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     CategoryRepository categoryRepository;
-
     @Autowired
     AmazonClient amazonClient;
-
     @Autowired
     VideoRepository videoRepository;
-
     @Autowired
     UserDAO userDAO;
+    @Autowired
+    CommentRepository commentRepository;
 
     private void setInitialValuesToVideo(Video video) {
         video.setStatus(Video.Status.PENDING.toString());
@@ -81,7 +78,6 @@ public class VideoService {
         } catch (IOException e) {
             video.setStatus(Video.Status.FAILED.toString());
         }
-
         return video.toPendingVideoDto();
     }
 
@@ -95,7 +91,6 @@ public class VideoService {
         if (status == null || !status.equals(Video.Status.UPLOADED.toString())) {
             throw new NotFoundException("Video not found!");
         }
-
         return video;
     }
 
@@ -107,30 +102,26 @@ public class VideoService {
         videoRepository.deleteById(videoId);
         amazonClient.deleteFileFromS3Bucket(video.getVideoUrl());
         amazonClient.deleteFileFromS3Bucket(video.getThumbnailUrl());
-
         return video.toVideoDto();
     }
 
-    public VideoDto getVideoById(long videoId) {
-        VideoDto video  = validateAndGetVideo(videoId).toVideoDto();
-
-        return video;
+    public VideoWholeInfoDto getVideoById(long videoId) {
+        Video video  = validateAndGetVideo(videoId);
+        List<ResponseCommentWithRepliesDto> comments = getAllCommentsForVideo(videoId);
+        return video.toVideoWholeInfoDto(comments);
     }
 
     public List<VideoDto> getVideosByTitle(String title, int page) {
         List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Video.Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
-
         if (videos.isEmpty()) {
             throw new NotFoundException("No videos found!");
         }
-
         List<VideoDto> videoDtos = new ArrayList<>();
         for (Video video : videos) {
             videoDtos.add(video.toVideoDto());
 
         }
-
         return videoDtos;
     }
 
@@ -145,7 +136,8 @@ public class VideoService {
     }
 
     public List<VideoDto> getAllByDateUploadedAndNumberLikes(int page) {
-        List<Video> videos = videoRepository.findAllByStatusOrderByNumberLikesDescDateUploadedDesc(Video.Status.UPLOADED.toString(),
+        List<Video> videos = videoRepository.findAllByStatusOrderByNumberLikesDescDateUploadedDesc(
+                Video.Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
         if (videos.isEmpty()) {
             throw new NotFoundException("Videos not found!");
@@ -157,4 +149,34 @@ public class VideoService {
         return videoDtos;
     }
 
+    public List <ResponseCommentWithRepliesDto> getAllCommentsForVideo(long videoId) {
+        //check if video id is valid
+        Video video = validateAndGetVideo(videoId);
+        //check if there are any parent comments
+        Optional<List <Comment>> commentList = commentRepository.findAllByVideoIdAndRepliedToIsNull(videoId);
+        if(!commentList.isPresent()){
+            return null;
+        }
+        //get all comments, if there are any
+        List<Comment> parentComments = commentList.get();
+        List<ResponseCommentWithRepliesDto> response = new ArrayList <>();
+        //check if the comments have replies
+        for (Comment p: parentComments) {
+            Optional<List<Comment>> repliesToParent = commentRepository.findAllByRepliedToId(p.getId());
+            //if there is a reply
+            if(repliesToParent.isPresent()){
+                List<Comment> replies = repliesToParent.get();
+                List<ResponseReplyDto> repliesDtos = new ArrayList <>();
+                for (Comment r: replies){
+                    repliesDtos.add(r.toReplyDto());
+                }
+                response.add(new ResponseCommentWithRepliesDto(p,repliesDtos));
+            }
+            //if there are no replies
+            else {
+                response.add(new ResponseCommentWithRepliesDto(p));
+            }
+        }
+        return response;
+    }
 }
