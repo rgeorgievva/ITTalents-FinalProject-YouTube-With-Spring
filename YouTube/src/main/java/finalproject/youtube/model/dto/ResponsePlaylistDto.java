@@ -1,7 +1,6 @@
 package finalproject.youtube.model.dto;
 
-import finalproject.youtube.model.entity.Playlist;
-import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.pojo.Playlist;
 import lombok.Getter;
 import lombok.Setter;
 

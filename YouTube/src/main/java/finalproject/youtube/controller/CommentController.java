@@ -2,18 +2,10 @@ package finalproject.youtube.controller;
 
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
-import finalproject.youtube.exceptions.NotFoundException;
-import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
-import finalproject.youtube.model.dto.ResponseReplyDto;
-import finalproject.youtube.model.entity.Comment;
-import finalproject.youtube.model.entity.User;
-import finalproject.youtube.model.entity.Video;
-import finalproject.youtube.model.repository.CommentRepository;
 import finalproject.youtube.service.CommentService;
-import finalproject.youtube.service.VideoService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,9 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController

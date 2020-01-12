@@ -3,7 +3,7 @@ package finalproject.youtube.controller;
 import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.*;
-import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class UserController extends BaseController {
@@ -33,7 +32,7 @@ public class UserController extends BaseController {
     public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) {
         User user = userService.login(loginUser);
         SessionManager.logUser(session, user);
-
+        //todo add verification to log in -> if status is new -> throw auth exc
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
     }
 
@@ -113,8 +112,9 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(playlists, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/users/verify/{verification_url}")
-    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL){
-        return userService.verifyAccount(verificationURL);
+    @GetMapping(value = "/users/verify/{user_id}/{verification_url}")
+    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
+                                                @PathVariable ("user_id") long userId){
+        return new ResponseEntity <>(userService.verifyAccount(userId, verificationURL), HttpStatus.OK);
     }
 }

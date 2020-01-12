@@ -1,6 +1,6 @@
 package finalproject.youtube.model.repository;
 
-import finalproject.youtube.model.entity.Category;
+import finalproject.youtube.model.pojo.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

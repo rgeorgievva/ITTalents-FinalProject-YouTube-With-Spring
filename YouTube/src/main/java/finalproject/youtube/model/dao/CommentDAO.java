@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.pojo.Comment;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

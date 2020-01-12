@@ -1,6 +1,6 @@
 package finalproject.youtube.model.repository;
 
-import finalproject.youtube.model.entity.Playlist;
+import finalproject.youtube.model.pojo.Playlist;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

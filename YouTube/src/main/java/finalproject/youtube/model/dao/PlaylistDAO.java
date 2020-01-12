@@ -1,8 +1,8 @@
 package finalproject.youtube.model.dao;
 
 import finalproject.youtube.model.dto.VideoInPlaylistDto;
-import finalproject.youtube.model.entity.Playlist;
-import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.pojo.Playlist;
+import finalproject.youtube.model.pojo.Video;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

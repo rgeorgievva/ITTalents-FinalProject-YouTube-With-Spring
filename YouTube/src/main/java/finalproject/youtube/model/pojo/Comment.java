@@ -1,4 +1,4 @@
-package finalproject.youtube.model.entity;
+package finalproject.youtube.model.pojo;
 
 import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;

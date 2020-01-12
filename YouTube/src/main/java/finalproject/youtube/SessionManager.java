@@ -1,7 +1,7 @@
 package finalproject.youtube;
 
 import finalproject.youtube.exceptions.AuthorizationException;
-import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.pojo.User;
 
 import javax.servlet.http.HttpSession;
 

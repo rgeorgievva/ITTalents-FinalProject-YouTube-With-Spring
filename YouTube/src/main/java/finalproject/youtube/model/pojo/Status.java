@@ -1,4 +1,4 @@
-package finalproject.youtube.model.entity;
+package finalproject.youtube.model.pojo;
 
 public enum Status {
 

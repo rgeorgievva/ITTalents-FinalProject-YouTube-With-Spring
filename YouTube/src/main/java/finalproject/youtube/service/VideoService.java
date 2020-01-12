@@ -9,7 +9,7 @@ import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dao.VideoDAO;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
-import finalproject.youtube.model.entity.*;
+import finalproject.youtube.model.pojo.*;
 import finalproject.youtube.model.repository.CategoryRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;

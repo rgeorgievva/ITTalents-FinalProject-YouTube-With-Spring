@@ -1,8 +1,7 @@
-package finalproject.youtube.model.entity;
+package finalproject.youtube.model.pojo;
 
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
-import finalproject.youtube.model.dto.VideoInPlaylistDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

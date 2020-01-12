@@ -1,4 +1,4 @@
-package finalproject.youtube.model.entity;
+package finalproject.youtube.model.pojo;
 
 import finalproject.youtube.AmazonClient;
 import finalproject.youtube.model.dao.UserDAO;

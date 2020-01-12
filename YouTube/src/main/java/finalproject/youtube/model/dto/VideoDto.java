@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dto;
 
-import finalproject.youtube.model.entity.Category;
+import finalproject.youtube.model.pojo.Category;
 import lombok.Getter;
 import lombok.Setter;
 

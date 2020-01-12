@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,6 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Component
 public class UserDAO {

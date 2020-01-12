@@ -1,7 +1,7 @@
 package finalproject.youtube.model.mail;
 
 import finalproject.youtube.MailSender;
-import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -13,7 +13,6 @@ public class ConfirmRegistration extends Thread {
             +"yt-ittalents.com/users/verify/";
     private             User   user;
     private UserRepository userRepository;
-    private String verificationURL = RandomStringUtils.randomAlphanumeric(40);
 
     public ConfirmRegistration(User user, UserRepository userRepository){
         this.user = user;
@@ -22,9 +21,10 @@ public class ConfirmRegistration extends Thread {
 
     @Override
     public void run() {
+        String verificationURL = RandomStringUtils.randomAlphanumeric(40);
         this.user.setVerificationURL(verificationURL);
         this.user.setStatus(User.UserStatus.NEW.toString());
-        BODY = BODY.concat(this.verificationURL);
+        BODY = BODY.concat(Long.toString(user.getId())).concat("/").concat(verificationURL);
         this.userRepository.save(user);
         MailSender.sendMail(user.getEmail(), SUBJECT, BODY);
     }

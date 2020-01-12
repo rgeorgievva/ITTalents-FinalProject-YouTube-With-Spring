@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dao;
 
-import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.pojo.Video;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

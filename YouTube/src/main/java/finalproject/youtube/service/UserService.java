@@ -6,14 +6,13 @@ import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.dto.*;
-import finalproject.youtube.model.entity.Playlist;
-import finalproject.youtube.model.entity.User;
-import finalproject.youtube.model.entity.Video;
+import finalproject.youtube.model.pojo.Playlist;
+import finalproject.youtube.model.pojo.User;
+import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.mail.ConfirmRegistration;
 import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -160,11 +159,9 @@ public class UserService {
         return playlistDtos;
     }
 
-    //todo add verification to log in -> if status is new -> throw auth exc
-    //todo maybe send mail when account is verified
-    public ResponseEntity<String> verifyAccount(String verificationURL) {
-        Optional<User> optionalUser = userRepository.findByVerificationURL(verificationURL);
-        if (!optionalUser.isPresent()){
+    public String verifyAccount(long userId, String verificationURL) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (!optionalUser.isPresent() || optionalUser.get().getVerificationURL().equals(verificationURL)){
             throw new BadRequestException("The verification link used is not valid!");
         }
         User user = optionalUser.get();
@@ -173,6 +170,6 @@ public class UserService {
         }
         user.setStatus(User.UserStatus.VERIFIED.toString());
         userRepository.save(user);
-        return new ResponseEntity <>("Account verified!", HttpStatus.OK);
+        return "Account verified!";
     }
 }

@@ -4,7 +4,7 @@ import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.ChangePasswordDto;
 import finalproject.youtube.model.dto.EditProfileDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
-import finalproject.youtube.model.entity.User;
+import finalproject.youtube.model.pojo.User;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.regex.Matcher;

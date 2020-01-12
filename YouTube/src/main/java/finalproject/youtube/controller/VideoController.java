@@ -4,7 +4,7 @@ import finalproject.youtube.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
-import finalproject.youtube.model.entity.*;
+import finalproject.youtube.model.pojo.*;
 import finalproject.youtube.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

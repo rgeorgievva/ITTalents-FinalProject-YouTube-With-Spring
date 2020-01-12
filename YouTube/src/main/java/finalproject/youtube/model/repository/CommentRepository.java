@@ -1,6 +1,6 @@
 package finalproject.youtube.model.repository;
 
-import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.pojo.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package finalproject.youtube.model.dto;
 
-import finalproject.youtube.model.entity.Comment;
+import finalproject.youtube.model.pojo.Comment;
 import lombok.Getter;
 import lombok.Setter;
 
