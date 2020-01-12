@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @Table(name = "videos")
 public class Video {
 
+    public enum Status {
+        PENDING, UPLOADED, FAILED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

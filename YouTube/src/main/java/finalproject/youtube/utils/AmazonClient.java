@@ -1,4 +1,4 @@
-package finalproject.youtube;
+package finalproject.youtube.utils;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import finalproject.youtube.model.pojo.Status;
 import finalproject.youtube.model.pojo.Video;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,7 +54,7 @@ public class AmazonClient {
             uploadFileTos3bucket(fileName, file);
             file.delete();
         } catch (Exception e) {
-            video.setStatus(Status.FAILED.toString());
+            video.setStatus(Video.Status.FAILED.toString());
         }
         return fileUrl;
     }

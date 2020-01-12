@@ -1,6 +1,5 @@
-package finalproject.youtube.model.mail;
+package finalproject.youtube.utils.mail;
 
-import finalproject.youtube.MailSender;
 import finalproject.youtube.model.dao.UserDAO;
 import finalproject.youtube.model.pojo.User;
 import lombok.SneakyThrows;

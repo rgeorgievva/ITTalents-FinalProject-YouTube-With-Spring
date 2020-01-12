@@ -1,8 +1,8 @@
-package finalproject.youtube.model.pojo;
+package finalproject.youtube.utils;
 
-import finalproject.youtube.AmazonClient;
+import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.dao.UserDAO;
-import finalproject.youtube.model.mail.VideoUploadNotificator;
+import finalproject.youtube.utils.mail.VideoUploadNotificator;
 import finalproject.youtube.model.repository.VideoRepository;
 
 import java.io.File;
@@ -33,8 +33,8 @@ public class Uploader extends Thread {
         String thumbnailUrl = amazonClient.uploadFile(thumbnail, video, true);
         video.setVideoUrl(videoUrl);
         video.setThumbnailUrl(thumbnailUrl);
-        if (!video.getStatus().equals(Status.FAILED.toString())) {
-            video.setStatus(Status.UPLOADED.toString());
+        if (!video.getStatus().equals(Video.Status.FAILED.toString())) {
+            video.setStatus(Video.Status.UPLOADED.toString());
         }
         videoRepository.save(video);
         Thread notificator = new VideoUploadNotificator(userDAO, video.getOwner());

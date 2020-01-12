@@ -1,6 +1,6 @@
 package finalproject.youtube.controller;
 
-import finalproject.youtube.SessionManager;
+import finalproject.youtube.utils.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
@@ -18,8 +18,6 @@ import java.util.List;
 
 @RestController
 public class VideoController extends BaseController {
-
-    private static final int NUMBER_VIDEOS_PER_PAGE = 10;
 
     @Autowired
     VideoService videoService;

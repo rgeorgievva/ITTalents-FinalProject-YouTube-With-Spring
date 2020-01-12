@@ -1,7 +1,8 @@
 package finalproject.youtube.service;
 
-import finalproject.youtube.AmazonClient;
-import finalproject.youtube.Validator;
+import finalproject.youtube.utils.AmazonClient;
+import finalproject.youtube.utils.Uploader;
+import finalproject.youtube.utils.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
@@ -48,7 +49,7 @@ public class VideoService {
     UserDAO userDAO;
 
     private void setInitialValuesToVideo(Video video) {
-        video.setStatus(Status.PENDING.toString());
+        video.setStatus(Video.Status.PENDING.toString());
         video.setVideoUrl("");
         video.setThumbnailUrl("");
         video.setNumberLikes(0);
@@ -78,7 +79,7 @@ public class VideoService {
                     amazonClient.convertMultiPartToFile(thumbnail), amazonClient, videoRepository, userDAO);
             uploader.start();
         } catch (IOException e) {
-            video.setStatus(Status.FAILED.toString());
+            video.setStatus(Video.Status.FAILED.toString());
         }
 
         return video.toPendingVideoDto();
@@ -91,7 +92,7 @@ public class VideoService {
         }
         Video video = optionalVideo.get();
         String status = video.getStatus();
-        if (status == null || !status.equals(Status.UPLOADED.toString())) {
+        if (status == null || !status.equals(Video.Status.UPLOADED.toString())) {
             throw new NotFoundException("Video not found!");
         }
 
@@ -117,7 +118,7 @@ public class VideoService {
     }
 
     public List<VideoDto> getVideosByTitle(String title, int page) {
-        List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Status.UPLOADED.toString(),
+        List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Video.Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
 
         if (videos.isEmpty()) {
@@ -144,7 +145,7 @@ public class VideoService {
     }
 
     public List<VideoDto> getAllByDateUploadedAndNumberLikes(int page) {
-        List<Video> videos = videoRepository.findAllByStatusOrderByNumberLikesDescDateUploadedDesc(Status.UPLOADED.toString(),
+        List<Video> videos = videoRepository.findAllByStatusOrderByNumberLikesDescDateUploadedDesc(Video.Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
         if (videos.isEmpty()) {
             throw new NotFoundException("Videos not found!");

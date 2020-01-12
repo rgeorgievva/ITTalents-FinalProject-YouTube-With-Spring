@@ -1,6 +1,5 @@
-package finalproject.youtube.model.mail;
+package finalproject.youtube.utils.mail;
 
-import finalproject.youtube.MailSender;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;

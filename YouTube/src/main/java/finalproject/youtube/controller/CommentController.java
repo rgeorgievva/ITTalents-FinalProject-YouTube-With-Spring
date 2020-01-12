@@ -1,6 +1,6 @@
 package finalproject.youtube.controller;
 
-import finalproject.youtube.SessionManager;
+import finalproject.youtube.utils.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;

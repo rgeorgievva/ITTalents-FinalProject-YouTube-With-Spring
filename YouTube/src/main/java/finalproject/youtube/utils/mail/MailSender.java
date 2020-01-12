@@ -1,4 +1,4 @@
-package finalproject.youtube;
+package finalproject.youtube.utils.mail;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;

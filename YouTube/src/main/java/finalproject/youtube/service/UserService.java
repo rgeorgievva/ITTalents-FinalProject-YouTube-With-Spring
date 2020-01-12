@@ -1,7 +1,7 @@
 package finalproject.youtube.service;
 
-import finalproject.youtube.Validator;
 import finalproject.youtube.exceptions.AuthorizationException;
+import finalproject.youtube.utils.Validator;
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.UserDAO;
@@ -9,14 +9,12 @@ import finalproject.youtube.model.dto.*;
 import finalproject.youtube.model.pojo.Playlist;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.pojo.Video;
-import finalproject.youtube.model.mail.ConfirmRegistration;
+import finalproject.youtube.utils.mail.ConfirmRegistration;
 import finalproject.youtube.model.repository.PlaylistRepository;
 import finalproject.youtube.model.repository.UserRepository;
 import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 

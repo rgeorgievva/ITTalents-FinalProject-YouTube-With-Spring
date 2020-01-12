@@ -1,4 +1,4 @@
-package finalproject.youtube;
+package finalproject.youtube.utils;
 
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.pojo.User;

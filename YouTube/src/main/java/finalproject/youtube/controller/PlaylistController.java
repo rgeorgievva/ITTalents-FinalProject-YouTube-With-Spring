@@ -1,11 +1,12 @@
 package finalproject.youtube.controller;
 
-import finalproject.youtube.SessionManager;
+import finalproject.youtube.utils.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.RequestPlaylistDto;
 import finalproject.youtube.model.dto.ResponsePlaylistDto;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.service.PlaylistService;
+
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

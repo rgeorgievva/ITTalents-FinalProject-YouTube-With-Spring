@@ -1,4 +1,4 @@
-package finalproject.youtube;
+package finalproject.youtube.utils;
 
 import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.model.dto.ChangePasswordDto;
@@ -86,6 +86,10 @@ public class Validator {
 
         if (!validateEmail(email)) {
             throw new BadRequestException("Invalid email!");
+        }
+
+        if (password.equals(username)) {
+            throw new BadRequestException("Password should be different from the username!");
         }
 
         if (!validatePasswordStrength(password)) {
