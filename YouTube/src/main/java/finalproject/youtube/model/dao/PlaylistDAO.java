@@ -16,7 +16,45 @@ import java.util.List;
 @Component
 public class PlaylistDAO {
 
-    private static final int MAX_VIDEOS_PER_PAGE = 10;
+    private static final int    MAX_VIDEOS_PER_PAGE  = 10;
+
+    private static final String    ADD_VIDEO                    =
+            "INSERT INTO youtube.videos_in_playlist VALUES (?,?, now());";
+    private static final String    REMOVE_VIDEO                 =
+            "DELETE FROM youtube.videos_in_playlist WHERE video_id = ? AND playlist_id = ?;";
+    private static final String IS_VIDEO_IN_PLAYLIST         =
+            "SELECT * " +
+                    "FROM youtube.videos_in_playlist " +
+                    "WHERE video_id = ? AND playlist_id = ?;";
+    private static final String GET_ALL_VIDEOS_FROM_PLAYLIST =
+            "SELECT " +
+                    "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
+                    "u.user_name, " +
+                    "vp.time_added " +
+                    "FROM youtube.videos AS v " +
+                    "JOIN youtube.videos_in_playlist AS vp " +
+                    "ON v.id = vp.video_id " +
+                    "JOIN youtube.playlists AS p " +
+                    "ON p.id = vp.playlist_id " +
+                    "JOIN youtube.users AS u " +
+                    "ON v.owner_id=u.id " +
+                    "WHERE vp.playlist_id = ?;"
+            ;
+    private static       String PAGINATED_PLAYLIST           =
+            "SELECT " +
+                    "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
+                    "u.user_name, " +
+                    "vp.time_added " +
+                    "FROM youtube.videos AS v " +
+                    "JOIN youtube.videos_in_playlist AS vp " +
+                    "ON v.id = vp.video_id " +
+                    "JOIN youtube.playlists AS p " +
+                    "ON p.id = vp.playlist_id " +
+                    "JOIN youtube.users AS u " +
+                    "ON v.owner_id=u.id " +
+                    "WHERE vp.playlist_id = ? " +
+                    "limit ? offset ?;";
+
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -27,8 +65,7 @@ public class PlaylistDAO {
    @SneakyThrows
     public void addVideoToPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "insert into youtube.videos_in_playlist values (?,?, now());";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(ADD_VIDEO);
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
@@ -37,8 +74,7 @@ public class PlaylistDAO {
     @SneakyThrows
     public void removeVideoFromPlaylist(Video video, Playlist playlist){
             Connection connection = jdbcTemplate.getDataSource().getConnection();
-            String sql = "delete from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(REMOVE_VIDEO);
             preparedStatement.setLong(1, video.getId());
             preparedStatement.setLong(2, playlist.getId());
             preparedStatement.executeUpdate();
@@ -48,19 +84,7 @@ public class PlaylistDAO {
     public List<VideoInPlaylistDto> getAllVideosFromPlaylist(Playlist playlist) {
         List <VideoInPlaylistDto> videos = new ArrayList <>();
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "select \n" +
-                "v.id as video_id, v.title, v.video_url, v.thumbnail_url, " +
-                "u.user_name, " +
-                "vp.time_added\n" +
-                "from youtube.videos as v\n" +
-                "join youtube.videos_in_playlist as vp\n" +
-                "on v.id = vp.video_id\n" +
-                "join youtube.playlists as p\n" +
-                "on p.id = vp.playlist_id\n" +
-                "join youtube.users as u\n" +
-                "on v.owner_id=u.id\n" +
-                "where vp.playlist_id = ?;\n";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_VIDEOS_FROM_PLAYLIST);
         preparedStatement.setLong(1, playlist.getId());
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
@@ -80,9 +104,8 @@ public class PlaylistDAO {
 
     @SneakyThrows
     public boolean isVideoInPlaylist(Video video, Playlist playlist) {
-        String sql = "select * from youtube.videos_in_playlist where video_id = ? and playlist_id = ?;";
         try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(IS_VIDEO_IN_PLAYLIST)) {
                 preparedStatement.setLong(1, video.getId());
                 preparedStatement.setLong(2, playlist.getId());
                 ResultSet result = preparedStatement.executeQuery();
@@ -98,20 +121,7 @@ public class PlaylistDAO {
     public List<VideoInPlaylistDto> getTenVideosPerPageFromPlaylist(Playlist playlist, int page) {
         List <VideoInPlaylistDto> videos = new ArrayList <>();
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-        String sql = "select \n" +
-                "v.id as video_id, v.title, v.video_url, v.thumbnail_url, " +
-                "u.user_name, " +
-                "vp.time_added\n" +
-                "from youtube.videos as v\n" +
-                "join youtube.videos_in_playlist as vp\n" +
-                "on v.id = vp.video_id\n" +
-                "join youtube.playlists as p\n" +
-                "on p.id = vp.playlist_id\n" +
-                "join youtube.users as u\n" +
-                "on v.owner_id=u.id\n" +
-                "where vp.playlist_id = ? " +
-                "limit ? offset ?;\n";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        PreparedStatement preparedStatement = connection.prepareStatement(PAGINATED_PLAYLIST);
         preparedStatement.setLong(1, playlist.getId());
         preparedStatement.setInt(2, MAX_VIDEOS_PER_PAGE);
         preparedStatement.setInt(3, page*MAX_VIDEOS_PER_PAGE);

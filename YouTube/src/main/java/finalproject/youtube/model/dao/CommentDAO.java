@@ -14,23 +14,19 @@ public class CommentDAO {
     public static final  int    DISLIKE             = -1;
     public static final  int    LIKE                = 1;
     private static final String HAS_IT_BEEN_REACTED =
-            "select * from comments_reactions where user_id = ? and comment_id = ?";
+            "SELECT * FROM comments_reactions WHERE user_id = ? AND comment_id = ?";
     private static final String REACT_TO_COMMENT    =
-            "insert into comments_reactions (user_id, comment_id, reaction) values (?, ?, ?);";
+            "INSERT INTO comments_reactions (user_id, comment_id, reaction) VALUES (?, ?, ?);";
     private static final String ADD_LIKE            =
-            "update comments set likes = ? where id = ?;";
+            "UPDATE comments SET likes = ? WHERE id = ?;";
     private static final String ADD_DISLIKE         =
-            "update comments set dislikes = ? where id = ?;";
+            "UPDATE comments SET dislikes = ? WHERE id = ?;";
     public static final  String CHANGE_REACTION     =
-            "update comments_reactions set reaction = ? where user_id = ? and comment_id = ?;";
+            "UPDATE comments_reactions SET reaction = ? WHERE user_id = ? AND comment_id = ?;";
     public static final  String UPDATE_REACTIONS =
-            "update comments set likes = ?, dislikes = ? where id = ?;";
+            "UPDATE comments SET likes = ?, dislikes = ? WHERE id = ?;";
     private static final String REMOVE_REACTION   =
-            "delete from comments_reactions where user_id = ? and comment_id = ?;";
-    private static final String LIKED = "Liked!";
-    private static final String DISLIKED = "Disliked!";
-    private static final String UNLIKED = "Un-liked!";
-    private static final String UNDISLIKED = "Un-disliked!";
+            "DELETE FROM comments_reactions WHERE user_id = ? AND comment_id = ?;";
 
     @Autowired
     JdbcTemplate jdbcTemplate;

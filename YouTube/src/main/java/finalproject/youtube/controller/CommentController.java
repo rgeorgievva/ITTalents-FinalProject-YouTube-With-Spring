@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
+//todo replace ResponseDTO with RequestParam ****(required = false)
+//todo check urls for posting comments
 
 @RestController
 public class CommentController extends BaseController{

@@ -11,13 +11,15 @@ import finalproject.youtube.model.pojo.Playlist;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.repository.PlaylistRepository;
-import finalproject.youtube.model.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+
+
+//todo validations -> to Validator
 
 @Service
 public class PlaylistService {
