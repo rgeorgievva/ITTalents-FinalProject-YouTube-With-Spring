@@ -6,6 +6,7 @@ import finalproject.youtube.model.dto.*;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.service.UserService;
 import finalproject.youtube.utils.Validator;
+import finalproject.youtube.utils.mail.ConfirmRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,8 @@ public class UserController extends BaseController {
     public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
                                                 @PathVariable ("user_id") long userId,
                                                 HttpSession session){
-        User verifiedUser = userService.verifyAccount(userId, verificationURL);
+        long realId = ConfirmRegistration.decryptId(userId);
+        User verifiedUser = userService.verifyAccount(realId, verificationURL);
         SessionManager.logUser(session, verifiedUser);
         return new ResponseEntity <>("Account verified", HttpStatus.OK);
     }
