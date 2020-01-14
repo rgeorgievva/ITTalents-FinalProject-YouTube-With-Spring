@@ -9,7 +9,7 @@ import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
 import finalproject.youtube.model.pojo.*;
 import finalproject.youtube.service.VideoService;
-import lombok.SneakyThrows;
+import finalproject.youtube.utils.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class VideoController extends BaseController {
     @Autowired
     VideoService videoService;
 
-    @PostMapping(value = "videos/upload")
+    @PostMapping(value = "/videos/upload")
     public ResponseEntity<PendingVideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
                                                        @RequestPart(value = "thumbnail") MultipartFile thumbnail,
                                                        @RequestParam(value = "title") String title,
@@ -41,7 +41,7 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "videos/{id}")
+    @DeleteMapping(value = "/videos/{id}")
     public ResponseEntity<VideoDto> deleteVideo(@PathVariable("id") long videoId, HttpSession session) {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
@@ -51,16 +51,17 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
-    @GetMapping(value = "videos/{id}")
+    @GetMapping(value = "/videos/{id}")
     public ResponseEntity<VideoWholeInfoDto> getVideoById(@PathVariable("id") long videoId) {
         VideoWholeInfoDto video = videoService.getVideoById(videoId);
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
-    @GetMapping(value = "videos/title/{title}/{page}")
-    public ResponseEntity<List<VideoDto>> getVideosByTitle(@PathVariable("title") String title,
-                                                           @PathVariable("page") int page) {
-        List<VideoDto> videos = videoService.getVideosByTitle(title, page);
+    @GetMapping(value = "/videos/title")
+    public ResponseEntity<List<VideoDto>> getVideosByTitle(@RequestParam(value = "title", defaultValue = "") String title,
+                                                           @RequestParam(value = "page", defaultValue = "1") int page) {
+        Validator.validatePage(page);
+        List<VideoDto> videos = videoService.getVideosByTitle(title, page - 1);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
@@ -84,14 +85,15 @@ public class VideoController extends BaseController {
         videoService.dislikeVideo(videoId, currentUser);
     }
 
-    @GetMapping("/videos/page/{page}")
-    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@PathVariable("page") int page) {
-        List<VideoDto> videos = videoService.getAllByDateUploadedAndNumberLikes(page);
+    @GetMapping("/videos/all")
+    public ResponseEntity<List<VideoDto>> getAllByDateUploadedAndNumberLikes(@RequestParam(value = "page",
+            defaultValue = "1") int page) {
+        Validator.validatePage(page);
+        List<VideoDto> videos = videoService.getAllByDateUploadedAndNumberLikes(page - 1);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
-    @SneakyThrows
-    @GetMapping(value = "/videos/comments/{video_id}")
+    @GetMapping(value = "/videos/{video_id}/comments")
     public ResponseEntity<List <ResponseCommentWithRepliesDto>> getAllCommentsForVideo(
             @PathVariable("video_id") long videoId){
         List<ResponseCommentWithRepliesDto> comments = videoService.getAllCommentsForVideo(videoId);

@@ -5,6 +5,7 @@ import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.*;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.service.UserService;
+import finalproject.youtube.utils.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +21,13 @@ public class UserController extends BaseController {
     @Autowired
     UserService userService;
 
-
-    @PostMapping(value = "users/register")
+    @PostMapping(value = "/users/register")
     public ResponseEntity<NoPasswordUserDto> register(@RequestBody RegisterUserDto registerUser) throws SQLException {
         NoPasswordUserDto user = userService.createUser(registerUser);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
-    @PostMapping(value = "users/login")
+    @PostMapping(value = "/users/login")
     public ResponseEntity<NoPasswordUserDto> login(HttpSession session, @RequestBody LoginUserDto loginUser) {
         User user = userService.login(loginUser);
         if (!user.getStatus().equals(User.UserStatus.VERIFIED.toString())) {
@@ -46,14 +46,15 @@ public class UserController extends BaseController {
         return new ResponseEntity <>("Account verified", HttpStatus.OK);
     }
 
-    @PostMapping(value = "users/logout")
+    @PostMapping(value = "/users/logout")
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate();
         return new ResponseEntity<>("Logged out successfully!", HttpStatus.OK);
     }
 
     @PutMapping(value = "/users/password")
-    public ResponseEntity<NoPasswordUserDto> changePassword(@RequestBody ChangePasswordDto passwordDto, HttpSession session) {
+    public ResponseEntity<NoPasswordUserDto> changePassword(@RequestBody ChangePasswordDto passwordDto,
+                                                            HttpSession session) {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -72,15 +73,19 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/{username}/{page}")
-    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@PathVariable("username") String username,
-                                                                 @PathVariable("page") int page) {
-        List<NoPasswordUserDto> users = userService.getByUsername(username, page);
+    @GetMapping(value = "/users")
+    public ResponseEntity<List<NoPasswordUserDto>> getByUsername(@RequestParam(value = "username", defaultValue = "")
+                                                                             String username,
+                                                                 @RequestParam(value = "page", defaultValue = "1")
+                                                                         int page) {
+        Validator.validatePage(page);
+        List<NoPasswordUserDto> users = userService.getByUsername(username, page - 1);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @PostMapping(value = "users/subscribe/{id}")
-        public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session) throws SQLException {
+    @PostMapping(value = "/users/subscribe/{id}")
+        public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session)
+            throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();
         }
@@ -89,7 +94,7 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Subscribed successfully!", HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "users/unsubscribe/{id}")
+    @DeleteMapping(value = "/users/unsubscribe/{id}")
     public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") long unsubscribeFromId, HttpSession session)
             throws SQLException {
         if (!SessionManager.validateLogged(session)) {
@@ -100,18 +105,21 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/{userId}/videos/{page}")
+    @GetMapping(value = "/users/{userId}/videos")
     public ResponseEntity<List<VideoDto>> getVideosUploadedByUser(@PathVariable("userId") long userId,
-                                                                  @PathVariable("page") int page) {
-        List<VideoDto> videos = userService.getVideosUploadedByUser(userId, page);
+                                                                  @RequestParam(value = "page", defaultValue = "1")
+                                                                          int page) {
+        Validator.validatePage(page);
+        List<VideoDto> videos = userService.getVideosUploadedByUser(userId, page - 1);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
-    @GetMapping(value = "users/{userId}/playlists/{page}")
-    public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsOfUser(@PathVariable("userId") long userId,
-                                                                        @PathVariable("page") int page) {
-        List<ResponsePlaylistDto> playlists = userService.getPlaylistsByUser(page, userId);
+    @GetMapping(value = "/users/{userId}/playlists")
+    public ResponseEntity<List<UsersPlaylistDto>> getPlaylistsOfUser(@PathVariable("userId") long userId,
+                                                                     @RequestParam(value = "page", defaultValue = "1")
+                                                                                int page) {
+        Validator.validatePage(page);
+        List<UsersPlaylistDto> playlists = userService.getPlaylistsByUser(page - 1, userId);
         return new ResponseEntity<>(playlists, HttpStatus.OK);
     }
-
 }

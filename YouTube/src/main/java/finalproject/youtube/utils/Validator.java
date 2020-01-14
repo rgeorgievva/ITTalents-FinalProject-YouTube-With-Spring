@@ -22,6 +22,8 @@ public class Validator {
             Pattern.compile("^[a-zA-Z]{3,}$");
     private static final Pattern VALID_VIDEO_TITLE_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._ -]{5,}$");
+    private static final int MIN_PAGE = 1;
+
 
     private static boolean validateEmail(String email) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(email);
@@ -56,7 +58,7 @@ public class Validator {
     }
 
 
-    public static void validateRegisterDto(RegisterUserDto registerUserDto) throws BadRequestException {
+    public static void validateRegisterDto(RegisterUserDto registerUserDto) {
         String username = registerUserDto.getUsername();
         String firstName = registerUserDto.getFirstName();
         String lastName = registerUserDto.getLastName();
@@ -70,7 +72,8 @@ public class Validator {
             firstName == null ||
             lastName == null
         )    {
-            throw new BadRequestException("Username,first name, last name, email, password and confirm password are required fields!");
+            throw new BadRequestException("Username,first name, last name, email, password and confirm password " +
+                    "are required fields!");
         }
         if (!validateName(firstName) || !validateName(lastName)) {
             throw new BadRequestException("First name and last name should contain at least 3 chars including only " +
@@ -96,7 +99,7 @@ public class Validator {
         }
     }
 
-    public static void validateChangePasswordInformation(ChangePasswordDto passwordDto, User user) throws BadRequestException {
+    public static void validateChangePasswordInformation(ChangePasswordDto passwordDto, User user) {
         String oldPassword = passwordDto.getOldPassword();
         String newPassword = passwordDto.getNewPassword();
         String confirmPassword = passwordDto.getConfirmPassword();
@@ -119,7 +122,7 @@ public class Validator {
         }
     }
 
-    public static void validateEditProfileInformation(EditProfileDto profileDto, User user) throws BadRequestException {
+    public static void validateEditProfileInformation(EditProfileDto profileDto, User user) {
         String firstName = profileDto.getFirstName();
         String lastName = profileDto.getLastName();
         //validate if first or last name match name format
@@ -131,10 +134,16 @@ public class Validator {
         }
     }
 
-    public static void validateVideoInformation(String title) throws BadRequestException {
+    public static void validateVideoInformation(String title) {
         if (!validateVideoTitle(title)) {
             throw new BadRequestException("Video title should be at least 5 chars and should contain only " +
                     "latin letters, digits, points, dashes, underscores and spaces");
+        }
+    }
+
+    public static void validatePage(int page) {
+        if (page < MIN_PAGE) {
+            throw new BadRequestException("Page must be greater than 0");
         }
     }
 }

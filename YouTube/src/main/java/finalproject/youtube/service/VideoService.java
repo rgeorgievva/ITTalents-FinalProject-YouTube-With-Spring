@@ -112,7 +112,8 @@ public class VideoService {
     }
 
     public List<VideoDto> getVideosByTitle(String title, int page) {
-        List<Video> videos = videoRepository.findAllByTitleContainingAndStatus(title, Video.Status.UPLOADED.toString(),
+        List<Video> videos = videoRepository.findAllByTitleContainingAndStatusOrderByNumberLikesDescDateUploadedDesc(
+                title, Video.Status.UPLOADED.toString(),
                 PageRequest.of(page, NUMBER_VIDEOS_PER_PAGE));
         if (videos.isEmpty()) {
             throw new NotFoundException("No videos found!");

@@ -131,22 +131,22 @@ public class UserService {
             videos.add(video.toVideoDto());
         }
         if (videos.isEmpty()) {
-            throw new NotFoundException("User has no videos!");
+            throw new NotFoundException("No videos found!");
         }
 
         return videos;
     }
 
-    public List<ResponsePlaylistDto> getPlaylistsByUser(int page, long ownerId) {
+    public List<UsersPlaylistDto> getPlaylistsByUser(int page, long ownerId) {
         validateUser(ownerId);
         List<Playlist> playlists = playlistRepository.findAllByOwnerId(ownerId,
                 PageRequest.of(page, NUMBER_ITEMS_PER_PAGE));
         if (playlists.isEmpty()) {
             throw new NotFoundException("No playlists found!");
         }
-        List<ResponsePlaylistDto> playlistDtos = new ArrayList<>();
+        List<UsersPlaylistDto> playlistDtos = new ArrayList<>();
         for (Playlist playlist : playlists) {
-            playlistDtos.add(new ResponsePlaylistDto(playlist));
+            playlistDtos.add(new UsersPlaylistDto(playlist));
         }
         return playlistDtos;
     }
