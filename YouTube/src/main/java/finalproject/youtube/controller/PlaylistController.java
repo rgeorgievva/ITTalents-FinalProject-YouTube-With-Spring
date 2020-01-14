@@ -14,9 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@Valid
 public class PlaylistController extends BaseController {
     @Autowired
     PlaylistService playlistService;
@@ -44,13 +46,11 @@ public class PlaylistController extends BaseController {
     @SneakyThrows
     @PostMapping(value = "/playlists")
     public ResponseEntity<ResponsePlaylistDto> createPlaylist(HttpSession session,
-                                                              @RequestBody RequestPlaylistDto requestPlaylist){
+                                                              @RequestBody @Valid RequestPlaylistDto requestPlaylist){
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to create a playlist!");
         }
-
-        //check if the user already has a playlist with the same title
         User currentUser = SessionManager.getLoggedUser(session);
         return new ResponseEntity<>(playlistService.createPlaylist(currentUser, requestPlaylist),HttpStatus.OK);
     }
@@ -98,7 +98,7 @@ public class PlaylistController extends BaseController {
     @PutMapping(value = "/playlists/{playlist_id}")
     public ResponseEntity <String> editPlaylistName(HttpSession session,
                                                     @PathVariable("playlist_id") long playlistId,
-                                                    @RequestBody RequestPlaylistDto playlistDto){
+                                                    @RequestBody @Valid RequestPlaylistDto playlistDto){
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to edit playlist!");

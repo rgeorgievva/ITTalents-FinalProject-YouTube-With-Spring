@@ -167,6 +167,22 @@ public class Validator {
         }
     }
 
+    public static void validateCommentId(long id){
+        if(id < 0){
+            throw new BadRequestException("Comment Id must be greater than zero!");
+        }
+    }
 
-    //todo validate for null data in playlist and comment services //test with null text for example
+    public static void validatePlaylistId(long id){
+        if(id < 0){
+            throw new BadRequestException("Playlist Id must be greater than zero!");
+        }
+    }
+
+    public static void validateText(String string){
+        String text = string.trim();
+        if(string.equals("")){
+            throw new BadRequestException("You can't enter an empty string!");
+        }
+    }
 }

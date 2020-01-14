@@ -46,6 +46,7 @@ public class PlaylistService {
     }
 
     public List<ResponsePlaylistDto> getPlaylistsByTitle(String title){
+        Validator.validateText(title);
         Optional<List<Playlist>> optionalPlaylists = playlistRepository.findAllByTitleContaining(title);
         //checks for playlist existence
         if(!optionalPlaylists.isPresent()){
@@ -64,6 +65,7 @@ public class PlaylistService {
     }
 
     public ResponsePlaylistDto createPlaylist(User user, RequestPlaylistDto requestPlaylist){
+        Validator.validateText(requestPlaylist.getTitle());
         if(playlistRepository.existsPlaylistByOwnerIdAndTitle(user.getId(), requestPlaylist.getTitle())){
             throw new BadRequestException("There is already a playlist with this name!");
         }
@@ -114,6 +116,7 @@ public class PlaylistService {
     }
 
     public void editPlaylistName(User user, long playlistId, String title){
+        Validator.validateText(title);
         Playlist playlist = validateAndGetPlaylist(playlistId);
         //check if you're the owner of the playlist
         if(playlist.getOwner().getId() != user.getId()){
@@ -140,6 +143,7 @@ public class PlaylistService {
     }
 
     public Playlist validateAndGetPlaylist(long playlistId){
+        Validator.validatePlaylistId(playlistId);
         //checks for playlist existence
         Optional <Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
         if(!optionalPlaylist.isPresent()){

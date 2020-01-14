@@ -3,19 +3,21 @@ package finalproject.youtube.controller;
 import finalproject.youtube.utils.SessionManager;
 import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.RequestCommentDto;
-import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
 import finalproject.youtube.service.CommentService;
+import finalproject.youtube.utils.Validator;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.List;
+import javax.validation.Valid;
 
 @RestController
+@Validated
 public class CommentController extends BaseController{
 
     @Autowired
@@ -31,7 +33,7 @@ public class CommentController extends BaseController{
     @PostMapping(value = "/comments/{video_id}")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
                                                             @PathVariable("video_id") long videoId,
-                                                            @RequestBody RequestCommentDto requestCommentDto) {
+                                                            @RequestBody @Valid RequestCommentDto requestCommentDto) {
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
@@ -43,7 +45,7 @@ public class CommentController extends BaseController{
     @SneakyThrows
     @PutMapping(value = "/comments/{commentId}")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
-                            @RequestBody RequestCommentDto requestCommentDto,
+                            @RequestBody @Valid RequestCommentDto requestCommentDto,
                             @PathVariable("commentId") long commentId){
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {

@@ -3,6 +3,7 @@ package finalproject.youtube.controller;
 import finalproject.youtube.exceptions.*;
 import finalproject.youtube.model.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
@@ -66,6 +67,16 @@ public abstract class BaseController {
         return new ErrorDto(
                 e.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleMethodArgumentNotValid(MethodArgumentNotValidException e){
+        return new ErrorDto(
+                "Invalid input data!",
+                HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
     }

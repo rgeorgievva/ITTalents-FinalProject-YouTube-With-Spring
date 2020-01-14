@@ -10,6 +10,7 @@ import finalproject.youtube.model.pojo.Comment;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.repository.CommentRepository;
+import finalproject.youtube.utils.Validator;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,6 +103,7 @@ public class CommentService {
     }
 
     public Comment validateAndGetComment(long commentId){
+        Validator.validateCommentId(commentId);
         //checks comment existence
         Optional <Comment> optionalComment = commentRepository.findById(commentId);
         if(!optionalComment.isPresent()){
