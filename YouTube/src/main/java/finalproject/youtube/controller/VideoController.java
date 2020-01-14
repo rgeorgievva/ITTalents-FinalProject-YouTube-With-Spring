@@ -95,6 +95,7 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
+    //todo ask - make pageable?
     @GetMapping(value = "/videos/{video_id}/comments")
     public ResponseEntity<List <ResponseCommentWithRepliesDto>> getAllCommentsForVideo(
             @PathVariable("video_id") long videoId){

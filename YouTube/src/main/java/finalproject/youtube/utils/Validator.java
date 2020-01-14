@@ -166,4 +166,7 @@ public class Validator {
             throw new BadRequestException("Page must be greater than 0");
         }
     }
+
+
+    //todo validate for null data in playlist and comment services //test with null text for example
 }

@@ -1,14 +1,17 @@
 package finalproject.youtube.model.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 
+@AllArgsConstructor
 @Getter
 @Setter
-public class RequestCommentDto {
+public class SmallUserDto {
     @NotNull
-    private String text;
-    private Long repliedTo;
+    private long id;
+    @NotNull
+    private String username;
 }

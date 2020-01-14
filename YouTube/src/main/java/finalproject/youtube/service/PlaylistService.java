@@ -11,15 +11,13 @@ import finalproject.youtube.model.pojo.Playlist;
 import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.repository.PlaylistRepository;
+import finalproject.youtube.utils.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-
-
-//todo validations -> to Validator
 
 @Service
 public class PlaylistService {
@@ -33,25 +31,16 @@ public class PlaylistService {
     VideoService       videoService;
 
     public ResponsePlaylistDto getPlaylistById( long playlistId){
-        //checks for playlist existence
-        Optional <Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //return playlist with all videos in it
-        Playlist playlist = optionalPlaylist.get();
         List <VideoInPlaylistDto> videos = playlistDAO.getAllVideosFromPlaylist(playlist);
         return new ResponsePlaylistDto(playlist, videos);
     }
 
     public ResponsePlaylistDto getTenFromPlaylistById(long playlistId, int page) {
-        //checks for playlist existence
-        Optional <Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
+        Validator.validatePage(page);
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //return playlist with all videos in it
-        Playlist playlist = optionalPlaylist.get();
         List <VideoInPlaylistDto> videos = playlistDAO.getTenVideosPerPageFromPlaylist(playlist, page);
         return new ResponsePlaylistDto(playlist, videos);
     }
@@ -88,15 +77,10 @@ public class PlaylistService {
 
     public ResponsePlaylistDto addVideoToPlaylist(User user, long playlistId, long videoId){
         //checks for playlist existence
-        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //check if video exists
         Video video = videoService.validateAndGetVideo(videoId);
-
         //check if you're the owner of the playlist
-        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
@@ -112,14 +96,10 @@ public class PlaylistService {
 
     public ResponsePlaylistDto removeVideoFromPlaylist(User user, long playlistId, long videoId){
         //checks for playlist existence
-        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //check if video exists
         Video video = videoService.validateAndGetVideo(videoId);
         //check if you're the owner of the playlist
-        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
@@ -134,16 +114,14 @@ public class PlaylistService {
     }
 
     public void editPlaylistName(User user, long playlistId, String title){
-        //checks for playlist existence
-        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
-
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //check if you're the owner of the playlist
-        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
+        }
+        //check if the name is the same
+        if(title.equals(playlist.getTitle())){
+            throw new BadRequestException("You haven't made any changes to the title!");
         }
         //change name
         playlist.setTitle(title);
@@ -152,18 +130,21 @@ public class PlaylistService {
     }
 
     public void deletePlaylist(User user, long playlistId){
-        //checks for playlist existence
-        Optional<Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
-        if(!optionalPlaylist.isPresent()){
-            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
-        }
-
+        Playlist playlist = validateAndGetPlaylist(playlistId);
         //check if you're the owner of the playlist
-        Playlist playlist = optionalPlaylist.get();
         if(playlist.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
         //delete playlist
         playlistRepository.delete(playlist);
+    }
+
+    public Playlist validateAndGetPlaylist(long playlistId){
+        //checks for playlist existence
+        Optional <Playlist> optionalPlaylist = playlistRepository.findById(playlistId);
+        if(!optionalPlaylist.isPresent()){
+            throw new NotFoundException("Playlist with id="+playlistId+" not found!");
+        }
+        return optionalPlaylist.get();
     }
 }

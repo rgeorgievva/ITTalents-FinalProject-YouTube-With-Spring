@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-//todo replace ResponseDTO with RequestParam ****(required = false)
-//todo check urls for posting comments
-
 @RestController
 public class CommentController extends BaseController{
 
@@ -31,15 +28,16 @@ public class CommentController extends BaseController{
     }
 
     @SneakyThrows
-    @PostMapping(value = "/comments")
+    @PostMapping(value = "/comments/{video_id}")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
+                                                            @PathVariable("video_id") long videoId,
                                                             @RequestBody RequestCommentDto requestCommentDto) {
         //checks for being logged in
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException("Please login to post a comment!");
         }
         return new ResponseEntity<>( commentService.submitComment(SessionManager.getLoggedUser(session),
-                requestCommentDto), HttpStatus.OK);
+                videoId, requestCommentDto), HttpStatus.OK);
     }
 
     @SneakyThrows

@@ -1,5 +1,6 @@
 package finalproject.youtube.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import finalproject.youtube.model.pojo.Comment;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,9 +16,10 @@ public class ResponseReplyDto {
     @NotNull
     private String        text;
     @NotNull
+    @JsonFormat(pattern = "dd.MM.yyyy hh:mm:ss")
     private LocalDateTime timePosted;
     @NotNull
-    private String ownerUsername;
+    private SmallUserDto owner;
     @NotNull
     private int likes;
     @NotNull
@@ -29,6 +31,6 @@ public class ResponseReplyDto {
         this.setTimePosted(comment.getTimePosted());
         this.setLikes(comment.getLikes());
         this.setDislikes(comment.getDislikes());
-        this.setOwnerUsername(comment.getOwner().getUsername());
+        this.setOwner(comment.getOwner().toSmallUserDto());
     }
 }

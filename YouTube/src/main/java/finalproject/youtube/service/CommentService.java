@@ -1,6 +1,7 @@
 package finalproject.youtube.service;
 
 import finalproject.youtube.exceptions.AuthorizationException;
+import finalproject.youtube.exceptions.BadRequestException;
 import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dao.CommentDAO;
 import finalproject.youtube.model.dto.RequestCommentDto;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-//todo validations -> to Validator
-//todo fix output for comments
 
 @Service
 public class CommentService {
@@ -33,30 +32,18 @@ public class CommentService {
 
     @SneakyThrows
     public ResponseCommentDto getCommentById(long commentId){
-        //gets comment
-        Optional <Comment> optionalComment = commentRepository.findById(commentId);
-        if(!optionalComment.isPresent()){
-            throw new NotFoundException("Comment with id="+commentId+" not found!");
-        }
-        Comment comment = optionalComment.get();
-        return new ResponseCommentDto(comment) ;
+        return new ResponseCommentDto(validateAndGetComment(commentId)) ;
     }
 
     @SneakyThrows
-    public ResponseCommentDto submitComment(User user, RequestCommentDto requestCommentDto) {
-        //check for videoID
-        Video video = videoService.validateAndGetVideo(requestCommentDto.getVideoId());
-        //get comment from dto
-        Comment comment = new Comment(requestCommentDto);
+    public ResponseCommentDto submitComment(User user, long videoId, RequestCommentDto requestCommentDto) {
+        //check for video existence
+        Video video = videoService.validateAndGetVideo(videoId);
+        Comment comment = new Comment(requestCommentDto, videoId);
         //check if there's a parent comment and if it is valid
         Long parentCommentId = requestCommentDto.getRepliedTo();
         if (parentCommentId != null) {
-            Optional <Comment> optionalParentComment =
-                    commentRepository.findById(parentCommentId);
-            if (!optionalParentComment.isPresent()) {
-                throw new NotFoundException("Parent comment with id=" + parentCommentId + " does not exist!");
-            }
-            Comment parentComment = optionalParentComment.get();
+            Comment parentComment = validateAndGetComment(parentCommentId);
             //check if the parent comment is a reply to another comment
             if (parentComment.getRepliedTo() != null) {
                 //change the replied to to the very first parent comment (where replied to id is null)
@@ -72,15 +59,14 @@ public class CommentService {
 
     @SneakyThrows
     public ResponseCommentDto editComment(User user, RequestCommentDto requestCommentDto, long commentId){
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        //check for comment availability
-        if(!optionalComment.isPresent()){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = optionalComment.get();
+        Comment comment = validateAndGetComment(commentId);
         //check for user authorization
         if(comment.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this comment to edit it");
+        }
+        //check if the new text is like before
+        if(requestCommentDto.getText().equals(comment.getText())){
+            throw new BadRequestException("You haven't made any changes to the text");
         }
         //edits text
         comment.setText(requestCommentDto.getText());
@@ -90,12 +76,7 @@ public class CommentService {
 
     @SneakyThrows
     public void deleteComment(User user, long commentId){
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        //check for comment availability
-        if(!optionalComment.isPresent()){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = optionalComment.get();
+        Comment comment = validateAndGetComment(commentId);
         //check for user authorization
         if(comment.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this comment to delete it");
@@ -106,27 +87,26 @@ public class CommentService {
 
     @SneakyThrows
     public void likeComment(User user, long commentId){
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        //check for comment availability
-        if(!optionalComment.isPresent()){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = optionalComment.get();
+        Comment comment = validateAndGetComment(commentId);
         //like comment
         long currentUser = user.getId();
         commentDAO.react(currentUser, comment, LIKE_REACTION);
     }
 
     @SneakyThrows
-    public void dislikeComment(User loggedUser, long commentId) {
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        //check for comment availability
-        if(!optionalComment.isPresent()){
-            throw new NotFoundException("Comment with id "+commentId+" not found!");
-        }
-        Comment comment = optionalComment.get();
+    public void dislikeComment(User user, long commentId){
+        Comment comment = validateAndGetComment(commentId);
         //dislike comment
-        long currentUser = loggedUser.getId();
+        long currentUser = user.getId();
         commentDAO.react(currentUser, comment, DISLIKE_REACTION);
+    }
+
+    public Comment validateAndGetComment(long commentId){
+        //checks comment existence
+        Optional <Comment> optionalComment = commentRepository.findById(commentId);
+        if(!optionalComment.isPresent()){
+            throw new NotFoundException("Comment with id="+commentId+" not found!");
+        }
+        return optionalComment.get();
     }
 }

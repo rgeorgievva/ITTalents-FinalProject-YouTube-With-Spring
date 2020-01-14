@@ -12,5 +12,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Optional<List<Comment>> findAllByRepliedToId(long repliedToId);
 
-    Optional<List<Comment>> findAllByVideoIdAndRepliedToIsNull(long videoId);
+    Optional<List<Comment>> findAllByVideoIdAndRepliedToIsNullOrderByTimePostedDesc(long videoId);
 }

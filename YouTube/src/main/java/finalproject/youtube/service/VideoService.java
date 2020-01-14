@@ -156,7 +156,8 @@ public class VideoService {
         //check if video id is valid
         Video video = validateAndGetVideo(videoId);
         //check if there are any parent comments
-        Optional<List <Comment>> commentList = commentRepository.findAllByVideoIdAndRepliedToIsNull(videoId);
+        Optional<List <Comment>> commentList =
+                commentRepository.findAllByVideoIdAndRepliedToIsNullOrderByTimePostedDesc(videoId);
         if(!commentList.isPresent()){
             return null;
         }

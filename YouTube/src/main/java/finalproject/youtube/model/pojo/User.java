@@ -1,6 +1,6 @@
 package finalproject.youtube.model.pojo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import finalproject.youtube.model.dto.SmallUserDto;
 import finalproject.youtube.model.dto.NoPasswordUserDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import lombok.AllArgsConstructor;
@@ -67,5 +67,9 @@ public class User {
         noPasswordUserDto.setEmail(this.email);
         noPasswordUserDto.setDateCreated(this.dateCreated);
         return noPasswordUserDto;
+    }
+
+    public SmallUserDto toSmallUserDto() {
+        return new SmallUserDto(this.id,this.username);
     }
 }

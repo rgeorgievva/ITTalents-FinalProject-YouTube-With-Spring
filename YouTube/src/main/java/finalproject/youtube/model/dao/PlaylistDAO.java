@@ -1,6 +1,7 @@
 package finalproject.youtube.model.dao;
 
 import finalproject.youtube.exceptions.NotFoundException;
+import finalproject.youtube.model.dto.SmallUserDto;
 import finalproject.youtube.model.dto.VideoInPlaylistDto;
 import finalproject.youtube.model.pojo.Playlist;
 import finalproject.youtube.model.pojo.Video;
@@ -29,7 +30,7 @@ public class PlaylistDAO {
     private static final String GET_ALL_VIDEOS_FROM_PLAYLIST =
             "SELECT " +
                     "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
-                    "u.user_name, " +
+                    "u.id as user_id, u.user_name, " +
                     "vp.time_added " +
                     "FROM youtube.videos AS v " +
                     "JOIN youtube.videos_in_playlist AS vp " +
@@ -43,7 +44,7 @@ public class PlaylistDAO {
     private static       String PAGINATED_PLAYLIST           =
             "SELECT " +
                     "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
-                    "u.user_name, " +
+                    "u.id as user_id, u.user_name, " +
                     "vp.time_added " +
                     "FROM youtube.videos AS v " +
                     "JOIN youtube.videos_in_playlist AS vp " +
@@ -93,7 +94,8 @@ public class PlaylistDAO {
                     resultSet.getString("title"),
                     resultSet.getString("video_url"),
                     resultSet.getString("thumbnail_url"),
-                    resultSet.getString("user_name"),
+                    new SmallUserDto(resultSet.getLong("user_id"),
+                            resultSet.getString("user_name")),
                     resultSet.getTimestamp("time_added").toLocalDateTime()
             );
 
@@ -135,7 +137,8 @@ public class PlaylistDAO {
                     resultSet.getString("title"),
                     resultSet.getString("video_url"),
                     resultSet.getString("thumbnail_url"),
-                    resultSet.getString("user_name"),
+                    new SmallUserDto(resultSet.getLong("user_id"),
+                            resultSet.getString("user_name")),
                     resultSet.getTimestamp("time_added").toLocalDateTime()
             );
             videos.add(video);

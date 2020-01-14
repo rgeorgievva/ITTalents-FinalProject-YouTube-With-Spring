@@ -4,6 +4,8 @@ import finalproject.youtube.model.pojo.User;
 import finalproject.youtube.model.repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 
+//todo crypt user id with math formula
+
 public class ConfirmRegistration extends Thread {
 
     private static final String SUBJECT = "Welcome to YoutubeTalents!";
