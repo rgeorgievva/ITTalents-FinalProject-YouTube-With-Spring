@@ -29,9 +29,11 @@ public class VideoController extends BaseController {
     @PostMapping(value = "/videos/upload")
     public ResponseEntity<PendingVideoDto> uploadVideo(@RequestPart(value = "file") MultipartFile multipartFile,
                                                        @RequestPart(value = "thumbnail") MultipartFile thumbnail,
-                                                       @RequestParam(value = "title") String title,
-                                                       @RequestParam(value = "description") String description,
-                                                       @RequestParam(value = "categoryId") long categoryId,
+                                                       @RequestParam(value = "title", defaultValue = "") String title,
+                                                       @RequestParam(value = "description", defaultValue = "")
+                                                                   String description,
+                                                       @RequestParam(value = "categoryId", defaultValue = "0")
+                                                                   long categoryId,
                                                        HttpSession session) throws SQLException {
         if (!SessionManager.validateLogged(session)) {
             throw new AuthorizationException();

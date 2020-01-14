@@ -83,7 +83,7 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/users/subscribe/{id}")
+    @PostMapping(value = "/users/{id}/subscribe")
         public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session)
             throws SQLException {
         if (!SessionManager.validateLogged(session)) {
@@ -94,7 +94,7 @@ public class UserController extends BaseController {
         return new ResponseEntity<>("Subscribed successfully!", HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/users/unsubscribe/{id}")
+    @DeleteMapping(value = "/users/{id}/unsubscribe")
     public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") long unsubscribeFromId, HttpSession session)
             throws SQLException {
         if (!SessionManager.validateLogged(session)) {

@@ -5,11 +5,14 @@ import finalproject.youtube.model.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public abstract class BaseController {
+
+    public static final String MISSING_PARAMETERS_MESSAGE = "Video and thumbnail are required fields";
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -36,6 +39,15 @@ public abstract class BaseController {
                 HttpStatus.NOT_FOUND.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorDto handleMissingRequestPart() {
+        return new ErrorDto(MISSING_PARAMETERS_MESSAGE,
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                BadRequestException.class.getName());
     }
 
     @ExceptionHandler(SQLException.class)

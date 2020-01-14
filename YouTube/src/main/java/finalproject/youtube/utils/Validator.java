@@ -6,7 +6,11 @@ import finalproject.youtube.model.dto.EditProfileDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import finalproject.youtube.model.pojo.User;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +27,8 @@ public class Validator {
     private static final Pattern VALID_VIDEO_TITLE_FORMAT =
             Pattern.compile("^[a-zA-Z0-9._ -]{5,}$");
     private static final int MIN_PAGE = 1;
+    private static final String VIDEO_MIME_TYPE = "video/mp4";
+    private static final List<String> THUMBNAIL_MIME_TYPES = Arrays.asList("image/png", "image/jpeg", "image/gif");
 
 
     private static boolean validateEmail(String email) {
@@ -134,7 +140,21 @@ public class Validator {
         }
     }
 
-    public static void validateVideoInformation(String title) {
+    public static void validateVideoInformation(String title,
+                                                long categoryId,
+                                                MultipartFile video,
+                                                MultipartFile thumbnail) {
+        if (!video.getContentType().equals(VIDEO_MIME_TYPE)) {
+            throw new BadRequestException("Invalid video format");
+        }
+        if (!THUMBNAIL_MIME_TYPES.contains(thumbnail.getContentType())) {
+            throw new BadRequestException("Invalid thumbnail format");
+        }
+
+        if (title.equals("") || categoryId == 0) {
+            throw new BadRequestException("Video, thumbnail, title and category fields are required!");
+        }
+
         if (!validateVideoTitle(title)) {
             throw new BadRequestException("Video title should be at least 5 chars and should contain only " +
                     "latin letters, digits, points, dashes, underscores and spaces");

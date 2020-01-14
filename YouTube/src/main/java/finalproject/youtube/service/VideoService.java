@@ -59,7 +59,9 @@ public class VideoService {
                                        String description,
                                        long categoryId,
                                        User owner) throws SQLException {
-        Validator.validateVideoInformation(title);
+        Validator.validateVideoInformation(title, categoryId, multipartFile, thumbnail);
+        System.out.println("Video type: " + multipartFile.getContentType());
+        System.out.println("Thumbnail type: " + thumbnail.getContentType());
         Video video = new Video();
         setInitialValuesToVideo(video);
         video.setTitle(title);
