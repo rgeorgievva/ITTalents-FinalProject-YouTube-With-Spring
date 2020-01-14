@@ -1,5 +1,6 @@
 package finalproject.youtube.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,6 @@ public class NoPasswordUserDto {
     private String firstName;
     private String lastName;
     private String email;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime dateCreated;
 }

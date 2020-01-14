@@ -20,5 +20,4 @@ public class Category {
     private long id;
     @Column(name = "category_name")
     private String categoryName;
-
 }

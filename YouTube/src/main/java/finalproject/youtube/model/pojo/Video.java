@@ -1,5 +1,6 @@
 package finalproject.youtube.model.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;
 import finalproject.youtube.model.dto.VideoDto;

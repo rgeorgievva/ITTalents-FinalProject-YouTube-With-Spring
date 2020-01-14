@@ -1,5 +1,6 @@
 package finalproject.youtube.model.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import finalproject.youtube.model.dto.NoPasswordUserDto;
 import finalproject.youtube.model.dto.RegisterUserDto;
 import lombok.AllArgsConstructor;
