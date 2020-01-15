@@ -13,13 +13,6 @@ import java.util.List;
 @Component
 public class UserDAO {
 
-    private static final String INSERT_IN_DB_SQL = "INSERT INTO users (user_name," +
-            " first_name," +
-            " last_name, " +
-            "email," +
-            " password," +
-            " date_created)" +
-            " VALUES (?, ?, ?, ?, ?, ?);";
     private static final String CHECK_IF_USER_HAS_SUBSCRIBED_SQL = "SELECT subscriber_id " +
             "FROM subscriptions WHERE " +
             "subscriber_id = ? AND " +
@@ -38,25 +31,6 @@ public class UserDAO {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    // register user
-    public long registerUser(User user) throws SQLException {
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(INSERT_IN_DB_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, user.getUsername());
-            statement.setString(2, user.getFirstName());
-            statement.setString(3, user.getLastName());
-            statement.setString(4, user.getEmail());
-            statement.setString(5, user.getPassword());
-            user.setDateCreated(LocalDateTime.now());
-            statement.setTimestamp(6, Timestamp.valueOf(user.getDateCreated()));
-            statement.executeUpdate();
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            generatedKeys.next();
-            user.setId(generatedKeys.getLong(1));
-            return user.getId();
-        }
-    }
 
     // check if user has subscribed to another user
     public boolean hasSubscribedTo(long subscriberId, long subscribedToId) throws SQLException {

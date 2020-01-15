@@ -30,7 +30,7 @@ public class PlaylistDAO {
     private static final String GET_ALL_VIDEOS_FROM_PLAYLIST =
             "SELECT " +
                     "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
-                    "u.id as user_id, u.user_name, " +
+                    "u.id AS user_id, u.user_name, " +
                     "vp.time_added " +
                     "FROM youtube.videos AS v " +
                     "JOIN youtube.videos_in_playlist AS vp " +
@@ -44,7 +44,7 @@ public class PlaylistDAO {
     private static       String PAGINATED_PLAYLIST           =
             "SELECT " +
                     "v.id AS video_id, v.title, v.video_url, v.thumbnail_url, " +
-                    "u.id as user_id, u.user_name, " +
+                    "u.id AS user_id, u.user_name, " +
                     "vp.time_added " +
                     "FROM youtube.videos AS v " +
                     "JOIN youtube.videos_in_playlist AS vp " +

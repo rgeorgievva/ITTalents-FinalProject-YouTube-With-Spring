@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 
 @Component
 public class VideoDAO {
@@ -20,16 +19,6 @@ public class VideoDAO {
             "FROM videos_reactions " +
             "WHERE user_id = ? " +
             "AND video_id = ?;";
-    private static final String UPLOAD_VIDEO_SQL = "INSERT INTO videos " +
-            "(title, " +
-            "description, " +
-            "video_url, " +
-            "date_uploaded, " +
-            "owner_id, " +
-            "category_id, " +
-            "thumbnail_url, " +
-            "status) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String UPDATE_VIDEO_NUMBER_LIKES_SQL = "UPDATE videos " +
             "SET number_likes = ? " +
             "WHERE id = ?;";

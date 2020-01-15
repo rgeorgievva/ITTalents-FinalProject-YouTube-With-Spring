@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +44,10 @@ public class UserService {
             throw new BadRequestException("There is already an account with this email.");
         }
         User user = User.registerDtoToUser(registerUser);
-        userDAO.registerUser(user);
+        user.setDateCreated(LocalDateTime.now());
+        user.setStatus(User.UserStatus.NEW.toString());
+        user.setVerificationURL("");
+        userRepository.save(user);
         Thread verificator = new ConfirmRegistration(user, userRepository);
         verificator.start();
         return user.toNoPasswordUserDto();

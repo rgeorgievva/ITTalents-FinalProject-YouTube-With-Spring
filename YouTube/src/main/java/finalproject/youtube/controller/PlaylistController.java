@@ -30,13 +30,14 @@ public class PlaylistController extends BaseController {
     }
 
     @SneakyThrows
-    @GetMapping(value = "/playlists/{playlist_id}/page")
+    @GetMapping(value = "/playlists/{playlist_id}/videos")
     public ResponseEntity<ResponsePlaylistDto> getTenVideosPerPagePlaylistById(
             @PathVariable("playlist_id") long playlistId,
             @RequestParam("page_num") int page){
-        return new ResponseEntity <>( playlistService.getTenFromPlaylistById(playlistId, page-1), HttpStatus.OK);
+        return new ResponseEntity <>( playlistService.getTenFromPlaylistById(playlistId, page), HttpStatus.OK);
     }
 
+    //todo move title to request param
     @SneakyThrows
     @GetMapping(value = "/playlists/byTitle/{playlist_title}")
     public ResponseEntity<List<ResponsePlaylistDto>> getPlaylistsByTitle(@PathVariable("playlist_title") String title){

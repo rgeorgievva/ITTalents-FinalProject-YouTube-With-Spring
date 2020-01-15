@@ -41,7 +41,7 @@ public class PlaylistService {
         Validator.validatePage(page);
         Playlist playlist = validateAndGetPlaylist(playlistId);
         //return playlist with all videos in it
-        List <VideoInPlaylistDto> videos = playlistDAO.getTenVideosPerPageFromPlaylist(playlist, page);
+        List <VideoInPlaylistDto> videos = playlistDAO.getTenVideosPerPageFromPlaylist(playlist, page-1);
         return new ResponsePlaylistDto(playlist, videos);
     }
 

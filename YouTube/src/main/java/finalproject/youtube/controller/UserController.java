@@ -38,6 +38,7 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
     }
 
+    //todo remove underlines
     @GetMapping(value = "/users/verify/{user_id}/{verification_url}")
     public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
                                                 @PathVariable ("user_id") long userId,
