@@ -4,7 +4,6 @@ import finalproject.youtube.exceptions.NotFoundException;
 import finalproject.youtube.model.dto.ResponseCommentWithRepliesDto;
 import finalproject.youtube.model.dto.VideoWholeInfoDto;
 import finalproject.youtube.utils.SessionManager;
-import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.PendingVideoDto;
 import finalproject.youtube.model.dto.VideoDto;
 import finalproject.youtube.model.pojo.*;
@@ -35,9 +34,7 @@ public class VideoController extends BaseController {
                                                        @RequestParam(value = "categoryId", defaultValue = "0")
                                                                    long categoryId,
                                                        HttpSession session) throws SQLException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User user = SessionManager.getLoggedUser(session);
         PendingVideoDto video = videoService.uploadVideo(multipartFile, thumbnail, title, description, categoryId, user);
         return new ResponseEntity<>(video, HttpStatus.OK);
@@ -45,9 +42,7 @@ public class VideoController extends BaseController {
 
     @DeleteMapping(value = "/videos/{id}")
     public ResponseEntity<VideoDto> deleteVideo(@PathVariable("id") long videoId, HttpSession session) {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User owner = SessionManager.getLoggedUser(session);
         VideoDto video = videoService.deleteVideo(videoId, owner);
         return new ResponseEntity<>(video, HttpStatus.OK);
@@ -70,9 +65,7 @@ public class VideoController extends BaseController {
     @PostMapping(value = "videos/{id}/like")
     public void likeVideo(@PathVariable("id") long videoId, HttpSession session)
             throws SQLException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User currentUser = SessionManager.getLoggedUser(session);
         videoService.likeVideo(videoId, currentUser);
     }
@@ -80,9 +73,7 @@ public class VideoController extends BaseController {
     @PostMapping(value = "videos/{id}/dislike")
     public void dislikeVideo(@PathVariable("id") long videoId, HttpSession session)
             throws SQLException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User currentUser = SessionManager.getLoggedUser(session);
         videoService.dislikeVideo(videoId, currentUser);
     }
@@ -103,6 +94,6 @@ public class VideoController extends BaseController {
         if (comments == null) {
             throw new NotFoundException("No comments found!");
         }
-        return new ResponseEntity(videoService.getAllCommentsForVideo(videoId), HttpStatus.OK);
+        return new ResponseEntity(comments, HttpStatus.OK);
     }
 }

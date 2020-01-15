@@ -48,9 +48,10 @@ public class PlaylistController extends BaseController {
     public ResponseEntity<ResponsePlaylistDto> createPlaylist(HttpSession session,
                                                               @RequestBody @Valid RequestPlaylistDto requestPlaylist){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to create a playlist!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to create a playlist!");
+//        }
+        //check if the user already has a playlist with the same title
         User currentUser = SessionManager.getLoggedUser(session);
         return new ResponseEntity<>(playlistService.createPlaylist(currentUser, requestPlaylist),HttpStatus.OK);
     }
@@ -61,9 +62,9 @@ public class PlaylistController extends BaseController {
                                                                   @PathVariable("playlist_id") long playlistId,
                                                                   @PathVariable("video_id") long videoId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to add video to playlist!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to add video to playlist!");
+//        }
         User user = SessionManager.getLoggedUser(session);
         return new ResponseEntity <>(playlistService.addVideoToPlaylist(user,playlistId, videoId), HttpStatus.OK);
     }
@@ -73,9 +74,9 @@ public class PlaylistController extends BaseController {
     public ResponseEntity<String> deletePlaylist(HttpSession session,
                                                  @PathVariable("playlist_id") long playlistId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to delete playlist!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to delete playlist!");
+//        }
         User user = SessionManager.getLoggedUser(session);
         playlistService.deletePlaylist(user, playlistId);
         return new ResponseEntity <>("Playlist with id="+playlistId+" deleted!", HttpStatus.OK);
@@ -87,9 +88,9 @@ public class PlaylistController extends BaseController {
                                                            @PathVariable("playlist_id") long playlistId,
                                                            @PathVariable("video_id") long videoId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to remove a video from the playlist!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to remove a video from the playlist!");
+//        }
         User user = SessionManager.getLoggedUser(session);
         return new ResponseEntity <>(playlistService.removeVideoFromPlaylist(user, playlistId, videoId),HttpStatus.OK);
     }
@@ -100,9 +101,9 @@ public class PlaylistController extends BaseController {
                                                     @PathVariable("playlist_id") long playlistId,
                                                     @RequestBody @Valid RequestPlaylistDto playlistDto){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to edit playlist!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to edit playlist!");
+//        }
         User user = SessionManager.getLoggedUser(session);
         String title = playlistDto.getTitle();
         playlistService.editPlaylistName(user, playlistId, title);

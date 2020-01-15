@@ -52,27 +52,6 @@ public class VideoDAO {
             "WHERE user_id = ? " +
             "AND video_id = ?;";
 
-    // add video
-    public long uploadVideo(Video video) throws SQLException {
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(UPLOAD_VIDEO_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, video.getTitle());
-            statement.setString(2, video.getDescription());
-            statement.setString(3, video.getVideoUrl());
-            video.setDateUploaded(LocalDateTime.now());
-            statement.setTimestamp(4, Timestamp.valueOf(video.getDateUploaded()));
-            statement.setLong(5, video.getOwner().getId());
-            statement.setLong(6, video.getCategory().getId());
-            statement.setString(7, video.getThumbnailUrl());
-            statement.setString(8, video.getStatus());
-            statement.executeUpdate();
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            generatedKeys.next();
-            video.setId(generatedKeys.getInt(1));
-            return video.getId();
-        }
-    }
-
     // react to video
     public void setReactionToVideo(Video video, long userId, int reaction) throws SQLException {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection();

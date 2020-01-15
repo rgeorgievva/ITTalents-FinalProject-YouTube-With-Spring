@@ -57,9 +57,7 @@ public class UserController extends BaseController {
     @PutMapping(value = "/users/password")
     public ResponseEntity<NoPasswordUserDto> changePassword(@RequestBody ChangePasswordDto passwordDto,
                                                             HttpSession session) {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User user = SessionManager.getLoggedUser(session);
         NoPasswordUserDto userDto = userService.changePassword(passwordDto, user);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
@@ -67,9 +65,7 @@ public class UserController extends BaseController {
 
     @PutMapping(value = "/users")
     public ResponseEntity<NoPasswordUserDto> editProfile(@RequestBody EditProfileDto profileDto, HttpSession session) {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User user = SessionManager.getLoggedUser(session);
         NoPasswordUserDto userDto = userService.editProfile(profileDto, user);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
@@ -88,9 +84,7 @@ public class UserController extends BaseController {
     @PostMapping(value = "/users/{id}/subscribe")
         public ResponseEntity<String> subscribeToUser(@PathVariable("id") long subscribedToId, HttpSession session)
             throws SQLException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User subscriber = SessionManager.getLoggedUser(session);
         userService.subscribeToUser(subscribedToId, subscriber);
         return new ResponseEntity<>("Subscribed successfully!", HttpStatus.OK);
@@ -99,9 +93,7 @@ public class UserController extends BaseController {
     @DeleteMapping(value = "/users/{id}/unsubscribe")
     public ResponseEntity<String> unsubscribeFromUser(@PathVariable("id") long unsubscribeFromId, HttpSession session)
             throws SQLException {
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException();
-        }
+        SessionManager.validateLogged(session);
         User subscriber = SessionManager.getLoggedUser(session);
         userService.unsubscribeFromUser(unsubscribeFromId, subscriber);
         return new ResponseEntity<>("Unsubscribed successfully!", HttpStatus.OK);

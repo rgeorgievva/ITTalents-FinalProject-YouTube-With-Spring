@@ -35,9 +35,9 @@ public class CommentController extends BaseController{
                                                             @PathVariable("video_id") long videoId,
                                                             @RequestBody @Valid RequestCommentDto requestCommentDto) {
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to post a comment!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to post a comment!");
+//        }
         return new ResponseEntity<>( commentService.submitComment(SessionManager.getLoggedUser(session),
                 videoId, requestCommentDto), HttpStatus.OK);
     }
@@ -48,9 +48,9 @@ public class CommentController extends BaseController{
                             @RequestBody @Valid RequestCommentDto requestCommentDto,
                             @PathVariable("commentId") long commentId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to edit comment!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to edit comment!");
+//        }
         return new ResponseEntity(commentService.editComment(SessionManager.getLoggedUser(session),
                 requestCommentDto,commentId), HttpStatus.OK);
     }
@@ -60,9 +60,9 @@ public class CommentController extends BaseController{
     public ResponseEntity<String> deleteComment(HttpSession session,
                               @PathVariable("commentId") long commentId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to delete comment!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to delete comment!");
+//        }
         commentService.deleteComment(SessionManager.getLoggedUser(session),commentId);
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
@@ -72,9 +72,9 @@ public class CommentController extends BaseController{
     public void likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to like comment!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to like comment!");
+//        }
         commentService.likeComment(SessionManager.getLoggedUser(session), commentId);
     }
 
@@ -83,9 +83,9 @@ public class CommentController extends BaseController{
     public void dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
         //checks for being logged in
-        if (!SessionManager.validateLogged(session)) {
-            throw new AuthorizationException("Please login to dislike comment!");
-        }
+//        if (!SessionManager.validateLogged(session)) {
+//            throw new AuthorizationException("Please login to dislike comment!");
+//        }
        commentService.dislikeComment(SessionManager.getLoggedUser(session), commentId);
     }
 

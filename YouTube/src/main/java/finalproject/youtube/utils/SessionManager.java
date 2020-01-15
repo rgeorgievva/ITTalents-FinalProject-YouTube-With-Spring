@@ -9,21 +9,19 @@ public class SessionManager {
 
     private static final String LOGGED = "logged";
 
-    public static boolean validateLogged(HttpSession session) {
+    public static void validateLogged(HttpSession session) {
         if (session.isNew()) {
-            return false;
+            throw new AuthorizationException();
         }
         if (session.getAttribute(LOGGED) == null) {
-            return false;
+            throw new AuthorizationException();
         }
-        return true;
     }
 
     public static User getLoggedUser(HttpSession session) throws AuthorizationException {
-        if (validateLogged(session)) {
-            return (User) session.getAttribute("user");
-        }
-        throw new AuthorizationException("Not logged!");
+        validateLogged(session);
+        User user = (User) session.getAttribute("user");
+        return user;
     }
 
     public static void logUser(HttpSession session, User user) {

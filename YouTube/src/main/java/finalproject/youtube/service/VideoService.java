@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,8 +61,6 @@ public class VideoService {
                                        long categoryId,
                                        User owner) throws SQLException {
         Validator.validateVideoInformation(title, categoryId, multipartFile, thumbnail);
-        System.out.println("Video type: " + multipartFile.getContentType());
-        System.out.println("Thumbnail type: " + thumbnail.getContentType());
         Video video = new Video();
         setInitialValuesToVideo(video);
         video.setTitle(title);
@@ -72,7 +71,8 @@ public class VideoService {
         }
         video.setCategory(optionalCategory.get());
         video.setOwner(owner);
-        videoDAO.uploadVideo(video);
+        video.setDateUploaded(LocalDateTime.now());
+        videoRepository.save(video);
         try {
             Thread uploader = new Uploader(video, amazonClient.convertMultiPartToFile(multipartFile),
                     amazonClient.convertMultiPartToFile(thumbnail), amazonClient, videoRepository, userDAO);
@@ -154,7 +154,7 @@ public class VideoService {
 
     public List <ResponseCommentWithRepliesDto> getAllCommentsForVideo(long videoId) {
         //check if video id is valid
-        Video video = validateAndGetVideo(videoId);
+        validateAndGetVideo(videoId);
         //check if there are any parent comments
         Optional<List <Comment>> commentList =
                 commentRepository.findAllByVideoIdAndRepliedToIsNullOrderByTimePostedDesc(videoId);
