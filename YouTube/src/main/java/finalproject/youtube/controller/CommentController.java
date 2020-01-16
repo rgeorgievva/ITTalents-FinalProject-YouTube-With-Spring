@@ -1,11 +1,9 @@
 package finalproject.youtube.controller;
 
 import finalproject.youtube.utils.SessionManager;
-import finalproject.youtube.exceptions.AuthorizationException;
 import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
 import finalproject.youtube.service.CommentService;
-import finalproject.youtube.utils.Validator;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +27,6 @@ public class CommentController extends BaseController{
         return new ResponseEntity(commentService.getCommentById(commentId), HttpStatus.OK) ;
     }
 
-    //todo parent id should not be string
    @SneakyThrows
     @PostMapping(value = "/videos/{videoId}/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,

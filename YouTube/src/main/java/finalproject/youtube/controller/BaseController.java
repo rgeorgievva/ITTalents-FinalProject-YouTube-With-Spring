@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import finalproject.youtube.exceptions.*;
 import finalproject.youtube.model.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.sql.SQLException;
@@ -85,6 +87,36 @@ public abstract class BaseController {
     @ExceptionHandler(InvalidFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDto handleInvalidFormatException(InvalidFormatException e) {
+        return new ErrorDto(
+                "Invalid format!",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleHttpMessageNotReadable(HttpMessageNotReadableException e){
+        return new ErrorDto(
+                "Invalid format!",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e){
+        return new ErrorDto(
+                "Invalid format!",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(NumberFormatException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleHttpMessageNotReadable(NumberFormatException e){
         return new ErrorDto(
                 "Invalid format!",
                 HttpStatus.BAD_REQUEST.value(),

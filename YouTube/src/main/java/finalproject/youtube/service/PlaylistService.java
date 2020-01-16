@@ -117,13 +117,17 @@ public class PlaylistService {
         title = Validator.validateText(title);
         //validate playlist
         Playlist playlist = validateAndGetPlaylist(playlistId);
+        //check if the name is the same
+        if(title.equals(playlist.getTitle())){
+            throw new BadRequestException("You haven't made any changes to the title!");
+        }
         //check if you're the owner of the playlist
         if(playlist.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this playlist!");
         }
-        //check if the name is the same
-        if(title.equals(playlist.getTitle())){
-            throw new BadRequestException("You haven't made any changes to the title!");
+        //check if there is a playlist by the owner of the same name
+        if(playlistRepository.existsPlaylistByOwnerIdAndTitle(user.getId(), title)){
+            throw new BadRequestException("There's already a playlist with he same name!");
         }
         //change name
         playlist.setTitle(title);

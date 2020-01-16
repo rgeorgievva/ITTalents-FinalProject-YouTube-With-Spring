@@ -48,7 +48,6 @@ public class PlaylistController extends BaseController {
         return new ResponseEntity<>(playlistService.createPlaylist(currentUser, title),HttpStatus.OK);
     }
 
-    //todo validate!!! long not string
     @SneakyThrows
     @PostMapping(value = "/playlists/{playlistId}/add")
     public ResponseEntity<ResponsePlaylistDto> addVideoToPlaylist(HttpSession session,
@@ -67,7 +66,6 @@ public class PlaylistController extends BaseController {
         return new ResponseEntity <>("Playlist with id="+playlistId+" deleted!", HttpStatus.OK);
     }
 
-    //todo validate!!! long not string
     @SneakyThrows
     @DeleteMapping("/playlists/{playlistId}/remove")
     public ResponseEntity<ResponsePlaylistDto> removeVideoFromPlaylist(HttpSession session,
