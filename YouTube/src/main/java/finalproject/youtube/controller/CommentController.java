@@ -27,7 +27,7 @@ public class CommentController extends BaseController{
         return new ResponseEntity(commentService.getCommentById(commentId), HttpStatus.OK) ;
     }
 
-   @SneakyThrows
+    @SneakyThrows
     @PostMapping(value = "/videos/{videoId}/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
                                                             @PathVariable(value = "videoId") long videoId,

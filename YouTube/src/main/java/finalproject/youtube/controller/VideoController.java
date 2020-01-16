@@ -34,7 +34,6 @@ public class VideoController extends BaseController {
                                                        @RequestParam(value = "categoryId", defaultValue = "0")
                                                                    long categoryId,
                                                        HttpSession session) throws SQLException {
-        SessionManager.validateLogged(session);
         User user = SessionManager.getLoggedUser(session);
         PendingVideoDto video = videoService.uploadVideo(multipartFile, thumbnail, title, description, categoryId, user);
         return new ResponseEntity<>(video, HttpStatus.OK);
@@ -42,7 +41,6 @@ public class VideoController extends BaseController {
 
     @DeleteMapping(value = "/videos/{id}")
     public ResponseEntity<VideoDto> deleteVideo(@PathVariable("id") long videoId, HttpSession session) {
-        SessionManager.validateLogged(session);
         User owner = SessionManager.getLoggedUser(session);
         VideoDto video = videoService.deleteVideo(videoId, owner);
         return new ResponseEntity<>(video, HttpStatus.OK);
@@ -63,17 +61,13 @@ public class VideoController extends BaseController {
     }
 
     @PostMapping(value = "videos/{id}/like")
-    public void likeVideo(@PathVariable("id") long videoId, HttpSession session)
-            throws SQLException {
-        SessionManager.validateLogged(session);
+    public void likeVideo(@PathVariable("id") long videoId, HttpSession session) throws SQLException {
         User currentUser = SessionManager.getLoggedUser(session);
         videoService.likeVideo(videoId, currentUser);
     }
 
     @PostMapping(value = "videos/{id}/dislike")
-    public void dislikeVideo(@PathVariable("id") long videoId, HttpSession session)
-            throws SQLException {
-        SessionManager.validateLogged(session);
+    public void dislikeVideo(@PathVariable("id") long videoId, HttpSession session) throws SQLException {
         User currentUser = SessionManager.getLoggedUser(session);
         videoService.dislikeVideo(videoId, currentUser);
     }

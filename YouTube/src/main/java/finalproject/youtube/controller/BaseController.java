@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public abstract class BaseController {
 
     public static final String MISSING_PARAMETERS_MESSAGE = "Video and thumbnail are required fields";
+    public static final String INVALID_JSON_MESSAGE = "Invalid JSON format";
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -54,29 +55,18 @@ public abstract class BaseController {
                 BadRequestException.class.getName());
     }
 
-    @ExceptionHandler(SQLException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorDto handleSQLExceptions(SQLException e){
-        return new ErrorDto(
-                e.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorDto handleInvalidJson() {
+        return new ErrorDto(INVALID_JSON_MESSAGE,
+                HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
-                e.getClass().getName());
-    }
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorDto handleAllExceptions(Exception e){
-        return new ErrorDto(
-                e.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                LocalDateTime.now(),
-                e.getClass().getName());
+                BadRequestException.class.getName());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorDto handleMethodArgumentNotValid(MethodArgumentNotValidException e){
+    public ErrorDto handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         return new ErrorDto(
                 "Invalid input data!",
                 HttpStatus.BAD_REQUEST.value(),
@@ -94,12 +84,12 @@ public abstract class BaseController {
                 e.getClass().getName());
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorDto handleHttpMessageNotReadable(HttpMessageNotReadableException e){
+    @ExceptionHandler(SQLException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleSQLExceptions(SQLException e){
         return new ErrorDto(
-                "Invalid format!",
-                HttpStatus.BAD_REQUEST.value(),
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
     }
@@ -120,6 +110,16 @@ public abstract class BaseController {
         return new ErrorDto(
                 "Invalid format!",
                 HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleAllExceptions(Exception e){
+        return new ErrorDto(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());
     }

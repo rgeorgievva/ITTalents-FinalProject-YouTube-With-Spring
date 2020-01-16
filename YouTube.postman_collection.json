@@ -1,0 +1,1410 @@
+{
+	"info": {
+		"_postman_id": "3663b5ad-cf6e-4c95-81b2-9b6c7b4a0fdf",
+		"name": "YouTube",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "getAllVideosUploadedByUser",
+					"item": [
+						{
+							"name": "getVideos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "page",
+											"value": "2",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/users/13/videos",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"13",
+										"videos"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "getPlaylistsByUser",
+					"item": [
+						{
+							"name": "getPlaylists",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "page",
+											"value": "1\n\n",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/users/13/playlists",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"13",
+										"playlists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "getUsersByUsername",
+					"item": [
+						{
+							"name": "getByUsername",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "page",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "geo",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/users",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "verifyRegistration",
+					"item": [
+						{
+							"name": "verifyRegistration",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/verify/13101/fwuZVPQb7xb2T0DwxrlnEEnY6pHyAAC8PlKR1v2o",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"verify",
+										"13101",
+										"fwuZVPQb7xb2T0DwxrlnEEnY6pHyAAC8PlKR1v2o"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "register",
+					"item": [
+						{
+							"name": "register",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"username\" : \"rgeorgieva\", \n\t\"firstName\" : \"Radostina\", \n\t\"lastName\" : \"Georgieva\", \n\t\"email\" : \"rhgeorgieva997@gmail.com\",\n\t\"password\" : \"Radipass1@\",\n\t\"confirmPassword\" : \"Radipass1@\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/register",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "login",
+					"item": [
+						{
+							"name": "loginWithProperCredentials",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\" : \"stoyanovs@gmail.com\",\n\t\"password\" : \"Stoyanpass2@\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "loginWithoutEmail",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"password\" : \"pepipass\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "loginWithWithoutPassword",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"email\" : \"petrovpetyr@gmail.com\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "loginWithWithoutEmailAndPassword",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/login",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "changePassword",
+					"item": [
+						{
+							"name": "changePassword",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"oldPassword\" : \"Stoyanpass1@\",\n\t\"newPassword\" : \"Stoyanpass2@\", \n\t\"confirmPassword\" : \"Stoyanpass2@\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/password",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"password"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "editProfile",
+					"item": [
+						{
+							"name": "editFirstNameOnly",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstName\" : \"Stoqn\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "editLastNameOnly",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"lastName\" : \"Stoqnov\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "editFirstAndLastName",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstName\" : \"Stoyan\",\n\t\"lastName\" : \"Stoyanov\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "subsribeToUser",
+					"item": [
+						{
+							"name": "subscribe",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/13/subscribe",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"13",
+										"subscribe"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "unsubscribeFromUser",
+					"item": [
+						{
+							"name": "unsubscribe",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n\t{\n\t\t\"id\" : 4,\n\t\t\"email\" : \"petrovpetyr@gmail.com\"\n\t},\n\t\n\t{\n\t\t\"id\" : 2\n\t}\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/users/13/unsubscribe",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"13",
+										"unsubscribe"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "logout",
+					"item": [
+						{
+							"name": "logout",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/users/logout",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"users",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "video",
+			"item": [
+				{
+					"name": "getVideosByTitle",
+					"item": [
+						{
+							"name": "getByTitle",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "page",
+											"value": "2",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "title",
+											"value": "funny",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/videos/title",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"title"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "getAll",
+					"item": [
+						{
+							"name": "getAll",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "page",
+											"value": "2",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/videos/all?",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"all"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "2",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "getById",
+					"item": [
+						{
+							"name": "getById",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/videos/43",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "uploadVideo",
+					"item": [
+						{
+							"name": "uploadVideo",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Dell/Desktop/videos/jingle_bells.mp4"
+										},
+										{
+											"key": "title",
+											"value": "Jingle Bells",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "categoryId",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "thumbnail",
+											"type": "file",
+											"src": "/C:/Users/Dell/Desktop/thumbnails/jingle_bells.jpg"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/videos/upload",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"upload"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "deleteVideo",
+					"item": [
+						{
+							"name": "deleteVideo",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/videos/42",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"42"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "likeVideo",
+					"item": [
+						{
+							"name": "likeVideo",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "localhost:8080/videos/43/like",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43",
+										"like"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "dislikeVideo",
+					"item": [
+						{
+							"name": "dislikeVideo",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/videos/43/dislike",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43",
+										"dislike"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "comment",
+			"item": [
+				{
+					"name": "get all comments on video",
+					"item": [
+						{
+							"name": "get comments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/videos/43/comments",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "getCommentById",
+					"item": [
+						{
+							"name": "getCommentById",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/comments/30",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"comments",
+										"30"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "submitComment",
+					"item": [
+						{
+							"name": "submit comment",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"text\" : \"cool\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/videos/43/comments",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "submit reply",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"text\" : \"thanks\",\n\t\"repliedTo\" : 29\n}"
+								},
+								"url": {
+									"raw": "localhost:8080/videos/43/comments",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"videos",
+										"43",
+										"comments"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "editComment",
+					"item": [
+						{
+							"name": "editcomment",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "text",
+											"value": ":):):)",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/comments/27",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"comments",
+										"27"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "deleteComment",
+					"item": [
+						{
+							"name": "deleteComment",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "localhost:8080/comments/29",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"comments",
+										"29"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "like/dislike",
+					"item": [
+						{
+							"name": "likeComment",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/comments/23/like",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"comments",
+										"23",
+										"like"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "dislikeComment",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/comments/23/dislike",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"comments",
+										"23",
+										"dislike"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "playlist",
+			"item": [
+				{
+					"name": "getPlaylist",
+					"item": [
+						{
+							"name": "getPlaylistById",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/playlists/5?",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"5"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "get playlist by title",
+					"item": [
+						{
+							"name": "get by title",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "fav",
+											"type": "text"
+										},
+										{
+											"key": "page",
+											"value": "1",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/playlists/title",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"title"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "create",
+					"item": [
+						{
+							"name": "createPlaylist",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Music",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/playlists",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "addVideo",
+					"item": [
+						{
+							"name": "add to playlist",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "localhost:8080/playlists/6/add/63",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"6",
+										"add",
+										"63"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "rename",
+					"item": [
+						{
+							"name": "rename",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Music",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8080/playlists/6",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"6"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "remove from playlist",
+					"item": [
+						{
+							"name": "remove video from playlist",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/playlists/6/remove/63",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"6",
+										"remove",
+										"63"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "deletePlaylist",
+					"item": [
+						{
+							"name": "delete playlist ",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/playlists/5",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"playlists",
+										"5"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

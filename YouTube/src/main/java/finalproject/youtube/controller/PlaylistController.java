@@ -49,10 +49,10 @@ public class PlaylistController extends BaseController {
     }
 
     @SneakyThrows
-    @PostMapping(value = "/playlists/{playlistId}/add")
+    @PostMapping(value = "/playlists/{playlistId}/add/{videoId}")
     public ResponseEntity<ResponsePlaylistDto> addVideoToPlaylist(HttpSession session,
                                                                   @PathVariable("playlistId") long playlistId,
-                                                                  @RequestParam("videoId") @Valid long videoId){
+                                                                  @PathVariable("videoId") long videoId){
         User user = SessionManager.getLoggedUser(session);
         return new ResponseEntity <>(playlistService.addVideoToPlaylist(user,playlistId, videoId), HttpStatus.OK);
     }
@@ -67,10 +67,10 @@ public class PlaylistController extends BaseController {
     }
 
     @SneakyThrows
-    @DeleteMapping("/playlists/{playlistId}/remove")
+    @DeleteMapping("/playlists/{playlistId}/remove/{videoId}")
     public ResponseEntity<ResponsePlaylistDto> removeVideoFromPlaylist(HttpSession session,
                                                            @PathVariable("playlistId") long playlistId,
-                                                           @RequestParam("videoId") @Valid long videoId){
+                                                           @PathVariable("videoId") long videoId){
         User user = SessionManager.getLoggedUser(session);
         return new ResponseEntity <>(playlistService.removeVideoFromPlaylist(user, playlistId, videoId),HttpStatus.OK);
     }
