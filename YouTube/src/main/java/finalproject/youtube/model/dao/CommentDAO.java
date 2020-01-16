@@ -148,28 +148,29 @@ public class CommentDAO {
             numberOfLikes = comment.getLikes() - 1;
             numberOfDislikes = comment.getDislikes() + 1;
         }
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        try (PreparedStatement changeReactionStatement = connection.prepareStatement(CHANGE_REACTION);
-             PreparedStatement updateReactionsStatement = connection.prepareStatement(UPDATE_REACTIONS)
-        ) {
-            connection.setAutoCommit(false);
-            changeReactionStatement.setInt(1, reaction);
-            changeReactionStatement.setLong(2, userId);
-            changeReactionStatement.setLong(3, comment.getId());
-            changeReactionStatement.executeUpdate();
+       try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+           try (PreparedStatement changeReactionStatement = connection.prepareStatement(CHANGE_REACTION);
+                PreparedStatement updateReactionsStatement = connection.prepareStatement(UPDATE_REACTIONS)
+           ) {
+               connection.setAutoCommit(false);
+               changeReactionStatement.setInt(1, reaction);
+               changeReactionStatement.setLong(2, userId);
+               changeReactionStatement.setLong(3, comment.getId());
+               changeReactionStatement.executeUpdate();
 
-            updateReactionsStatement.setInt(1, numberOfLikes);
-            updateReactionsStatement.setInt(2, numberOfDislikes);
-            updateReactionsStatement.setLong(3, comment.getId());
-            updateReactionsStatement.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-            connection.close();
-        }
+               updateReactionsStatement.setInt(1, numberOfLikes);
+               updateReactionsStatement.setInt(2, numberOfDislikes);
+               updateReactionsStatement.setLong(3, comment.getId());
+               updateReactionsStatement.executeUpdate();
+               connection.commit();
+           } catch (SQLException e) {
+               connection.rollback();
+               throw e;
+           } finally {
+               connection.setAutoCommit(true);
+               connection.close();
+           }
+       }
     }
 
 

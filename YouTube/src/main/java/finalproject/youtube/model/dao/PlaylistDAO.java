@@ -39,7 +39,8 @@ public class PlaylistDAO {
                     "ON p.id = vp.playlist_id " +
                     "JOIN youtube.users AS u " +
                     "ON v.owner_id=u.id " +
-                    "WHERE vp.playlist_id = ?;"
+                    "WHERE vp.playlist_id = ? " +
+                    "ORDER BY vp.time_added;"
             ;
     private static       String PAGINATED_PLAYLIST           =
             "SELECT " +
@@ -54,6 +55,7 @@ public class PlaylistDAO {
                     "JOIN youtube.users AS u " +
                     "ON v.owner_id=u.id " +
                     "WHERE vp.playlist_id = ? " +
+                    "ORDER BY vp.time_added " +
                     "limit ? offset ?;";
 
 
@@ -65,41 +67,47 @@ public class PlaylistDAO {
 
    @SneakyThrows
     public void addVideoToPlaylist(Video video, Playlist playlist){
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(ADD_VIDEO);
-            preparedStatement.setLong(1, video.getId());
-            preparedStatement.setLong(2, playlist.getId());
-            preparedStatement.executeUpdate();
+            try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+               try(PreparedStatement preparedStatement = connection.prepareStatement(ADD_VIDEO)){
+                   preparedStatement.setLong(1, video.getId());
+                   preparedStatement.setLong(2, playlist.getId());
+                   preparedStatement.executeUpdate();
+               }
+            }
     }
 
     @SneakyThrows
     public void removeVideoFromPlaylist(Video video, Playlist playlist){
-            Connection connection = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(REMOVE_VIDEO);
-            preparedStatement.setLong(1, video.getId());
-            preparedStatement.setLong(2, playlist.getId());
-            preparedStatement.executeUpdate();
+            try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+               try(PreparedStatement preparedStatement = connection.prepareStatement(REMOVE_VIDEO)) {
+                   preparedStatement.setLong(1, video.getId());
+                   preparedStatement.setLong(2, playlist.getId());
+                   preparedStatement.executeUpdate();
+               }
+            }
     }
 
     @SneakyThrows
     public List<VideoInPlaylistDto> getAllVideosFromPlaylist(Playlist playlist) {
         List <VideoInPlaylistDto> videos = new ArrayList <>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_VIDEOS_FROM_PLAYLIST);
-        preparedStatement.setLong(1, playlist.getId());
-        ResultSet resultSet = preparedStatement.executeQuery();
-        while (resultSet.next()) {
-            VideoInPlaylistDto video = new VideoInPlaylistDto(
-                    resultSet.getInt("video_id"),
-                    resultSet.getString("title"),
-                    resultSet.getString("video_url"),
-                    resultSet.getString("thumbnail_url"),
-                    new SmallUserDto(resultSet.getLong("user_id"),
-                            resultSet.getString("user_name")),
-                    resultSet.getTimestamp("time_added").toLocalDateTime()
-            );
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+           try(PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_VIDEOS_FROM_PLAYLIST)) {
+               preparedStatement.setLong(1, playlist.getId());
+               ResultSet resultSet = preparedStatement.executeQuery();
+               while (resultSet.next()) {
+                   VideoInPlaylistDto video = new VideoInPlaylistDto(
+                           resultSet.getInt("video_id"),
+                           resultSet.getString("title"),
+                           resultSet.getString("video_url"),
+                           resultSet.getString("thumbnail_url"),
+                           new SmallUserDto(resultSet.getLong("user_id"),
+                                   resultSet.getString("user_name")),
+                           resultSet.getTimestamp("time_added").toLocalDateTime()
+                   );
 
-            videos.add(video);
+                   videos.add(video);
+               }
+           }
         }
         return videos;
     }
@@ -122,27 +130,29 @@ public class PlaylistDAO {
     @SneakyThrows
     public List<VideoInPlaylistDto> getTenVideosPerPageFromPlaylist(Playlist playlist, int page) {
         List <VideoInPlaylistDto> videos = new ArrayList <>();
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(PAGINATED_PLAYLIST);
-        preparedStatement.setLong(1, playlist.getId());
-        preparedStatement.setInt(2, MAX_VIDEOS_PER_PAGE);
-        preparedStatement.setInt(3, page*MAX_VIDEOS_PER_PAGE);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if (!resultSet.next()){
-            throw new NotFoundException("There are no videos on this page");
+        try(Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+           try(PreparedStatement preparedStatement = connection.prepareStatement(PAGINATED_PLAYLIST)) {
+               preparedStatement.setLong(1, playlist.getId());
+               preparedStatement.setInt(2, MAX_VIDEOS_PER_PAGE);
+               preparedStatement.setInt(3, page * MAX_VIDEOS_PER_PAGE);
+               ResultSet resultSet = preparedStatement.executeQuery();
+               if (!resultSet.next()) {
+                   throw new NotFoundException("There are no videos on this page");
+               }
+               do {
+                   VideoInPlaylistDto video = new VideoInPlaylistDto(
+                           resultSet.getInt("video_id"),
+                           resultSet.getString("title"),
+                           resultSet.getString("video_url"),
+                           resultSet.getString("thumbnail_url"),
+                           new SmallUserDto(resultSet.getLong("user_id"),
+                                   resultSet.getString("user_name")),
+                           resultSet.getTimestamp("time_added").toLocalDateTime()
+                   );
+                   videos.add(video);
+               } while (resultSet.next());
+           }
         }
-        do{
-            VideoInPlaylistDto video = new VideoInPlaylistDto(
-                    resultSet.getInt("video_id"),
-                    resultSet.getString("title"),
-                    resultSet.getString("video_url"),
-                    resultSet.getString("thumbnail_url"),
-                    new SmallUserDto(resultSet.getLong("user_id"),
-                            resultSet.getString("user_name")),
-                    resultSet.getTimestamp("time_added").toLocalDateTime()
-            );
-            videos.add(video);
-        }while (resultSet.next());
         return videos;
     }
 }

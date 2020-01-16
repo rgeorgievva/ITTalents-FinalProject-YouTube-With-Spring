@@ -13,5 +13,5 @@ public class RequestCommentDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private String text;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
-    private Long repliedTo;
+    private long repliedTo;
 }

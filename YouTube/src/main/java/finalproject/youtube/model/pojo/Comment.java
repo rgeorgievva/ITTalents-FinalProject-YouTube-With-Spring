@@ -39,8 +39,8 @@ public class Comment {
     @Column(name = "dislikes")
     private int dislikes;
 
-    public Comment(RequestCommentDto requestCommentDto, long videoId){
-        this.setText(requestCommentDto.getText());
+    public Comment(String text, long videoId){
+        this.setText(text);
         this.setTimePosted(LocalDateTime.now());
         this.setVideoId(videoId);
     }

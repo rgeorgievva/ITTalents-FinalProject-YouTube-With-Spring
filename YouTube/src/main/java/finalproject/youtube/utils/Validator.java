@@ -179,10 +179,11 @@ public class Validator {
         }
     }
 
-    public static void validateText(String string){
+    public static String validateText(String string){
         String text = string.trim();
-        if(string.equals("")){
+        if(text.equals("")){
             throw new BadRequestException("You can't enter an empty string!");
         }
+        return text;
     }
 }

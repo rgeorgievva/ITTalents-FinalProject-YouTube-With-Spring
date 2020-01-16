@@ -8,7 +8,6 @@ import finalproject.youtube.model.dto.RequestCommentDto;
 import finalproject.youtube.model.dto.ResponseCommentDto;
 import finalproject.youtube.model.pojo.Comment;
 import finalproject.youtube.model.pojo.User;
-import finalproject.youtube.model.pojo.Video;
 import finalproject.youtube.model.repository.CommentRepository;
 import finalproject.youtube.utils.Validator;
 import lombok.SneakyThrows;
@@ -38,13 +37,17 @@ public class CommentService {
 
     @SneakyThrows
     public ResponseCommentDto submitComment(User user, long videoId, RequestCommentDto requestCommentDto) {
+        String text = requestCommentDto.getText();
+        Long parentId = requestCommentDto.getRepliedTo();
         //check for video existence
-        Video video = videoService.validateAndGetVideo(videoId);
-        Comment comment = new Comment(requestCommentDto, videoId);
+        videoService.validateAndGetVideo(videoId);
+        //validate text
+        text = (Validator.validateText(text));
+        //create comment from dto
+        Comment comment = new Comment(text, videoId);
         //check if there's a parent comment and if it is valid
-        Long parentCommentId = requestCommentDto.getRepliedTo();
-        if (parentCommentId != null) {
-            Comment parentComment = validateAndGetComment(parentCommentId);
+        if (parentId != 0) {
+            Comment parentComment = validateAndGetComment(parentId);
             //check if the parent comment is a reply to another comment
             if (parentComment.getRepliedTo() != null) {
                 //change the replied to to the very first parent comment (where replied to id is null)
@@ -59,18 +62,21 @@ public class CommentService {
     }
 
     @SneakyThrows
-    public ResponseCommentDto editComment(User user, RequestCommentDto requestCommentDto, long commentId){
+    public ResponseCommentDto editComment(User user, String text, long commentId){
+        //validate comment
         Comment comment = validateAndGetComment(commentId);
+        //validate text
+        text = Validator.validateText(text);
         //check for user authorization
         if(comment.getOwner().getId() != user.getId()){
             throw new AuthorizationException("You are not the owner of this comment to edit it");
         }
         //check if the new text is like before
-        if(requestCommentDto.getText().equals(comment.getText())){
+        if(text.equals(comment.getText())){
             throw new BadRequestException("You haven't made any changes to the text");
         }
         //edits text
-        comment.setText(requestCommentDto.getText());
+        comment.setText(text);
         commentRepository.save(comment);
         return new ResponseCommentDto(comment);
     }

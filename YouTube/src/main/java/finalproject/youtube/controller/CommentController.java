@@ -24,20 +24,17 @@ public class CommentController extends BaseController{
     CommentService commentService;
 
     @SneakyThrows
-    @GetMapping(value = "/comments/{comment_id}")
-    public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("comment_id") long commentId){
+    @GetMapping(value = "/comments/{commentId}")
+    public ResponseEntity <ResponseCommentDto> getCommentById(@PathVariable("commentId") long commentId){
         return new ResponseEntity(commentService.getCommentById(commentId), HttpStatus.OK) ;
     }
 
-    @SneakyThrows
-    @PostMapping(value = "/comments/{video_id}")
+    //todo parent id should not be string
+   @SneakyThrows
+    @PostMapping(value = "/videos/{videoId}/comments")
     public ResponseEntity<ResponseCommentDto> submitComment(HttpSession session,
-                                                            @PathVariable("video_id") long videoId,
-                                                            @RequestBody @Valid RequestCommentDto requestCommentDto) {
-        //checks for being logged in
-//        if (!SessionManager.validateLogged(session)) {
-//            throw new AuthorizationException("Please login to post a comment!");
-//        }
+                                                            @PathVariable(value = "videoId") long videoId,
+                                                            @RequestBody @Valid RequestCommentDto requestCommentDto){
         return new ResponseEntity<>( commentService.submitComment(SessionManager.getLoggedUser(session),
                 videoId, requestCommentDto), HttpStatus.OK);
     }
@@ -45,24 +42,16 @@ public class CommentController extends BaseController{
     @SneakyThrows
     @PutMapping(value = "/comments/{commentId}")
     public ResponseEntity<ResponseCommentDto> editComment(HttpSession session,
-                            @RequestBody @Valid RequestCommentDto requestCommentDto,
-                            @PathVariable("commentId") long commentId){
-        //checks for being logged in
-//        if (!SessionManager.validateLogged(session)) {
-//            throw new AuthorizationException("Please login to edit comment!");
-//        }
+                            @PathVariable("commentId") long commentId,
+                            @RequestParam(value = "text", defaultValue = "") String text){
         return new ResponseEntity(commentService.editComment(SessionManager.getLoggedUser(session),
-                requestCommentDto,commentId), HttpStatus.OK);
+                text,commentId), HttpStatus.OK);
     }
 
     @SneakyThrows
     @DeleteMapping(value = "/comments/{commentId}")
     public ResponseEntity<String> deleteComment(HttpSession session,
                               @PathVariable("commentId") long commentId){
-        //checks for being logged in
-//        if (!SessionManager.validateLogged(session)) {
-//            throw new AuthorizationException("Please login to delete comment!");
-//        }
         commentService.deleteComment(SessionManager.getLoggedUser(session),commentId);
         return new ResponseEntity <>("Comment with id="+commentId+" deleted!", HttpStatus.OK);
     }
@@ -71,10 +60,6 @@ public class CommentController extends BaseController{
     @GetMapping(value = "/comments/{commentId}/like")
     public void likeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
-        //checks for being logged in
-//        if (!SessionManager.validateLogged(session)) {
-//            throw new AuthorizationException("Please login to like comment!");
-//        }
         commentService.likeComment(SessionManager.getLoggedUser(session), commentId);
     }
 
@@ -82,10 +67,6 @@ public class CommentController extends BaseController{
     @GetMapping(value = "/comments/{commentId}/dislike")
     public void dislikeComment(HttpSession session,
                             @PathVariable("commentId") long commentId){
-        //checks for being logged in
-//        if (!SessionManager.validateLogged(session)) {
-//            throw new AuthorizationException("Please login to dislike comment!");
-//        }
        commentService.dislikeComment(SessionManager.getLoggedUser(session), commentId);
     }
 

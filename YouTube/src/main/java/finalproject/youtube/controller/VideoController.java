@@ -86,10 +86,9 @@ public class VideoController extends BaseController {
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
-    //todo ask - make pageable?
-    @GetMapping(value = "/videos/{video_id}/comments")
+    @GetMapping(value = "/videos/{videoId}/comments")
     public ResponseEntity<List <ResponseCommentWithRepliesDto>> getAllCommentsForVideo(
-            @PathVariable("video_id") long videoId){
+            @PathVariable("videoId") long videoId){
         List<ResponseCommentWithRepliesDto> comments = videoService.getAllCommentsForVideo(videoId);
         if (comments == null) {
             throw new NotFoundException("No comments found!");

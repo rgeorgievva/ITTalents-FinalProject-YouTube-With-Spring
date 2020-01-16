@@ -1,5 +1,6 @@
 package finalproject.youtube.controller;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import finalproject.youtube.exceptions.*;
 import finalproject.youtube.model.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
@@ -76,6 +77,16 @@ public abstract class BaseController {
     public ErrorDto handleMethodArgumentNotValid(MethodArgumentNotValidException e){
         return new ErrorDto(
                 "Invalid input data!",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                e.getClass().getName());
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleInvalidFormatException(InvalidFormatException e) {
+        return new ErrorDto(
+                "Invalid format!",
                 HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
                 e.getClass().getName());

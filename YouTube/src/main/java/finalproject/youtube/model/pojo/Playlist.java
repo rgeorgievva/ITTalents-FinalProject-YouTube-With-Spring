@@ -1,6 +1,6 @@
 package finalproject.youtube.model.pojo;
 
-import finalproject.youtube.model.dto.RequestPlaylistDto;
+import finalproject.youtube.model.dto.SmallPlaylistDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,15 +26,12 @@ public class Playlist {
     @JoinColumn(name = "owner_id")
     private User        owner;
 
-    public Playlist(int id, String title, LocalDateTime dateCreated, User owner) {
-        this.id = id;
-        this.title = title;
-        this.dateCreated = dateCreated;
-        this.owner = owner;
+    public Playlist(String title) {
+        this.setTitle(title);
+        this.setDateCreated(LocalDateTime.now());
     }
 
-    public Playlist(RequestPlaylistDto requestPlaylist) {
-        this.setTitle(requestPlaylist.getTitle());
-        this.setDateCreated(LocalDateTime.now());
+    public SmallPlaylistDto toSmallDto() {
+        return new SmallPlaylistDto(id, title, owner.toSmallUserDto(), dateCreated);
     }
 }

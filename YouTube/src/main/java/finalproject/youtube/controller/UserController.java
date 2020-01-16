@@ -38,13 +38,12 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(user.toNoPasswordUserDto(), HttpStatus.OK);
     }
 
-    //todo remove underlines
-    @GetMapping(value = "/users/verify/{user_id}/{verification_url}")
-    public ResponseEntity<String> verifyAccount(@PathVariable ("verification_url") String verificationURL,
-                                                @PathVariable ("user_id") long userId,
+    @GetMapping(value = "/users/verify/{secretId}/{verificationUrl}")
+    public ResponseEntity<String> verifyAccount(@PathVariable ("verificationUrl") String verificationURL,
+                                                @PathVariable ("secretId") long secretId,
                                                 HttpSession session){
-        long realId = ConfirmRegistration.decryptId(userId);
-        User verifiedUser = userService.verifyAccount(realId, verificationURL);
+        long realUserId = ConfirmRegistration.decryptId(secretId);
+        User verifiedUser = userService.verifyAccount(realUserId, verificationURL);
         SessionManager.logUser(session, verifiedUser);
         return new ResponseEntity <>("Account verified", HttpStatus.OK);
     }
