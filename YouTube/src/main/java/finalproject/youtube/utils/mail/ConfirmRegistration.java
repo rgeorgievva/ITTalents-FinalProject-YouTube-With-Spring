@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class ConfirmRegistration extends Thread {
 
-    private static final String elements = "abcdefghjiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*/.,?!";
+    private static final String elements = "abcdefghjiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     public static final int FIRST_NUM_FORMULA = 587;
     public static final int SECOND_NUM_FORMULA = 987;
     public static final int ENCRYPTED_URL_LENGTH = 40;
